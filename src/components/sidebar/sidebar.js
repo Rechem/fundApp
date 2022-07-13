@@ -1,12 +1,13 @@
 import React from 'react';
 import classes from './sidebar.module.css'
 import Navitem from './navitem/navitem';
-import { Story, Diagram, User, DocumentText1, HambergerMenu } from 'iconsax-react';
+import { Story, Diagram, User, DocumentText1, ArrowLeft2 } from 'iconsax-react';
 import { ReactComponent as ProjetsIcon } from './shuttle.svg';
 import { Link } from 'react-router-dom';
-import { Typography } from '@mui/material';
+import { Typography, Divider, IconButton } from '@mui/material';
 import { useTheme } from '@emotion/react';
-import { Divider } from '@mui/material';
+import 'animate.css';
+import { useState } from 'react';
 import Scrollbar from 'react-perfect-scrollbar'
 
 const NAVLIST = [
@@ -18,7 +19,7 @@ const NAVLIST = [
     {
         name: 'Projets',
         link: '/projets',
-        icon: <ProjetsIcon fill='currentcolor'/>
+        icon: <ProjetsIcon fill='currentcolor' />
     },
     {
         name: 'Demandes',
@@ -37,13 +38,25 @@ const NAVLIST = [
     },
 ]
 
-const Sidebar = () => {
+const Sidebar = props => {
 
     const theme = useTheme();
+    
 
+    let rootClass = props.isCollapsed ?
+        [classes.root, classes.hidden].join(' ') :
+        [classes.root, classes.shown].join(' ')
     return (
-        <div className={classes.root}>
+        <div className={rootClass}>
             <div className={classes.container}>
+                <div className={classes.closeIcon}>
+                    <IconButton onClick={props.closeSideBar}>
+                        <ArrowLeft2 />
+                    </IconButton>
+                </div>
+                <div className={classes.logo}>
+                    LOGO<br />PLACEHOLDER
+                </div>
                 <div>
                     {NAVLIST.map(item =>
                         <Navitem link={item.link} key={item.name}
@@ -55,7 +68,7 @@ const Sidebar = () => {
                     <Link className={classes.strtch}
                         to='/disconnect'>
                         <Typography color={theme.palette.error.main}
-                        noWrap>Déconnexion</Typography>
+                            noWrap>Déconnexion</Typography>
                     </Link>
                 </div>
             </div>

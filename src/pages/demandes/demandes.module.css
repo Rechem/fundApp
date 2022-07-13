@@ -8,13 +8,22 @@
     width: 100%;
     min-width: 0;
     flex: 1 1 auto;
+    display: flex;
 }
+
 @media screen and (max-width: 239px) {
-    /* For mobile phones: */
     .container{
         width: 0; 
     }
   }
+
+.openIcon{
+    position: absolute;
+    height: 1rem;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 5;
+}
 
 .content {
     width: min(90%,1024px);
