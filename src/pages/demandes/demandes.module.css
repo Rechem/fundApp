@@ -1,0 +1,27 @@
+.root {
+    height: 100vh;
+    display: flex;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+@media screen and (max-width: 239px) {
+    /* For mobile phones: */
+    .container{
+        width: 0; 
+    }
+  }
+
+.content {
+    width: min(90%,1024px);
+    overflow: hidden;
+    max-width: 1024px;
+    position: absolute;
+    left: 50%;
+    top: 4rem;
+    transform: translate(-50%,-50%);
+}
