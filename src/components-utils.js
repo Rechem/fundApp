@@ -15,8 +15,7 @@ export const BpIcon = styled('span')(({ theme }) => ({
       //   ? 'linear-gradient(180deg,hsla(0,0%,100%,.05),hsla(0,0%,100%,0))'
       //   : 'linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))',
     '.Mui-focusVisible &': {
-      outline: '2px auto rgba(19,124,189,.6)',
-      outlineOffset: 2,
+      borderColor : theme.palette.text.main
     },
     'input:hover ~ &': {
       borderColor : theme.palette.text.main

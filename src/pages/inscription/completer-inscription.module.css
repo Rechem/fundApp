@@ -1,0 +1,52 @@
+.hdr {
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+    margin-left: 3rem;
+    text-align: left;
+    overflow: auto;
+}
+
+.field {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.lbl {
+    margin-bottom: 0.25rem;
+}
+
+.btn {
+    display: block;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    margin-left: auto;
+    margin-right: 0;
+    width: 11rem;
+    height: 2.5rem;
+}
+
+@media screen and (max-width: 601px) {
+
+    .btn {
+        width: 100%;
+    }
+
+    .hdr {
+        margin-top: 4rem;
+        margin-bottom: 6rem;
+        margin-left: auto;
+        text-align: center;
+    }
+}
+
+.container {
+    max-width: 60rem;
+    padding-inline: 1rem;
+    margin: auto;
+}
+
+.subContainer {
+    margin: auto;
+    max-width: 43rem;
+    padding-bottom: 2rem;
+}

@@ -31,6 +31,6 @@
     max-width: 1024px;
     position: absolute;
     left: 50%;
-    top: 4rem;
-    transform: translate(-50%,-50%);
+    top: 2rem;
+    transform: translate(-50%,0);
 }

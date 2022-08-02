@@ -21,8 +21,7 @@
     transform: translateX(0);
 }
 
-
-@media screen and (max-width: 239px) {
+@media screen and (max-width: 600px) {
 
     /* For mobile phones: */
     .root {
@@ -46,6 +45,7 @@
 
 .disconnect {
     /* overflow: hidden; */
+    cursor: pointer;
     margin: auto 0 1rem 0;
     min-width: 0;
 }

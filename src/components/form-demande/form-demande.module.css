@@ -1,0 +1,108 @@
+.hdr {
+    margin-bottom: 1rem;
+    margin-left: 3rem;
+    text-align: left;
+    overflow: auto;
+}
+
+.dvdr{
+    margin-bottom: 4rem;
+}
+
+.closeIcon {
+    position: absolute;
+    right: 0;
+    margin: 0.5rem 1rem;
+}
+
+.icon{
+    transform:rotate(45deg);
+    overflow: hidden;
+    transform-origin: center center;
+}
+
+.field {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.lbl {
+    margin-bottom: 0.25rem;
+}
+
+.btnContainer {
+    display: flex;
+    margin-top: 2rem;
+    margin-left: auto;
+    justify-content : flex-end
+}
+
+
+.btn {
+    margin-left: 1rem;
+    width: 11rem;
+    padding: 1rem;
+    height: 2.5rem;
+}
+
+@media screen and (max-width: 599px) {
+
+    .btnContainer{
+        display: block;
+    }
+
+    .btn {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .btn:nth-child(2){
+        margin-top: 1rem;
+    }
+
+    .hdr {
+        margin-bottom: 4rem;
+        margin-left: auto;
+        text-align: center;
+    }
+    .container{
+        margin: 0 auto;
+    }
+    
+}
+
+.container {
+    width: 100%;
+    max-width: 60rem;
+    padding-inline: 1rem;
+    margin: 4rem auto;
+}
+
+.subContainer {
+    margin: auto;
+    max-width: 43rem;
+    padding-bottom: 2rem;
+}
+
+.stepper{
+    margin-top: 1rem;
+    margin-bottom: 4rem;
+}
+
+.filebtn{
+margin-right: 1rem;
+width: 6rem;
+}
+
+.filebtn:hover{
+    background-color: transparent;
+}
+
+.addBusinessPlan{
+    display: flex;
+    align-items: center;
+}
+
+.formBody {
+    margin-bottom: 2rem;
+}

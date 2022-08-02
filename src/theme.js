@@ -1,13 +1,18 @@
 import { createTheme } from '@mui/material/styles';
-import { TextField, Checkbox } from '@mui/material';
+import { TextField, Checkbox, Select } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import {BpCheckedIcon, BpIcon} from './components-utils'
+import { BpCheckedIcon, BpIcon } from './components-utils'
 
 const tinycolor = require("tinycolor2");
 
 let theme = createTheme({
     palette: {
-        primary: { main: "#ff7373" },
+        primary: {
+            main: "#ff7373",
+            light: tinycolor("#ff7373").lighten(5).toString(),
+            dark: tinycolor("#ff7373").lighten(5).toString(),
+            contrastText: "fff"
+        },
         error: { main: "#ff4e3c" },
         success: { main: "#27ae60" },
         warning: { main: "#e67e22" },
@@ -16,34 +21,35 @@ let theme = createTheme({
         background: { main: "#fff" },
     },
     typography: {
+        htmlFontSize: 16,
         fontFamily: ["inter", "sans-serif"],
         body1: {
             fontSize: "1rem",
-            letterSpacing: '-0.02em'
-            // color: theme.palette.text
+            color: "#424141"
         },
         body2: {
-            fontSize: "0.75rem",
-            // color: theme.palette.text
+            fontSize: "0.875rem",
+            color: "#424141"
         },
         subtitle1: {
-            fontSize: "1.75rem",
-            // color: theme.palette.text
+            fontSize: "1rem",
+            color: "#424141"
         },
         subtitle2: {
             fontSize: "1.3125rem",
-            // color: theme.palette.text
+            color: "#424141"
         },
         h2: {
             fontSize: "3.25rem",
-            // color: theme.palette.text
+            color: "#424141"
         },
         h3: {
             fontSize: "2.375rem",
-            // color: theme.palette.text
+            color: "#424141"
         },
     },
 })
+
 theme = createTheme(theme, {
     components: {
         MuiButton: {
@@ -74,31 +80,51 @@ theme = createTheme(theme, {
                 },
             }
         },
-    }
+        MuiFormHelperText: {
+            styleOverrides: {
+                root: {
+                    marginRight: 0,
+                    marginLeft: 0
+                }
+            }
+        }
+    },
 });
 
 export const CustomTextField = styled(TextField)(({ theme }) => ({
     '& .MuiOutlinedInput-root': {
-      '&.Mui-focused fieldset': {
-        borderWidth:'thin',
-        borderColor: theme.palette.text.primary,
-      },
+        '&.Mui-focused fieldset': {
+            borderWidth: 'thin',
+            borderColor: theme.palette.text.primary,
+        },
     },
-    '& .MuiFormHelperText-root' :{
+    '& .MuiFormHelperText-root': {
         marginRight: 0,
         marginLeft: 0,
     },
     input: {
         '&::placeholder': {
-          fontSize : theme.typography.body2.fontSize,
+            fontSize: theme.typography.body2.fontSize,
         },
-      },
-  }));
+    },
+}));
+
+export const CustomSelect = props =>
+    <Select
+        sx={{
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderWidth: 'thin',
+                borderColor: theme.palette.text.primary,
+            },
+        }}
+        {...props}
+    />
+
 
 export const CustomCheckBox = (props) =>
-      <Checkbox
+    <Checkbox
         sx={{
-          '&:hover': { bgcolor: 'transparent' },
+            '&:hover': { bgcolor: 'transparent' },
         }}
         disableRipple
         color="default"
@@ -106,6 +132,6 @@ export const CustomCheckBox = (props) =>
         icon={<BpIcon />}
         inputProps={{ 'aria-label': 'Checkbox demo' }}
         {...props}
-      />
+    />
 
 export default theme

@@ -1,0 +1,39 @@
+.hdr {
+    margin-bottom: 2rem;
+}
+
+.mdlContainer {
+    width: min(60rem, 90%);
+    background-color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 3rem;
+    border-radius: 10px;
+}
+
+.closeIcon {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+}
+
+.icon{
+    transform:rotate(45deg);
+    overflow: hidden;
+    transform-origin: center center;
+}
+
+.etatContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+@media screen and (max-width: 599px) {
+    .mdlContainer {
+        height: 100%;
+        overflow-y: scroll;
+    }
+}

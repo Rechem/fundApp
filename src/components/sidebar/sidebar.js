@@ -1,14 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import classes from './sidebar.module.css'
 import Navitem from './navitem/navitem';
 import { Story, Diagram, User, DocumentText1, ArrowLeft2 } from 'iconsax-react';
 import { ReactComponent as ProjetsIcon } from './shuttle.svg';
-import { Link } from 'react-router-dom';
 import { Typography, Divider, IconButton } from '@mui/material';
-import { useTheme } from '@emotion/react';
-import 'animate.css';
-import { useState } from 'react';
-import Scrollbar from 'react-perfect-scrollbar'
+import { useTheme } from '@mui/material/styles';
+import { useDispatch, useSelector } from 'react-redux';
+import { signOut } from '../../store/loginSlice/reducer';
 
 const NAVLIST = [
     {
@@ -32,6 +30,11 @@ const NAVLIST = [
         icon: <Story variant='Outline' />
     },
     {
+        name: 'Mes demandes',
+        link: '/mes-demandes',
+        icon: <DocumentText1 variant='Outline' />
+    },
+    {
         name: 'Utilisateurs',
         link: '/users',
         icon: <User variant='Outline' />
@@ -40,12 +43,26 @@ const NAVLIST = [
 
 const Sidebar = props => {
 
-    const theme = useTheme();
-    
+    let rootClass = classes.root
 
-    let rootClass = props.isCollapsed ?
-        [classes.root, classes.hidden].join(' ') :
-        [classes.root, classes.shown].join(' ')
+    const dispatch = useDispatch()
+    const loginState = useSelector(state => state.login)
+
+    const theme = useTheme();
+
+
+    if (!props.isCollapsed) {
+        if (rootClass !== classes.root){
+            rootClass = [classes.root, classes.shown].join(' ')
+            console.log("pokipoki");
+        }
+    } else {
+        rootClass = [classes.root, classes.hidden].join(' ')
+    }
+
+    const disconnect = () => {
+        dispatch(signOut(null))
+    }
     return (
         <div className={rootClass}>
             <div className={classes.container}>
@@ -65,11 +82,11 @@ const Sidebar = props => {
                 </div>
                 <div className={classes.disconnect}>
                     <Divider className={classes.dvdr} />
-                    <Link className={classes.strtch}
+                    <a onClick={disconnect} className={classes.strtch}
                         to='/disconnect'>
                         <Typography color={theme.palette.error.main}
                             noWrap>Déconnexion</Typography>
-                    </Link>
+                    </a>
                 </div>
             </div>
         </div>

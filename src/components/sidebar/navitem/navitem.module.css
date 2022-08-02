@@ -1,14 +1,17 @@
-.container {
-    margin: 2rem;
-}
-
 .lnk {
     text-decoration: none;
     color: inherit;
     display: flex;
     align-items: center;
+    padding-left: 2rem;
+    padding-block: 1rem;
 }
 
 .icon{
     margin-right: 1rem;
+    margin-left: 1rem;
+}
+
+.txt {
+    color: inherit;
 }

@@ -14,7 +14,7 @@ const Navitem = props => {
                 <span className={classes.icon}>
                     {props.icon}
                 </span>
-                <Typography display='inline' noWrap>{props.children}</Typography>
+                <Typography display='inline' noWrap className={classes.txt}>{props.children}</Typography>
             </Link>
         </div>
     );
