@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import classes from './sidebar.module.css'
 import Navitem from './navitem/navitem';
-import { Story, Diagram, User, DocumentText1, ArrowLeft2 } from 'iconsax-react';
+import { Story, Diagram, User, DocumentText1, ArrowLeft2, Sms } from 'iconsax-react';
 import { ReactComponent as ProjetsIcon } from './shuttle.svg';
 import { Typography, Divider, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -24,21 +24,26 @@ const NAVLIST = [
         link: '/demandes',
         icon: <DocumentText1 variant='Outline' />
     },
-    {
-        name: 'Commissions',
-        link: '/commisions',
-        icon: <Story variant='Outline' />
-    },
+    // {
+    //     name: 'Commissions',
+    //     link: '/commisions',
+    //     icon: <Story variant='Outline' />
+    // },
     {
         name: 'Mes demandes',
         link: '/mes-demandes',
         icon: <DocumentText1 variant='Outline' />
     },
     {
-        name: 'Utilisateurs',
-        link: '/users',
-        icon: <User variant='Outline' />
+        name: 'Messages',
+        link: '/messages',
+        icon: <Sms variant='Outline' />
     },
+    // {
+    //     name: 'Utilisateurs',
+    //     link: '/users',
+    //     icon: <User variant='Outline' />
+    // },
 ]
 
 const Sidebar = props => {
@@ -54,7 +59,6 @@ const Sidebar = props => {
     if (!props.isCollapsed) {
         if (rootClass !== classes.root){
             rootClass = [classes.root, classes.shown].join(' ')
-            console.log("pokipoki");
         }
     } else {
         rootClass = [classes.root, classes.hidden].join(' ')

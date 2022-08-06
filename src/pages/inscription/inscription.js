@@ -57,15 +57,19 @@ const Inscription = () => {
         }
     }
 
+    let redirect = null
+
+    if (authenticationState.status === 'connected') {
+        if (authenticationState.user.completedSignup) {
+            redirect = <Navigate to="/mes-demandes" />
+        } else {
+            redirect = <Navigate to="/complete-signup" />
+        }
+    }
+
     return (
         <React.Fragment>
-            {authenticationState.status === 'connected' &&
-                authenticationState.user.completedSignup &&
-                <Navigate to="/dashboard" />}
-            {authenticationState.status === 'connected' &&
-                !authenticationState.user.completedSignup &&
-                <Navigate to="/complete-signup" />}
-
+            {redirect}
             <div className={classes.container}>
                 <form onSubmit={submitSignUpForm}>
 

@@ -5,8 +5,6 @@ import classes from './mes-demandes.module.css'
 import Dialog from '@mui/material/Dialog';
 import Slide from '@mui/material/Slide';
 import FormDemande from '../../../components/form-demande/form-demande';
-import Status from '../../../components/status/status'
-import { STATUS } from '../../../components/status/status-enum'
 import { useSelector, useDispatch } from 'react-redux'
 import MesDemandesTable from './mes-demandes-table';
 import { CustomTextField } from '../../../theme';
@@ -75,8 +73,8 @@ const MesDemandes = () => {
                             variant='body2'>Ajouter une demande</Typography>
                     </Button>
                     <CustomTextField
-                        name='denominationCommerciale'
-                        id='denomination-commerciale-field'
+                        name='searchInput'
+                        id='searchInput-field'
                         className={classes.field}
                         size='small' margin='none'
                         type='text' onChange={onChangeHandler}

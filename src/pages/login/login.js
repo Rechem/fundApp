@@ -10,7 +10,7 @@ import { Navigate } from 'react-router-dom';
 const initialValues = {
     email: '',
     password: '',
-    stayLoggedIn: false,
+    // stayLoggedIn: false,
 }
 
 const Login = () => {
@@ -42,11 +42,10 @@ const Login = () => {
     const submitSignInForm = async (e) => {
         e?.preventDefault()
         if (validateForm()) {
-            console.log('Form is valid')
             dispatch(signIn({
                 email: values.email,
                 password: values.password,
-                stayLoggedIn: values.stayLoggedIn,
+                // stayLoggedIn: values.stayLoggedIn,
             }))
         }
     }
@@ -55,11 +54,12 @@ const Login = () => {
 
     if(authenticationState.status === 'connected'){
         if(authenticationState.user.completedSignup){
-            redirect = <Navigate to="/dashboard"/>
+            redirect = <Navigate to="/mes-demandes"/>
         }else{
             redirect = <Navigate to="/complete-signup"/>
         }
     }
+    
     return (
         <React.Fragment>
             {redirect}
@@ -67,7 +67,7 @@ const Login = () => {
                 <form onSubmit={submitSignInForm}>
                     <Typography variant='h3' fontWeight={700}
                         className={classes.hdr}>
-                        Se connecter
+                        {'Se connecter'}
                     </Typography>
 
                     {
@@ -106,14 +106,14 @@ const Login = () => {
                         {...(errors.password && errors.password !== '' && { error: true, helperText: errors.password })}>
                     </CustomTextField>
 
-                    <span className={classes.chckbxcontainer}
+                    {/* <span className={classes.chckbxcontainer}
                         onClick={() => onChangeHandler({ target: { name: 'stayLoggedIn', value: !values.stayLoggedIn } })}>
                         <CustomCheckBox className={classes.chckbx} size='small'
                             checked={values.stayLoggedIn}></CustomCheckBox>
                         <Typography display='inline' marginLeft='0.5rem' variant='body2'>
                             Rester connecté
                         </Typography>
-                    </span>
+                    </span> */}
                     <Button variant='contained' className={classes.btn} onClick={submitSignInForm}>
                         <Typography color='white' fontWeight={600} >Se connecter</Typography>
                     </Button>

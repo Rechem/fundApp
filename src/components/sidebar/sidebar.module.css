@@ -26,6 +26,7 @@
     /* For mobile phones: */
     .root {
         flex-shrink: 1;
+        position: fixed;
     }
 }
 

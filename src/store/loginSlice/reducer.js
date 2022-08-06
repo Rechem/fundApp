@@ -1,16 +1,13 @@
-import { createSlice, createAsyncThunk, isAnyOf, addMatcher } from '@reduxjs/toolkit'
-import axios from 'axios'
+import { createSlice, createAsyncThunk, isAnyOf} from '@reduxjs/toolkit'
+import axios from 'axios';
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-axios.defaults.withCredentials = true;
-
-
 const initialState = {
     user: {
         idUser: null,
-        role: null,
+        role: 'simpleUser',
         completedSignUp: true,
     },
     status: 'init',// 'init', disconnected', 'connected', 'loading', 
@@ -21,74 +18,76 @@ export const authenticationSlice = createSlice({
     name: 'authentication',
     initialState,
     reducers: {
-        onLoad: (state, _) => {
-
-            const authObject = cookies.get('authObject')
-            
-            if (authObject) {
-                console.log(cookies.get('authObject'))
-                if (authObject.stayLoggedIn === true) {
-                    const user = {
-                        idUser: authObject.idUser,
-                        role: authObject.role,
-                        completedSignUp: authObject.completedSignUp,
-                    }
-                    state.user = user;
-                    state.status = user.idUser && user.role ? 'connected' : 'disconnected'
-                }else{
-                    state.status = 'disconnected'
-                }
-            }
-        },
-        setCompletedSignup: (state, _) => {
-            const authObject = cookies.get('authObject')
-
-            if (authObject) {
-                authObject.completedSignUp = true
-            }
-            state.user.completedSignUp = true
-
-            cookies.set('authObject', JSON.stringify(authObject),
-                { maxAge: process.env.REACT_APP_LOGGEDIN_EXPIRES * 60 * 24 })
-        },
-    },
-    extraReducers(builder) {
-        builder
-            .addCase(signOut.fulfilled, (state, _) => {
+        logout: {
+            reducer: (state, action) => {
                 state.status = 'disconnected';// 'disconnected', 'connected', 'loading'
                 state.user = {
                     idUser: null,
                     role: null,
                     completedSignUp: false,
                 }
-                state.error = null;
-
+                if (action.payload)
+                    state.error = action.payload;
+                else
+                    state.error = null
+            },
+            prepare: (error) => {
                 cookies.remove('authObject')
+                if (error)
+                    return { payload: error }
+                else
+                    return
+            },
+        },
+        setCompletedSignup: {
+            reducer: (state, _) => {
+                state.user.completedSignUp = true
+            },
+            prepare: () => {
+                const authObject = cookies.get('authObject')
+
+                if (authObject) {
+                    authObject.completedSignUp = true
+                }
+
+                cookies.set('authObject', JSON.stringify(authObject),
+                    {
+                        maxAge: process.env.REACT_APP_LOGGEDIN_EXPIRES * 60 * 24,
+                        path: '/'
+                    })
+                return
+            }
+        }
+    },
+    extraReducers(builder) {
+        builder
+            .addCase(signOut.fulfilled, (state, action) => {
+                authenticationSlice.caseReducers.logout(state, action)
             })
-            // .addCase(onLoad.fulfilled, (state, action) => {
-            //     state.status = 'connected'
-            //     state.user = action.payload
-            // })
-            .addMatcher(isAnyOf(signIn.pending, signOut.pending),
+            .addMatcher(isAnyOf(signIn.pending, signOut.pending, checkSignIn.pending),
                 (state, _) => {
                     state.status = 'loading'
                     state.error = null
                 })
-            .addMatcher(isAnyOf(signIn.fulfilled, signUp.fulfilled), (state, action) => {
-                const authObject = {
-                    idUser: action.payload.response.user.idUser,
-                    role: action.payload.response.user.role,
-                    completedSignUp: action.payload.response.user.completedSignUp,
-                    stayLoggedIn: action.payload.stayLoggedIn
-                }
+            .addMatcher(isAnyOf(signIn.fulfilled, signUp.fulfilled, checkSignIn.fulfilled),
+                (state, action) => {
+                    console.log(action.payload);
+                    const userObject = {
+                        idUser: action.payload.data.user.idUser,
+                        role: action.payload.data.user.role,
+                        completedSignUp: action.payload.data.user.completedSignUp,
+                    }
 
-                cookies.set('authObject', JSON.stringify(authObject),
-                    { maxAge: process.env.REACT_APP_LOGGEDIN_EXPIRES * 60 * 24 })
+                    cookies.set('authObject', JSON.stringify(userObject),
+                        {
+                            maxAge: process.env.REACT_APP_LOGGEDIN_EXPIRES * 60 * 24,
+                            path: '/'
+                        })
 
-                state.status = 'connected'
-                state.user = action.payload.response.user
-            })
-            .addMatcher(isAnyOf(signIn.rejected), (state, action) => {
+                    state.status = 'connected'
+                    state.user = userObject
+                })
+            .addMatcher(isAnyOf(signIn.rejected, checkSignIn.rejected), (state, action) => {
                 state.status = 'disconnected'
                 state.error = action.payload
             })
@@ -96,27 +95,24 @@ export const authenticationSlice = createSlice({
 })
 
 export const signIn = createAsyncThunk('authentication/login',
-    async ({ email, password, stayLoggedIn, }, { rejectWithValue }) => {
+    async ({ email, password }) => {
         try {
-            const BASE_URL = process.env.REACT_APP_BASE_URL
-            const response = await axios.post(
-                `${BASE_URL}/users/login`, {
+            const {data} = await axios.post(
+                `/users/login`, {
                 email,
                 password,
             })
-            return { response: response.data, stayLoggedIn }
+            return data
         } catch (e) {
-            return rejectWithValue(e.response.data.message)
+            throw new Error(e.response.data.message)
         }
     })
 
 export const signUp = createAsyncThunk('aythentication/signUp',
     async ({ email, password }, { rejectWithValue }) => {
         try {
-            const BASE_URL = process.env.REACT_APP_BASE_URL
-            console.log(BASE_URL)
             const response = await axios.post(
-                `${BASE_URL}/users/signup`, {
+                `/users/signup`, {
                 email,
                 password,
             })
@@ -126,51 +122,28 @@ export const signUp = createAsyncThunk('aythentication/signUp',
         }
     })
 
-// export const onLoad = createAsyncThunk('authentication/onLoad',
-//     async (_, { rejectWithValue }) => {
-
-//         const authObject = cookies.get('authObject')
-
-//         if (authObject) {
-//             // const stayLoggedIn = cookies.get('stayLoggedIn') === 'true'
-//             // const idUser = parseInt(cookies.get('idUser'))
-//             // const role = cookies.get('role')
-//             // const completedSignUp = cookies.get('completedSignUp') === 'true'
-//             if (authObject.stayLoggedIn === true) {
-//                 const user = {
-//                     idUser: authObject.idUser,
-//                     role: authObject.role,
-//                     completedSignUp: authObject.completedSignUp,
-//                 }
-//             }
-//         }
-
-//         if (stayLoggedIn && idUser != null) {
-//             console.log("here ?")
-//             try {
-//                 const BASE_URL = process.env.REACT_APP_BASE_URL
-//                 await axios.post(
-//                     `${BASE_URL}/users/onLoad`, { user: user })
-//                 return { ...user }
-//             } catch (e) {
-//                 return rejectWithValue(e.response.data.message)
-//             }
-//         }
-//         return rejectWithValue()
-//     })
+export const checkSignIn = createAsyncThunk('authentication/checkSignIn',
+    async () => {
+        try {
+            const {data} = await axios.get(
+                `/users/checkSignIn`)
+            return data
+        } catch (e) {
+            throw new Error(e.response.data.message)
+        }
+    })
 
 export const signOut = createAsyncThunk('authentication/logout',
     async (_, { rejectWithValue }) => {
         try {
-            const BASE_URL = process.env.REACT_APP_BASE_URL
             await axios.post(
-                `${BASE_URL}/users/logout`, {})
+                `/users/logout`, {})
         } catch (e) {
             return rejectWithValue(e.response.data.message)
         }
     })
 
 // Action creators are generated for each case reducer function
-export const { reset, logout, autoSignIn, setCompletedSignup, onLoad } = authenticationSlice.actions
+export const { reset, logout, autoSignIn, setCompletedSignup, logoutWithError } = authenticationSlice.actions
 
 export default authenticationSlice.reducer

@@ -7,7 +7,7 @@ import moment from "moment";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
-const MesDemandesTable = props => {
+const DemandesTable = props => {
 
     const theme = useTheme()
 
@@ -32,6 +32,9 @@ const MesDemandesTable = props => {
             field: "etat",
             render: (rowData) => <Status status={rowData.etat} />,
         },
+        
+        { title: "Nom", field: "user.nom", cellStyle },
+        { title: "Prénom", field: "user.prenom", cellStyle },
         { title: "Dénomination", field: "denominationCommerciale", cellStyle },
         { title: "Montant", field: "montant", cellStyle },
         {
@@ -72,4 +75,4 @@ const MesDemandesTable = props => {
     </React.Fragment>
 };
 
-export default MesDemandesTable;
+export default DemandesTable;

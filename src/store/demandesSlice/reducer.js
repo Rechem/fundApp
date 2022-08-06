@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const initialState = {
     demandes: [],
-    status: 'idle', //'searching' 'idle',
+    status: 'idle', //'fetching' 'idle',
     error: null,
 }
 
@@ -12,39 +12,52 @@ export const demandesSlice = createSlice({
     initialState,
     extraReducers(builder) {
         builder
-            .addMatcher(isAnyOf(fetchUserDemandes.fulfilled),
+            .addMatcher(isAnyOf(fetchUserDemandes.fulfilled, fetchAllDemandes.fulfilled),
                 (state, action) => {
-                    state.demandes = action.payload.demandes
+                    state.demandes = action.payload.data.demandes
                     state.status = 'idle'
                 })
-            .addMatcher(isAnyOf(fetchUserDemandes.pending),
+            .addMatcher(isAnyOf(fetchUserDemandes.pending, fetchAllDemandes.pending),
                 (state, action) => {
-                    state.status = 'searching'
+                    state.status = 'fetching'
                 })
-            .addMatcher(isAnyOf(fetchUserDemandes.rejected),
+            .addMatcher(isAnyOf(fetchUserDemandes.rejected, fetchAllDemandes.rejected),
                 (state, action) => {
                     state.status = 'idle'
+                    state.error = action.payload
                 })
     }
 })
 
 export const fetchUserDemandes = createAsyncThunk('demandes/fetchDemandesByUserId',
-    async ({searchInput, idUser, }, { rejectWithValue }) => {
+    async ({searchInput, idUser, }) => {
         try {
-            const BASE_URL = process.env.REACT_APP_BASE_URL
-            console.log(idUser)
-            const response = await axios.get(
-                `${BASE_URL}/demandes/user`, {
+            const {data} = await axios.get(
+                `/demandes/user`, {
                 params: {
                     idUser,
                     searchInput,
                 }
             })
+            return data
+        } catch (e) {
+            throw new Error(e.response.data.message)
+        }
+    })
+
+export const fetchAllDemandes = createAsyncThunk('demandes/fetchAllDemandes',
+    async searchInput => {
+        try {
+            const response = await axios.get(
+                `/demandes`, {
+                params: {
+                    searchInput,
+                }
+            })
             return response.data
         } catch (e) {
-            console.log(e)
             // if(e.response.status)
-            return rejectWithValue(e.response.data.message)
+            throw new Error(e.response.data.message)
         }
     })
 

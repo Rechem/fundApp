@@ -36,7 +36,7 @@ const CompleterInscription = () => {
     const onChangeDateHander = newValue => {
         setValues({
             ...values,
-            dateNaissance: newValue.format("DD-MM-YYYY")
+            dateNaissance: newValue
         })
         setErrors({ ...errors, dateNaissance: '' })
     }
@@ -77,14 +77,12 @@ const CompleterInscription = () => {
         e?.preventDefault()
         setResponseError('')
         if (validateForm()) {
-            console.log('Form is valid')
             try {
-                const BASE_URL = process.env.REACT_APP_BASE_URL
                 const response = await axios.put(
-                    BASE_URL + `/users/${authenticationState.user.idUser}`,
+                    `/users/${authenticationState.user.idUser}`,
                     { ...values })
                     dispatch(setCompletedSignup())
-            } catch (e) {
+                } catch (e) {
                 setResponseError(e.response.data.message)
             }
         }
@@ -99,7 +97,7 @@ const CompleterInscription = () => {
             <form onSubmit={submitForm} className={classes.subContainer}>
                 {responseError != '' &&
                     <ErrorDisplay>
-                        responseError
+                        {responseError}
                     </ErrorDisplay>}
                 <Grid container rowSpacing={1} columnSpacing={3}>
                     <Grid item className={classes.col1} xs={12} sm={6}>

@@ -131,7 +131,7 @@ const FormDemande = props => {
     const onChangeDateHander = newValue => {
         setValues({
             ...values,
-            dateCreation: newValue.format("DD-MM-YYYY")
+            dateCreation: newValue
         })
         setErrors({ ...errors, dateCreation: '' })
     }
@@ -184,17 +184,16 @@ const FormDemande = props => {
         formData.append('nbLabel', values.nbLabel)
         formData.append('montant', values.montant)
 
-        axios.post(
-            process.env.REACT_APP_BASE_URL + '/demandes',
-            formData
-        ).then(function (response) {
-            //handle success
-            dispatch(fetchUserDemandes({idUser :  authenticationState.user.idUser}))
-            console.log(response);
-        }).catch(function (response) {
+        try {
+            const response = await axios.post(
+                '/demandes',
+                formData
+            )
+            dispatch(fetchUserDemandes({ idUser: authenticationState.user.idUser }))
+        } catch (e) {
             //handle error
-            console.log(response);
-        });
+            setResponseError(e.response.data.message)
+        }
     }
 
     return (
@@ -210,11 +209,11 @@ const FormDemande = props => {
                     className={classes.hdr}>
                     Demande de financement
                 </Typography>
-                <Divider className={classes.dvdr} />
                 {responseError != '' &&
                     <ErrorDisplay>
                         {responseError}
                     </ErrorDisplay>}
+                <Divider className={classes.dvdr} />
                 <FromSteperHandler
                     submit={submit}
                     validateFirstPage={validateFirstPage}
@@ -345,7 +344,7 @@ const FormDemande = props => {
                                     <Button onClick={() => { onClickUpload() }}
                                         className={classes.filebtn} variant='outlined'>
                                         <input type='file' onChange={fileUploadHandler}
-                                            style={{ display: 'none' }}
+                                            style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
                                             id='file' ref={inputFile} />
                                         {selectedFile ? 'Remplacer' : 'Ajouter'}
                                     </Button>
