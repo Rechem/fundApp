@@ -70,7 +70,6 @@ const FromSteperHandler = props => {
         e?.preventDefault()
         if (isLastStep()) {
             if (props.validateSecondPage()) {
-                console.log("Form is valiiiiiiiiid")
                 props.submit()
             }
         } else {

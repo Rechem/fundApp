@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import classes from './sidebar.module.css'
 import Navitem from './navitem/navitem';
-import { Story, Diagram, User, DocumentText1, ArrowLeft2, Sms } from 'iconsax-react';
+import { Story, Diagram, User, DocumentText1, Add, Sms } from 'iconsax-react';
 import { ReactComponent as ProjetsIcon } from './shuttle.svg';
 import { Typography, Divider, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -24,11 +24,11 @@ const NAVLIST = [
         link: '/demandes',
         icon: <DocumentText1 variant='Outline' />
     },
-    // {
-    //     name: 'Commissions',
-    //     link: '/commisions',
-    //     icon: <Story variant='Outline' />
-    // },
+    {
+        name: 'Commissions',
+        link: '/commissions',
+        icon: <Story variant='Outline' />
+    },
     {
         name: 'Mes demandes',
         link: '/mes-demandes',
@@ -57,7 +57,7 @@ const Sidebar = props => {
 
 
     if (!props.isCollapsed) {
-        if (rootClass !== classes.root){
+        if (rootClass !== classes.root) {
             rootClass = [classes.root, classes.shown].join(' ')
         }
     } else {
@@ -72,7 +72,7 @@ const Sidebar = props => {
             <div className={classes.container}>
                 <div className={classes.closeIcon}>
                     <IconButton onClick={props.closeSideBar}>
-                        <ArrowLeft2 />
+                        <Add className={classes.icon}/>
                     </IconButton>
                 </div>
                 <div className={classes.logo}>

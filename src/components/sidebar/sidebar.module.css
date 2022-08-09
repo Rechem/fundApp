@@ -21,6 +21,12 @@
     transform: translateX(0);
 }
 
+.icon{
+    transform:rotate(45deg);
+    overflow: hidden;
+    transform-origin: center center;
+}
+
 @media screen and (max-width: 600px) {
 
     /* For mobile phones: */

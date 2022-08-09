@@ -5,6 +5,7 @@ import { SearchNormal1 } from 'iconsax-react';
 import classes from './messages.module.css'
 import { useNavigate } from "react-router-dom";
 import MessagesTable from './messages-table';
+import Toolbar from '../../components/toolbar/toolbar'
 
 const Messages = () => {
 
@@ -29,27 +30,8 @@ const Messages = () => {
                 variant='h3' className={classes.hdr}>
                 Messages
             </Typography>
-            <div className={classes.toolbar}>
-                <Button variant='outlined' className={classes.btn}
-                onClick={onClickHandler}>
-                    <Typography color='primary' fontWeight={400}
-                        variant='body2'>Nouveau message</Typography>
-                </Button>
-                <CustomTextField
-                    name='denominationCommerciale'
-                    id='denomination-commerciale-field'
-                    className={classes.field}
-                    size='small' margin='none'
-                    type='text' onChange={onChangeHandler}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <SearchNormal1 />
-                            </InputAdornment>
-                        )
-                    }}
-                    value={searchInput} />
-            </div>
+            <Toolbar onClick={onClickHandler} buttonLabel='Nouveau message'
+            onSearchChangeHandler={onChangeHandler} searchValue={searchInput}/>
             <MessagesTable />
         </React.Fragment>
     );

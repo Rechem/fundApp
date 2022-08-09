@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles';
-import { TextField, Checkbox, Select } from '@mui/material';
+import { TextField, Checkbox, Select, Tab } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { BpCheckedIcon, BpIcon } from './components-utils'
 
@@ -134,4 +134,11 @@ export const CustomCheckBox = (props) =>
         {...props}
     />
 
+export const CustomTab = styled((props) => <Tab disableRipple {...props} />)(
+    ({ theme }) => ({
+        textTransform: 'none',
+        fontWeight: 500,
+        fontSize: "1rem",
+    }),
+);
 export default theme

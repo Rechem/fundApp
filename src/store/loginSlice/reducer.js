@@ -114,7 +114,7 @@ export const signIn = createAsyncThunk('authentication/login',
     })
 
 export const signUp = createAsyncThunk('authentication/signUp',
-    async ({ email, password }, { rejectWithValue }) => {
+    async ({ email, password }) => {
         try {
             const response = await axios.post(
                 `/users/signup`, {
@@ -132,8 +132,9 @@ export const checkSignIn = createAsyncThunk('authentication/checkSignIn',
     async () => {
         try {
             const uninterceptedAxiosInstance = axios.create();
+            const BASE_URL = process.env.BASE_URL
             const response = await uninterceptedAxiosInstance.get(
-                `/users/checkSignIn`)
+                `${BASE_URL}/users/checkSignIn`)
             return response.data
         } catch (e) {
             throw new Error(e.response.data.message)

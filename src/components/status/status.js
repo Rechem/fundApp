@@ -11,7 +11,7 @@ const Status = ({status}) => {
     let message, messageColor, containerColor;
 
     switch (status) {
-        case STATUS.accepted:
+        case STATUS.accepted || STATUS.terminee:
             message = 'Acceptée'
             messageColor = theme.palette.success.main
             containerColor = tinycolor(theme.palette.success.main).setAlpha(.1)
@@ -21,16 +21,26 @@ const Status = ({status}) => {
             messageColor = theme.palette.error.main
             containerColor = tinycolor(theme.palette.error.main).setAlpha(.1)
             break;
-        case STATUS.pending:
+        case STATUS.pending || STATUS.programmee:
             message = 'En attente'
             messageColor = theme.palette.warning.main
             containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
             break;
-        case STATUS.complement:
+        case STATUS.complement :
             message = 'Besoin complément'
             messageColor = theme.palette.info.main
             containerColor = tinycolor(theme.palette.info.main).setAlpha(.1)
             break;
+        // case STATUS.programmee:
+        //     message = 'Programmée'
+        //     messageColor = theme.palette.warning.main
+        //     containerColor = tinycolor(theme.palette.info.main).setAlpha(.1)
+        //     break;
+        // case STATUS.terminee:
+        //     message = 'Terminée'
+        //     messageColor = theme.palette.success.main
+        //     containerColor = tinycolor(theme.palette.info.main).setAlpha(.1)
+        //     break;
         default:
             message = 'Inconnu'
             messageColor = theme.palette.warning.main

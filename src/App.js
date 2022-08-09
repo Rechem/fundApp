@@ -16,6 +16,7 @@ import NewMessage from './pages/messages/new-message/new-message';
 import Demandes from './pages/demandes/admin/demandes';
 import CircularProgress from '@mui/material/CircularProgress';
 import React from 'react';
+import Commissions from './pages/commissions/commissions'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -53,19 +54,9 @@ const App = () => {
     style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
   ><CircularProgress /></div>)
 
-  const publicRoutes = <Routes>
-    <Route path="/connexion" exact element={<Login />} />
-    <Route path="/inscription" exact element={<Inscription />} />
-    {/* <Route exact
-      element={<ProtectedRoute
-        isAllowed={authenticationState.status === 'init' || authenticationState.status === 'loading'}
-        redirectPath={"/connexion"} />}> */}
-      <Route path="*" exact element={standByScreen} />
-    {/* </Route> */}
-  </Routes>
-
   const protectedRoutes = (
     <Routes>
+
 
       <Route exact
         element={<ProtectedRoute
@@ -104,6 +95,7 @@ const App = () => {
             authenticationState.status === 'connected'
             && isAdmin()} />}>
         <Route path="/demandes" exact element={<Layout><Demandes /></Layout>} />
+        <Route path="/commissions" exact element={<Layout><Commissions /></Layout>} />
       </Route>
 
       <Route exact
