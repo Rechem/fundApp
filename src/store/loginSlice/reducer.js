@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, isAnyOf} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, isAnyOf } from '@reduxjs/toolkit'
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 
@@ -11,7 +11,7 @@ const initialState = {
         completedSignUp: true,
     },
     status: 'init',// 'init', disconnected', 'connected', 'loading', 
-    error: null,
+    error: '',
 }
 
 export const authenticationSlice = createSlice({
@@ -29,14 +29,16 @@ export const authenticationSlice = createSlice({
                 if (action.payload)
                     state.error = action.payload;
                 else
-                    state.error = null
+                    state.error = ''
             },
             prepare: (error) => {
                 cookies.remove('authObject')
+                cookies.remove('__at')
+                cookies.remove('__rt')
                 if (error)
                     return { payload: error }
                 else
-                    return
+                    return {}
             },
         },
         setCompletedSignup: {
@@ -55,23 +57,27 @@ export const authenticationSlice = createSlice({
                         maxAge: process.env.REACT_APP_LOGGEDIN_EXPIRES * 60 * 24,
                         path: '/'
                     })
-                return
+                return {}
             }
         }
     },
     extraReducers(builder) {
         builder
-            .addCase(signOut.fulfilled, (state, action) => {
-                authenticationSlice.caseReducers.logout(state, action)
-            })
-            .addMatcher(isAnyOf(signIn.pending, signOut.pending, checkSignIn.pending),
+            .addCase(checkSignIn.rejected,
+                (state, action) => {
+                    state.status = 'disconnected'
+                })
+            .addCase(signOut.fulfilled,
+                (state, action) => {
+                    authenticationSlice.caseReducers.logout(state, action)
+                })
+            .addMatcher(isAnyOf(signIn.pending, signOut.pending),
                 (state, _) => {
                     state.status = 'loading'
-                    state.error = null
+                    state.error = ''
                 })
             .addMatcher(isAnyOf(signIn.fulfilled, signUp.fulfilled, checkSignIn.fulfilled),
                 (state, action) => {
-                    console.log(action.payload);
                     const userObject = {
                         idUser: action.payload.data.user.idUser,
                         role: action.payload.data.user.role,
@@ -87,9 +93,10 @@ export const authenticationSlice = createSlice({
                     state.status = 'connected'
                     state.user = userObject
                 })
-            .addMatcher(isAnyOf(signIn.rejected, checkSignIn.rejected), (state, action) => {
+            .addMatcher(isAnyOf(signIn.rejected, signUp.rejected), (state, action) => {
+                console.log(action);
                 state.status = 'disconnected'
-                state.error = action.payload
+                state.error = action.error.message
             })
     }
 })
@@ -97,18 +104,18 @@ export const authenticationSlice = createSlice({
 export const signIn = createAsyncThunk('authentication/login',
     async ({ email, password }) => {
         try {
-            const {data} = await axios.post(
+            const response = await axios.post(
                 `/users/login`, {
                 email,
                 password,
             })
-            return data
+            return response.data
         } catch (e) {
             throw new Error(e.response.data.message)
         }
     })
 
-export const signUp = createAsyncThunk('aythentication/signUp',
+export const signUp = createAsyncThunk('authentication/signUp',
     async ({ email, password }, { rejectWithValue }) => {
         try {
             const response = await axios.post(
@@ -116,30 +123,31 @@ export const signUp = createAsyncThunk('aythentication/signUp',
                 email,
                 password,
             })
+            console.log(response);
             return response.data
         } catch (e) {
-            rejectWithValue(e.response.data.message)
+            throw new Error(e.response.data.message)
         }
     })
 
 export const checkSignIn = createAsyncThunk('authentication/checkSignIn',
     async () => {
         try {
-            const {data} = await axios.get(
+            const uninterceptedAxiosInstance = axios.create();
+            const response = await uninterceptedAxiosInstance.get(
                 `/users/checkSignIn`)
-            return data
+            return response.data
         } catch (e) {
             throw new Error(e.response.data.message)
         }
     })
 
 export const signOut = createAsyncThunk('authentication/logout',
-    async (_, { rejectWithValue }) => {
+    async () => {
         try {
-            await axios.post(
-                `/users/logout`, {})
+            await axios.post(`/users/logout`)
         } catch (e) {
-            return rejectWithValue(e.response.data.message)
+            throw new Error(e.response.data.message)
         }
     })
 

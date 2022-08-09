@@ -30,7 +30,7 @@ const NewMessage = () => {
             <Typography
             marginBottom='1rem'
             variant='subtitle2'
-            >A: Admin</Typography>
+            >A: Support</Typography>
             <form className={classes.form}>
                 <Typography variant='body2'
                 marginBottom='0.5rem'

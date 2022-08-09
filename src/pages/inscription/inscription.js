@@ -69,7 +69,7 @@ const Inscription = () => {
 
     return (
         <React.Fragment>
-            {redirect}
+            {/* {redirect} */}
             <div className={classes.container}>
                 <form onSubmit={submitSignUpForm}>
 
@@ -78,10 +78,9 @@ const Inscription = () => {
                         Inscription
                     </Typography>
 
-                    {authenticationState.loginError &&
-                        authenticationState.loginError !== '' &&
+                    {authenticationState.error !== '' &&
                         <ErrorDisplay>
-                            {authenticationState.loginError}
+                            {authenticationState.error}
                         </ErrorDisplay>}
 
                     <Typography variant='body2' fontWeight={400} className={classes.lbl}>
@@ -126,7 +125,7 @@ const Inscription = () => {
                         value={values.confirmPassword}
                         {...(errors.confirmPassword && errors.confirmPassword !== '' && { error: true, helperText: errors.confirmPassword })}>
                     </CustomTextField>
-                    <FormControl error={errors.agreesToTos && errors.agreesToTos !== ''}>
+                    <FormControl error={errors.agreesToTos!=null && errors.agreesToTos !== ''}>
                         <span className={classes.chckbxcontainer}
                             onClick={() => onChangeHandler({ target: { name: 'agreesToTos', value: !values.agreesToTos } })}>
                             <CustomCheckBox className={classes.chckbx} size='small'

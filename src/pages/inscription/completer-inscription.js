@@ -1,4 +1,4 @@
-import { Button, Typography, Grid, FormHelperText, FormControl } from '@mui/material';
+import { Button, Typography, Grid, FormHelperText, FormControl, useTheme } from '@mui/material';
 import { CustomTextField, CustomSelect } from '../../theme';
 import classes from './completer-inscription.module.css'
 import { useState } from 'react';
@@ -13,6 +13,7 @@ import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCompletedSignup } from '../../store/loginSlice/reducer'
 import ErrorDisplay from '../../components/error-display/error-display';
+import { signOut } from '../../store/loginSlice/reducer';
 
 const initialValues = {
     nom: '',
@@ -25,6 +26,8 @@ const initialValues = {
 }
 
 const CompleterInscription = () => {
+
+    const theme = useTheme()
 
     const authenticationState = useSelector(state => state.login)
     const dispatch = useDispatch()
@@ -81,11 +84,16 @@ const CompleterInscription = () => {
                 const response = await axios.put(
                     `/users/${authenticationState.user.idUser}`,
                     { ...values })
-                    dispatch(setCompletedSignup())
-                } catch (e) {
+                dispatch(setCompletedSignup())
+            } catch (e) {
+                console.log(e);
                 setResponseError(e.response.data.message)
             }
         }
+    }
+
+    const disconnect = () => {
+        dispatch(signOut())
     }
 
     return (
@@ -230,7 +238,11 @@ const CompleterInscription = () => {
                         </CustomTextField>
                     </Grid>
                 </Grid>
-
+                <a onClick={disconnect} className={classes.strtch}
+                    to='/disconnect'>
+                    <Typography color={theme.palette.error.main}
+                        noWrap>Déconnexion</Typography>
+                </a>
                 <Button variant='contained' className={classes.btn} onClick={submitForm}>
                     <Typography color='white' fontWeight={600} noWrap>Sauvgarder</Typography>
                 </Button>

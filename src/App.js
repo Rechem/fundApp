@@ -15,7 +15,7 @@ import Messages from './pages/messages/messages';
 import NewMessage from './pages/messages/new-message/new-message';
 import Demandes from './pages/demandes/admin/demandes';
 import CircularProgress from '@mui/material/CircularProgress';
-import setupAxios from './axios-config';
+import React from 'react';
 
 const App = () => {
   const dispatch = useDispatch()
@@ -43,20 +43,40 @@ const App = () => {
       else {
         redirectCompleteSignup = '/complete-signup'
       }
-    } else if (isAdmin())
+    } else
       redirectCompleteSignup = '/demandes'
   } else {
     redirectCompleteSignup = '/connexion'
   }
 
   const standByScreen = (<div
-    style={{position:'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)'}}
+    style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
   ><CircularProgress /></div>)
 
-  const routes = (
+  const publicRoutes = <Routes>
+    <Route path="/connexion" exact element={<Login />} />
+    <Route path="/inscription" exact element={<Inscription />} />
+    {/* <Route exact
+      element={<ProtectedRoute
+        isAllowed={authenticationState.status === 'init' || authenticationState.status === 'loading'}
+        redirectPath={"/connexion"} />}> */}
+      <Route path="*" exact element={standByScreen} />
+    {/* </Route> */}
+  </Routes>
+
+  const protectedRoutes = (
     <Routes>
-      <Route path="/connexion" exact element={<Login />} />
-      <Route path="/inscription" exact element={<Inscription />} />
+
+      <Route exact
+        element={<ProtectedRoute
+          isAllowed={
+            authenticationState.status !== 'connected'}
+          redirectPath={redirectCompleteSignup} />}>
+        <Route path="/connexion" exact element={<Login />} />
+        <Route path="/inscription" exact element={<Inscription />} />
+      </Route>
+
+
 
       <Route exact
         element={<ProtectedRoute
@@ -104,7 +124,8 @@ const App = () => {
     <Router>
       <ThemeProvider theme={theme}>
         <StyledEngineProvider injectFirst>
-          {authenticationState.status === 'loading' || authenticationState.status === 'init' ? standByScreen : routes}
+          {authenticationState.status === 'init'
+            ? standByScreen : protectedRoutes}
         </StyledEngineProvider>
       </ThemeProvider>
     </Router>

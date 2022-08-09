@@ -15,9 +15,8 @@ export default function setupAxios(axios, store) {
         (error) => {
             if (error.response.status === 401) {
                 store.dispatch(logout(error.response.data.message))
-            } else {
-                return Promise.reject(error);
             }
+            return Promise.reject(error);
         }
     );
 

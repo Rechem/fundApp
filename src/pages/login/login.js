@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button, Typography, CircularProgress } from '@mui/material';
 import { CustomTextField, CustomCheckBox } from '../../theme';
 import classes from './login.module.css'
 import React, { useEffect, useState } from 'react';
@@ -62,17 +62,15 @@ const Login = () => {
     
     return (
         <React.Fragment>
-            {redirect}
+            {/* {redirect} */}
             <div className={classes.container}>
                 <form onSubmit={submitSignInForm}>
                     <Typography variant='h3' fontWeight={700}
                         className={classes.hdr}>
-                        {'Se connecter'}
+                        Se connecter
                     </Typography>
 
-                    {
-                    authenticationState.error!=null &&
-                    authenticationState.error !== '' &&
+                    {authenticationState.error !== '' &&
                         <ErrorDisplay>
                             {authenticationState.error}
                         </ErrorDisplay>}
@@ -114,7 +112,9 @@ const Login = () => {
                             Rester connecté
                         </Typography>
                     </span> */}
-                    <Button variant='contained' className={classes.btn} onClick={submitSignInForm}>
+                    <Button variant='contained' className={classes.btn} onClick={submitSignInForm}
+                    disabled={authenticationState.status==='loading'}
+                    startIcon={authenticationState.status==='loading' ? <CircularProgress size="1rem"/> : null}>
                         <Typography color='white' fontWeight={600} >Se connecter</Typography>
                     </Button>
                 </form>

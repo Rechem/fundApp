@@ -65,7 +65,7 @@ const Sidebar = props => {
     }
 
     const disconnect = () => {
-        dispatch(signOut(null))
+        dispatch(signOut())
     }
     return (
         <div className={rootClass}>
