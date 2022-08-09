@@ -238,14 +238,15 @@ const CompleterInscription = () => {
                         </CustomTextField>
                     </Grid>
                 </Grid>
-                <a onClick={disconnect} className={classes.strtch}
-                    to='/disconnect'>
-                    <Typography color={theme.palette.error.main}
-                        noWrap>Déconnexion</Typography>
-                </a>
-                <Button variant='contained' className={classes.btn} onClick={submitForm}>
-                    <Typography color='white' fontWeight={600} noWrap>Sauvgarder</Typography>
-                </Button>
+                <div className={classes.btnRow}>
+                    <a onClick={disconnect} className={classes.anchor}>
+                        <Typography color={theme.palette.error.main} sx={{ textDecoration: "underline" }}
+                        align='center' noWrap>Déconnexion</Typography>
+                    </a>
+                    <Button variant='contained' className={classes.btn} onClick={submitForm}>
+                        <Typography color='white' fontWeight={600} noWrap>Sauvgarder</Typography>
+                    </Button>
+                </div>
             </form>
         </div>
     );

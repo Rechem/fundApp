@@ -86,8 +86,7 @@ const Sidebar = props => {
                 </div>
                 <div className={classes.disconnect}>
                     <Divider className={classes.dvdr} />
-                    <a onClick={disconnect} className={classes.strtch}
-                        to='/disconnect'>
+                    <a onClick={disconnect} className={classes.strtch}>
                         <Typography color={theme.palette.error.main}
                             noWrap>Déconnexion</Typography>
                     </a>

@@ -1,4 +1,4 @@
-import { logout } from "./store/loginSlice/reducer";
+import { signOut } from "./store/loginSlice/reducer";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -12,9 +12,9 @@ export default function setupAxios(axios, store) {
         (response) => {
             return response;
         },
-        (error) => {
+        async (error) => {
             if (error.response.status === 401) {
-                store.dispatch(logout(error.response.data.message))
+                await store.dispatch(signOut(error.response.data.message))
             }
             return Promise.reject(error);
         }

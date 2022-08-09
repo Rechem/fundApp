@@ -33,8 +33,6 @@ export const authenticationSlice = createSlice({
             },
             prepare: (error) => {
                 cookies.remove('authObject')
-                cookies.remove('__at')
-                cookies.remove('__rt')
                 if (error)
                     return { payload: error }
                 else
