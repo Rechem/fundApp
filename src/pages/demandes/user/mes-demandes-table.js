@@ -25,7 +25,7 @@ const MesDemandesTable = props => {
             title: "Date dépôt",
             field: "createdAt",
             width:'15%',
-            render: (rowData) => moment(rowData).format("DD/MM/YYYY"),
+            render: (rowData) => moment(rowData.createdAt).format("DD/MM/YYYY"),
         },
         {
             title: "Etat",

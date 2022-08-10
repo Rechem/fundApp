@@ -24,9 +24,9 @@ const CommissionsTable = props => {
     const columns = [
         {
             title: "Date",
-            field: "date",
             width: '15%',
-            render: (rowData) => moment(rowData).format("DD/MM/YYYY"),
+            field : 'dateCommission',
+            render: (rowData) => moment(rowData.dateCommission).format("DD/MM/YYYY"),
         },
         {
             title: "Etat",
@@ -36,8 +36,7 @@ const CommissionsTable = props => {
 
         {
             title: "Président",
-            // field: "president.nom",
-            render: (rowData) => `${rowData.president.nom} ${rowData.president.prenom}`
+            render: (rowData) => `${rowData.president.nomMembre} ${rowData.president.prenomMembre}`
         },
         { title: "Nombre de demandes", field: "user.prenom", width: '20%',},
         {
@@ -63,16 +62,16 @@ const CommissionsTable = props => {
             </Box>
         </Modal> */}
         <MaterialTable
-            // localization={{
-            //     body:
-            //     {
-            //         emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-            //             "Aucun résultat" : "Vous n'avez pas de demandes"
-            //     }
-            // }}
+            localization={{
+                body:
+                {
+                    emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
+                        "Aucun résultat" : "Vous n'avez pas de demandes"
+                }
+            }}
             columns={columns}
-            // data={props.demandes}
-            // isLoading={props.isLoading}
+            data={props.commissions}
+            isLoading={props.isLoading}
             options={{ toolbar: false, paging: false, draggable: false, search: true, padding: 'dense' }}
             components={{ Container: props => <Paper {...props} elevation={0} /> }} />
     </React.Fragment>

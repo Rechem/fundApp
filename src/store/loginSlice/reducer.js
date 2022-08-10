@@ -132,7 +132,7 @@ export const checkSignIn = createAsyncThunk('authentication/checkSignIn',
     async () => {
         try {
             const uninterceptedAxiosInstance = axios.create();
-            const BASE_URL = process.env.BASE_URL
+            const BASE_URL = process.env.REACT_APP_BASE_URL
             const response = await uninterceptedAxiosInstance.get(
                 `${BASE_URL}/users/checkSignIn`)
             return response.data

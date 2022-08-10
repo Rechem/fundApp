@@ -8,36 +8,38 @@ import { Dialog, Box } from '@mui/material';
 import FormMembre from '../../../components/form-membre/form-membre';
 
 const MembresTab = () => {
-    
+
     const dispatch = useDispatch()
     const membresState = useSelector(state => state.membres)
     const authenticationState = useSelector(state => state.login)
-    
+
     const onChangeHandler = e => {
         const { name, value } = e.target
         setSearchInput(value)
     }
-    
+
     const [searchInput, setSearchInput] = useState('')
-    
+
     const debouncedSearchTerm = useDebounce(searchInput, 500);
-    
+
     const [open, setOpen] = useState(false);
-    
+
     const handleDialogClickOpen = () => {
         setOpen(true);
     };
-    
+
     const handleDialogClose = () => {
         setOpen(false);
     };
 
-    const clickAddMembre = data =>{
-        dispatch(addMembre(data))
+    const clickAddMembre = async data => {
+        await dispatch(addMembre(data))
+        dispatch(fetchAllMembres())
+        handleDialogClose()
     }
 
     useEffect(() => {
-        // if (authenticationState.user.idUser)
+        if (authenticationState.user.idUser)
             dispatch(fetchAllMembres(debouncedSearchTerm));
     }, [authenticationState.user.idUser, debouncedSearchTerm])
 
@@ -48,13 +50,13 @@ const MembresTab = () => {
             <Dialog open={open} onClose={handleDialogClose}>
                 <Box>
                     <FormMembre
-                    addMembre={clickAddMembre}
-                    onClose={handleDialogClose} />
+                        addMembre={clickAddMembre}
+                        onClose={handleDialogClose} />
                 </Box>
             </Dialog>
             <MembresTable membres={membresState.membres}
-            isLoading={membresState.status === 'searching'}
-            isEmptyFilterResults={membresState.membres.length === 0 && debouncedSearchTerm !== ''}/>
+                isLoading={membresState.status === 'searching'}
+                isEmptyFilterResults={membresState.membres.length === 0 && debouncedSearchTerm !== ''} />
         </div>
     );
 };
