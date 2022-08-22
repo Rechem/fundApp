@@ -1,0 +1,8 @@
+.toolbar{
+    margin-block: 1rem;
+}
+.modelContainer {
+    padding: 2rem;
+    border-radius: 50px; 
+    max-width: 90%;
+}

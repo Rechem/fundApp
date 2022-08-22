@@ -12,9 +12,13 @@
     background-color: transparent;
 }
 
-.toolbar {
+.container {
     display: flex;
     justify-content: space-between;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
+    /* align-items: center; */
+    /* margin-top: 1.5rem;
+    margin-bottom: 1.5rem; */
+}
+.toolbar{
+    align-items: flex-end;
 }

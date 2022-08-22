@@ -1,0 +1,83 @@
+.hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn {
+    width: 10.5rem;
+    height: 2.5rem;
+}
+
+.filebtn {
+    margin-right: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 100px;
+    height: 2rem;
+}
+
+.filebtn:hover {
+    background-color: transparent;
+}
+
+.btnSecondary:hover {
+    background-color: transparent;
+}
+
+.fileBtnContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    /* justify-content: flex; */
+}
+
+.slct {
+    padding: 0;
+    border-width: 0;
+    height: 2.5rem;
+    width: 8rem;
+}
+
+.txt {
+    margin-bottom: 0.5rem;
+}
+
+.etatContainer {
+    display: inline-flex;
+    align-items: center;
+    justify-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.modelContainer {
+    padding: 2rem;
+    border-radius: 50px; 
+    max-width: 90%;
+}
+
+.rightColumn {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-direction: column;
+    flex: 1 0 auto;
+}
+
+.leftColumn {
+    max-width: 70%;
+}
+
+.demandesContainer {
+    margin-top: 1rem;
+}
+
+.toolbar {
+    margin-block: 0.5rem;
+}

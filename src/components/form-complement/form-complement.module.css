@@ -1,0 +1,76 @@
+.container{
+    width: 30rem;
+}
+
+.field {
+    width: 100%;
+}
+
+.btnContainer{
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn{
+    margin-left: 1rem;
+}
+
+.btn:nth-child(1):hover {
+    background-color: transparent;
+}
+
+.addBtn{
+    margin-block: 2rem;
+    width: 100%
+}
+
+.addBtn:hover{
+    background-color: transparent;
+}
+
+
+.addComplementContainer{
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 0.5rem;
+    margin-block: 0.5rem;
+    cursor: pointer;
+}
+
+.dvdr{
+    margin-bottom: 1rem;
+}
+
+.complementContainer{
+    min-height: 4rem;
+}
+
+.deleteIcon{
+    transform:rotate(45deg);
+    overflow: hidden;
+    transform-origin: center center;
+}
+
+.complement{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.complementField{
+    display: flex;
+    column-gap: 0.25rem;
+    margin-block: 0.5rem;
+}
+
+.complementTxt {
+    width: 100%;
+}
+
+.iconButton {
+    height: 2.5rem;
+    width: 2.5rem;
+}

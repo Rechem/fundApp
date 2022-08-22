@@ -4,7 +4,7 @@
     max-width: 240px;
     width: 100%;
     height: 100%;
-    background-color: #f7f5f5;
+    background-color: #223645;
     position: relative;
     z-index: 10;
     transition: transform width;
@@ -16,6 +16,10 @@
     width: 0;
 }
 
+.img{
+    height: 4.5rem;
+}
+
 .shown {
     width: 100%;
     transform: translateX(0);
@@ -25,6 +29,7 @@
     transform:rotate(45deg);
     overflow: hidden;
     transform-origin: center center;
+    color: white;
 }
 
 @media screen and (max-width: 600px) {
@@ -58,6 +63,7 @@
 }
 
 .dvdr {
+    background-color: grey;
     margin: auto 0.5rem 1rem 0.5rem;
     min-width: 0;
 }
@@ -70,8 +76,8 @@
 
 .closeIcon {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+    top: 0;
+    right: 0;
 }
 
 .logo {

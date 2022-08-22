@@ -2,10 +2,13 @@ import { Typography, useTheme, Button } from '@mui/material';
 import React, { useState } from 'react';
 import { CustomTextField } from '../../../theme';
 import classes from './new-message.module.css'
+import { useNavigate } from 'react-router-dom';
 
 const initialValue = { objet: '', body: '' }
 
 const NewMessage = () => {
+
+    const navigate = useNavigate()
 
     const theme = useTheme()
 
@@ -54,8 +57,12 @@ const NewMessage = () => {
                     value={values.body}
                     type='text' onChange={onChangeHandler} />
                 <div className={classes.btnContainer}>
-                    <Button variant='outlined' className={classes.btn}>
-                        <Typography color='primary' fontWeight={600} >Envoyer</Typography>
+                    <Button variant='outlined' className={classes.btn}
+                    onClick={()=>navigate(-1)}>
+                        <Typography color='primary'>Retour</Typography>
+                    </Button>
+                    <Button variant='contained' className={classes.btn}>
+                        <Typography color='white' fontWeight={700}>Envoyer</Typography>
                     </Button>
                 </div>
             </form>

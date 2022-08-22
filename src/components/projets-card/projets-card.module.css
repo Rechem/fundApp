@@ -1,0 +1,29 @@
+.img {
+    height: 3rem;
+    width: 3rem;
+    background-color: grey;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.stepper{
+    display: inline-block;
+}
+
+.container {
+    padding: 2rem;
+    margin-bottom: 1rem;
+}
+
+@media screen and (max-width : 600px) {
+    .img {
+        height: 5rem;
+        width: 5rem;
+        margin: auto;
+    }
+
+    .center{
+        text-align: center;
+        width: 100%;
+    }
+}

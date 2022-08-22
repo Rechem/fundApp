@@ -4,6 +4,8 @@ import classes from './details-demande.module.css'
 import { Add } from 'iconsax-react';
 import axios from 'axios';
 import Status from '../status/status';
+import moment from 'moment';
+import InfoDemande from './info-demande';
 
 const getFileName = (response) => {
     const headerLine = response.headers['content-disposition'];
@@ -11,7 +13,6 @@ const getFileName = (response) => {
     const endFileNameIndex = headerLine.lastIndexOf('"');
     const filename = headerLine.substring(startFileNameIndex, endFileNameIndex);
     return filename;
-
 }
 
 const DetailsDemande = props => {
@@ -44,145 +45,28 @@ const DetailsDemande = props => {
                 className={classes.icon}
                 color={theme.palette.text.primary} />
         </IconButton>
-        <Typography
-            color={theme.palette.text.primary}
-            fontWeight={700}
-            className={classes.hdr}>Détails de la demande</Typography>
+        <div className={classes.dateContainer}>
+            <Typography
+                color={theme.palette.text.primary}
+                fontWeight={700}
+                className={classes.hdr}>Détails de la demande</Typography>
+            <div>
+                <Typography
+                    color={theme.palette.text.primary}
+                    className={classes.hdr}>
+                    {moment(props.createdAt).format("DD/MM/YYYY HH:MM")}
+                </Typography>
+            </div>
+        </div>
         <div className={classes.etatContainer}>
             <Typography display='inline' marginRight='1rem'>
-                Etat :
+                Etat
             </Typography>
-            <Status status={props.etat} />
+            <div>
+                <Status status={props.etat} />
+            </div>
         </div>
-        <Grid container rowSpacing={2} columnSpacing={2}>
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Forme juridique
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.formeJuridique}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            NIF
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.nif}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Dénomination commerciale
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.denominationCommerciale}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Numéro du Label
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.nbLabel}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Nombre d'employés
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.nbEmploye}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-
-
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Business plan
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <span onClick={downloadBusinessPlan} style={{ cursor: 'pointer' }}>
-                            <Typography
-                                color={theme.palette.primary.main}
-                                display='inline'
-                            >Télécharger</Typography>
-                        </span>
-                    </Grid>
-                </Grid>
-            </Grid>
-
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Date de création
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.dateCreation}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-            <Grid container item xs={12} sm={6} columnSpacing={1}>
-                <Grid item container columnSpacing={1}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}>
-                            Montant
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography color={theme.palette.text.primary}
-                            fontWeight={700}>
-                            {props.montant}
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Grid>
-        </Grid>
+        <InfoDemande {...props} downloadBusinessPlan={downloadBusinessPlan}/>
     </Box>
 };
 

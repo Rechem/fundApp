@@ -1,13 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Add } from 'iconsax-react';
 import classes from './form-demande.module.css'
-import { IconButton, Button, Typography, MenuItem, Grid, FormHelperText, FormControl }
+import { IconButton, Button, Typography, MenuItem, Grid, FormHelperText, FormControl, CircularProgress }
     from '@mui/material';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Calendar1 } from 'iconsax-react';
-import { CustomTextField, CustomSelect } from '../../theme';
+import theme, { CustomTextField, CustomSelect } from '../../theme';
 import { useTheme } from '@mui/system';
 import ErrorDisplay from '../error-display/error-display';
 import Stepper from '@mui/material/Stepper';
@@ -58,6 +58,7 @@ const FormStepper = props => {
 }
 
 const FromSteperHandler = props => {
+
     const childrenArray = React.Children.toArray(props.children);
     const [activeStep, setActiveStep] = useState(0)
     const currentChild = childrenArray[activeStep];
@@ -90,11 +91,13 @@ const FromSteperHandler = props => {
                 {activeStep > 0 ? (
                     <Button variant='contained' className={classes.btn} onClick={() => setActiveStep(activeStep - 1)}>
                         <Typography color='white' fontWeight={600} noWrap>
-                            {'Retour'}
+                            Retour
                         </Typography>
                     </Button>) : null}
                 <Button variant='contained' className={classes.btn}
-                    type='submit'>
+                    type='submit' disabled={props.isLoading}
+                    startIcon={props.isLoading ? <CircularProgress size={16}
+                        color='background' /> : null}>
                     <Typography color='white' fontWeight={600} noWrap>
                         {isLastStep() ? 'Envoyer' : 'Suivant'}
                     </Typography>
@@ -112,7 +115,7 @@ const FormDemande = props => {
     const authenticationState = useSelector(state => state.login)
 
     const inputFile = useRef(null)
-    const [selectedFile, setSelectedFile] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
     const [selectedFileName, setSelectedFileName] = useState(null);
     const fileUploadHandler = (event) => {
         setSelectedFile(event.target.files[0])
@@ -122,6 +125,8 @@ const FormDemande = props => {
         inputFile.current.click();
         setErrors({ ...errors, selectedFile: '' })
     };
+
+    const [isLoading, setLoading] = useState(false)
 
     const [values, setValues] = useState(initialValues)
     const [errors, setErrors] = useState({})
@@ -145,13 +150,14 @@ const FormDemande = props => {
         setErrors({ ...errors, [name]: '' })
     }
 
-    //im so sorry i swear next time ill user formik
+    //im so sorry i swear next time ill use formik
     const validateFirstPage = () => {
         let temp = {}
 
         temp.denominationCommerciale = values.denominationCommerciale === '' ? 'Vous devez entrer une valeur' : ''
         temp.formeJuridique = values.formeJuridique === '' ? 'Vous devez choisir une valeur' : ''
-        temp.nbEmploye = values.nbEmploye === '' ? 'Vous devez entrer une valeur' : ''
+        temp.nbEmploye = values.nbEmploye === '' ? 'Vous devez entrer une valeur' :
+            Number(values.nbEmploye) < 1 ? "Le nombre d'employés ne peut pas être négatif ou nul" : ''
         temp.dateCreation = values.dateCreation == null ? 'Vous devez choisir une valeur' : ''
         temp.nif = values.nif === '' ? 'Vous devez entrer une valeur' : ''
         temp.nbLabel = values.nbLabel === '' ? 'Vous devez entrer une valeur' : ''
@@ -162,7 +168,7 @@ const FormDemande = props => {
 
     const validateSecondPage = () => {
         let temp = {}
-        temp.selectedFile = selectedFile == null ? 'Vous devez ajouter le business plan' : ''
+        temp.selectedFile = selectedFile === null ? 'Vous devez ajouter le business plan' : ''
         temp.montant = values.montant === '' ? 'Vous devez entrer une valeur' : ''
 
         setErrors({ ...temp })
@@ -184,14 +190,18 @@ const FormDemande = props => {
         formData.append('montant', values.montant)
 
         try {
-            const response = await axios.post(
+            setLoading(true)
+            await axios.post(
                 '/demandes',
                 formData
             )
             dispatch(fetchUserDemandes({ idUser: authenticationState.user.idUser }))
+            setLoading(false)
+            props.onClose()
         } catch (e) {
             //handle error
             setResponseError(e.response.data.message)
+            setLoading(false)
         }
     }
 
@@ -214,6 +224,7 @@ const FormDemande = props => {
                     </ErrorDisplay>}
                 <Divider className={classes.dvdr} />
                 <FromSteperHandler
+                    isLoading={isLoading}
                     submit={submit}
                     validateFirstPage={validateFirstPage}
                     validateSecondPage={validateSecondPage}>
@@ -268,6 +279,7 @@ const FormDemande = props => {
                                 name='nbEmploye'
                                 id='nbEmploye-field'
                                 type='number'
+                                min="0"
                                 size='small' margin='none'
                                 onChange={onChangeHandler}
                                 value={values.nbEmploye}
@@ -281,8 +293,9 @@ const FormDemande = props => {
                                 Date de création
                             </Typography>
 
-                            <LocalizationProvider dateAdapter={AdapterMoment} >
+                            <LocalizationProvider dateAdapter={AdapterDayjs} >
                                 <DatePicker
+                                inputFormat='DD/MM/YYYY'
                                     disableFuture
                                     value={values.dateCreation}
                                     onChange={onChangeDateHander}

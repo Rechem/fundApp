@@ -26,11 +26,6 @@ export const commissionsSlice = createSlice({
     }
 })
 
-export const addCommission = createAsyncThunk('commissions/addCommission',
-    async ({ president, membres, dateCommission }) => {
-        const response = await axios.post('/commissions', { president, membres, dateCommission })
-    })
-
 export const fetchAllCommissions = createAsyncThunk('commissions/fetchAllCommissions',
     async searchInput => {
         const response = await axios.get('/commissions',

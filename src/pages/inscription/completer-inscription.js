@@ -2,18 +2,18 @@ import { Button, Typography, Grid, FormHelperText, FormControl, useTheme } from 
 import { CustomTextField, CustomSelect } from '../../theme';
 import classes from './completer-inscription.module.css'
 import { useState } from 'react';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Calendar1 } from 'iconsax-react';
 import MenuItem from '@mui/material/MenuItem';
 import { WILAYA } from './wilayas';
-import moment from 'moment';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCompletedSignup } from '../../store/loginSlice/reducer'
 import ErrorDisplay from '../../components/error-display/error-display';
 import { signOut } from '../../store/loginSlice/reducer';
+import dayjs from 'dayjs'
 
 const initialValues = {
     nom: '',
@@ -62,7 +62,7 @@ const CompleterInscription = () => {
         if (values.dateNaissance == null) {
             temp.dateNaissance = 'Vous devez choisir une valeur'
         } else {
-            if (moment().diff(values.dateNaissance, 'years') < 18)
+            if (dayjs().diff(values.dateNaissance, 'years') < 18)
                 temp.dateNaissance = 'Vous devez avoir plus de 18 ans pour procéder'
             else
                 temp.dateNaissance = ''
@@ -81,12 +81,12 @@ const CompleterInscription = () => {
         setResponseError('')
         if (validateForm()) {
             try {
-                const response = await axios.put(
+                await axios.patch(
                     `/users/${authenticationState.user.idUser}`,
                     { ...values })
                 dispatch(setCompletedSignup())
             } catch (e) {
-                console.log(e);
+                // console.log(e);TOAST IT
                 setResponseError(e.response.data.message)
             }
         }
@@ -143,8 +143,9 @@ const CompleterInscription = () => {
                             Date de naissance
                         </Typography>
 
-                        <LocalizationProvider dateAdapter={AdapterMoment} >
+                        <LocalizationProvider dateAdapter={AdapterDayjs} >
                             <DatePicker
+                            inputFormat='DD/MM/YYYY'
                                 disableFuture
                                 value={values.dateNaissance}
                                 onChange={onChangeDateHander}

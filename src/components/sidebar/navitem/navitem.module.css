@@ -4,7 +4,12 @@
     display: flex;
     align-items: center;
     padding-left: 2rem;
-    padding-block: 1rem;
+    margin-block: 0.5rem;
+    padding-block: 0.5rem;
+}
+
+.slctd{
+    background-color: white;
 }
 
 .icon{

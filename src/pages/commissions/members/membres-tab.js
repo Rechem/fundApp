@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllMembres, addMembre } from '../../../store/membresSlice/reducer';
 import { Dialog, Box } from '@mui/material';
 import FormMembre from '../../../components/form-membre/form-membre';
+import classes from './membres-tab.module.css'
 
 const MembresTab = () => {
 
@@ -32,12 +33,6 @@ const MembresTab = () => {
         setOpen(false);
     };
 
-    const clickAddMembre = async data => {
-        await dispatch(addMembre(data))
-        dispatch(fetchAllMembres())
-        handleDialogClose()
-    }
-
     useEffect(() => {
         if (authenticationState.user.idUser)
             dispatch(fetchAllMembres(debouncedSearchTerm));
@@ -45,18 +40,20 @@ const MembresTab = () => {
 
     return (
         <div>
-            <Toolbar onSearchChangeHandler={onChangeHandler} onClick={handleDialogClickOpen}
-                searchValue={searchInput} buttonLabel='Ajourer un membre' />
+            <Toolbar className={classes.toolbar}
+                onSearchChangeHandler={onChangeHandler} onClick={handleDialogClickOpen}
+                searchValue={searchInput} buttonLabel='Ajouter un membre' />
             <Dialog open={open} onClose={handleDialogClose}>
                 <Box>
                     <FormMembre
-                        addMembre={clickAddMembre}
+                        afterSubmit={()=>dispatch(fetchAllMembres())}
                         onClose={handleDialogClose} />
                 </Box>
             </Dialog>
             <MembresTable membres={membresState.membres}
                 isLoading={membresState.status === 'searching'}
-                isEmptyFilterResults={membresState.membres.length === 0 && debouncedSearchTerm !== ''} />
+                isEmptyFilterResults={debouncedSearchTerm !== '' && membresState.membres.length === 0}
+            />
         </div>
     );
 };

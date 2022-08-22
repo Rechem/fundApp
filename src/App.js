@@ -10,15 +10,25 @@ import CompleterInscription from './pages/inscription/completer-inscription';
 import { useSelector, useDispatch } from 'react-redux'
 import { checkSignIn } from './store/loginSlice/reducer';
 import ProtectedRoute from './components/protected-route'
-import MesDemandes from './pages/demandes/user/mes-demandes';
 import Messages from './pages/messages/messages';
 import NewMessage from './pages/messages/new-message/new-message';
-import Demandes from './pages/demandes/admin/demandes';
+import Demandes from './pages/demandes/demandes';
+import Demande from './pages/demande/demande';
 import CircularProgress from '@mui/material/CircularProgress';
 import React from 'react';
-import Commissions from './pages/commissions/commissions'
+import Commissions from './pages/commissions/commissions-membres'
+import Commission from './pages/commissions/commission/commission';
+import NotFound from './pages/util-pages/not-found'
+import Unauthorized from './pages/util-pages/unauthorized'
+import { isAdmin, isModo, isSimpleUser } from './utils';
+import Projets from './pages/projets/projets';
+import Projet from './pages/projet/projet';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
+
+  // setupAxios(axios)
   const dispatch = useDispatch()
   const authenticationState = useSelector(state => state.login)
 
@@ -26,20 +36,12 @@ const App = () => {
     dispatch(checkSignIn());
   }, [])
 
-  const isAdmin = () => {
-    return authenticationState.user.role === 'admin'
-  }
-
-  const isSimpleUser = () => {
-    return authenticationState.user.role === 'simpleUser'
-  }
-
   let redirectCompleteSignup = null
 
   if (authenticationState.status === 'connected') {
-    if (isSimpleUser()) {
+    if (isSimpleUser(authenticationState)) {
       if (authenticationState.user.completedSignUp) {
-        redirectCompleteSignup = '/mes-demandes'
+        redirectCompleteSignup = '/demandes'
       }
       else {
         redirectCompleteSignup = '/complete-signup'
@@ -57,7 +59,6 @@ const App = () => {
   const protectedRoutes = (
     <Routes>
 
-
       <Route exact
         element={<ProtectedRoute
           isAllowed={
@@ -67,13 +68,11 @@ const App = () => {
         <Route path="/inscription" exact element={<Inscription />} />
       </Route>
 
-
-
       <Route exact
         element={<ProtectedRoute
           isAllowed={
             authenticationState.status === 'connected'
-            && isSimpleUser()
+            && isSimpleUser(authenticationState)
             && !authenticationState.user.completedSignUp}
           redirectPath={redirectCompleteSignup} />}>
         <Route path="/complete-signup" exact element={<CompleterInscription />} />
@@ -83,32 +82,38 @@ const App = () => {
         element={<ProtectedRoute
           isAllowed={
             authenticationState.status === 'connected'
-            && isSimpleUser()
-            && authenticationState.user.completedSignUp}
+            &&
+            (isAdmin(authenticationState) || isModo(authenticationState) ||
+              isSimpleUser(authenticationState)
+              && authenticationState.user.completedSignUp)}
           redirectPath={redirectCompleteSignup} />}>
-        <Route path="/mes-demandes" exact element={<Layout><MesDemandes /></Layout>} />
-      </Route>
-
-      <Route exact
-        element={<ProtectedRoute
-          isAllowed={
-            authenticationState.status === 'connected'
-            && isAdmin()} />}>
+        <Route path="/projets" exact element={<Layout><Projets /></Layout>} />
+        <Route path="/projets/:idProjet" exact element={<Layout><Projet /></Layout>} />
         <Route path="/demandes" exact element={<Layout><Demandes /></Layout>} />
-        <Route path="/commissions" exact element={<Layout><Commissions /></Layout>} />
+        <Route path="/demandes/:idDemande" exact element={<Layout><Demande /></Layout>} />
       </Route>
 
       <Route exact
         element={<ProtectedRoute
           isAllowed={
             authenticationState.status === 'connected'
-            && (isAdmin() || isSimpleUser())} />}>
+            && isAdmin(authenticationState)} />}>
+        <Route path="/commissions" exact element={<Layout><Commissions /></Layout>} />
+        <Route path="/commissions/:idCommission" exact element={<Layout><Commission /></Layout>} />
+      </Route>
+
+      <Route exact
+        element={<ProtectedRoute
+          isAllowed={
+            authenticationState.status === 'connected'} />}>
         <Route path="/messages" exact element={<Layout><Messages /></Layout>} />
         <Route path="/messages/new" exact element={<Layout><NewMessage /></Layout>} />
       </Route>
 
 
-      <Route path="*" element={<h1>404 Not found</h1>} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/notfound" element={<NotFound />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>)
 
 
@@ -118,6 +123,17 @@ const App = () => {
         <StyledEngineProvider injectFirst>
           {authenticationState.status === 'init'
             ? standByScreen : protectedRoutes}
+          <ToastContainer
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable={false}
+            pauseOnHover
+            theme='colored' />
         </StyledEngineProvider>
       </ThemeProvider>
     </Router>

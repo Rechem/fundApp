@@ -74,7 +74,7 @@
     width: 100%;
     max-width: 60rem;
     padding-inline: 1rem;
-    margin: 4rem auto;
+    margin: 3rem auto;
 }
 
 .subContainer {
@@ -90,7 +90,7 @@
 
 .filebtn{
 margin-right: 1rem;
-width: 6rem;
+border-radius: 100px;
 }
 
 .filebtn:hover{

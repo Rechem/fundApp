@@ -13,7 +13,5 @@
 }
 
 .toolbar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 3rem;
+    margin-block: 1.5rem;
 }

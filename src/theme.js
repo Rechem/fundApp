@@ -8,9 +8,9 @@ const tinycolor = require("tinycolor2");
 let theme = createTheme({
     palette: {
         primary: {
-            main: "#ff7373",
-            light: tinycolor("#ff7373").lighten(5).toString(),
-            dark: tinycolor("#ff7373").lighten(5).toString(),
+            main: "#18a39f",
+            light: tinycolor("#18a39f").lighten(5).toString(),
+            dark: tinycolor("#18a39f").lighten(5).toString(),
             contrastText: "fff"
         },
         error: { main: "#ff4e3c" },
@@ -32,7 +32,7 @@ let theme = createTheme({
             color: "#424141"
         },
         subtitle1: {
-            fontSize: "1rem",
+            fontSize: "1.75rem",
             color: "#424141"
         },
         subtitle2: {
@@ -57,12 +57,31 @@ theme = createTheme(theme, {
                 disableTouchRipple: true,
             },
             styleOverrides: {
-                root: {
-                    borderRadius: 0,
+                root:{
+                    textTransform: "none",
+                },
+                // outlined: {
+                //     '&:hover': {
+                //         backgroundColor: 'transparent',
+                //         boxShadow: 'none',
+                //         '@media (hover: none)': {
+                //             boxShadow: 'none',
+                //         },
+                //     },
+                //   },
+                //   outlinedPrimary: {
+                //     '&:hover': {
+                //         backgroundColor: 'transparent',
+                //         boxShadow: 'none',
+                //         '@media (hover: none)': {
+                //             boxShadow: 'none',
+                //         },
+                //     },
+                //   },
+                contained: {
                     textTransform: "none",
                     boxShadow: 'none',
                     '&:hover': {
-                        backgroundColor: tinycolor(theme.palette.primary.main).lighten(5).toString(),
                         boxShadow: 'none',
                         '@media (hover: none)': {
                             boxShadow: 'none',

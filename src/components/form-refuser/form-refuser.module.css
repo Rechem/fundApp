@@ -1,0 +1,21 @@
+.container{
+    width: 30rem;
+}
+
+.field {
+    width: 100%;
+}
+
+.btnContainer{
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn{
+    margin-left: 1rem;
+}
+
+.btn:nth-child(1):hover {
+    background-color: transparent;
+}

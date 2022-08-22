@@ -28,10 +28,10 @@
 }
 
 .content {
+    padding-block: 2rem;
     width: min(90%,1024px);
     max-width: 1024px;
     position: absolute;
     left: 50%;
-    top: 2rem;
     transform: translate(-50%,0);
 }

@@ -1,0 +1,31 @@
+.btnContainer{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btnSecondary{
+    margin-right: 1rem;
+}
+
+.btnSecondary:hover {
+    background-color: transparent;
+}
+
+.container {
+    width: 50rem;
+}
+
+.hdrContainer{
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.helper {
+    margin: auto;
+    display: block;
+}
+
+.toolbar{
+    margin-block: 1rem;
+}

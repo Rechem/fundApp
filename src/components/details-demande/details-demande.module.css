@@ -3,7 +3,7 @@
 }
 
 .mdlContainer {
-    width: min(60rem, 90%);
+    width: min(50rem, 90%);
     background-color: white;
     position: absolute;
     top: 50%;
@@ -36,4 +36,9 @@
         height: 100%;
         overflow-y: scroll;
     }
+}
+
+.dateContainer{
+    display: flex;
+    justify-content: space-between;
 }

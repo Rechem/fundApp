@@ -61,7 +61,7 @@ const Inscription = () => {
 
     if (authenticationState.status === 'connected') {
         if (authenticationState.user.completedSignup) {
-            redirect = <Navigate to="/mes-demandes" />
+            redirect = <Navigate to="/demandes" />
         } else {
             redirect = <Navigate to="/complete-signup" />
         }

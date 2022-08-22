@@ -1,57 +1,65 @@
 import React, { useEffect } from 'react';
 import classes from './sidebar.module.css'
 import Navitem from './navitem/navitem';
-import { Story, Diagram, User, DocumentText1, Add, Sms } from 'iconsax-react';
+import { Story, Diagram, User, DocumentText1, Add, Sms, ProfileCircle } from 'iconsax-react';
 import { ReactComponent as ProjetsIcon } from './shuttle.svg';
 import { Typography, Divider, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { signOut } from '../../store/loginSlice/reducer';
+import roles from '../../utils';
+
 
 const NAVLIST = [
     {
         name: 'Dashboard',
         link: '/dashboard',
-        icon: <Diagram variant='Outline' />
+        icon: <Diagram variant='Outline' />,
+        allowed: [roles.roleModerator, roles.roleAdmin]
     },
     {
         name: 'Projets',
         link: '/projets',
-        icon: <ProjetsIcon fill='currentcolor' />
+        icon: <ProjetsIcon fill='currentcolor' />,
+        allowed: [roles.roleModerator, roles.roleAdmin, roles.roleSimpleUser]
     },
     {
         name: 'Demandes',
         link: '/demandes',
-        icon: <DocumentText1 variant='Outline' />
+        icon: <DocumentText1 variant='Outline' />,
+        allowed: [roles.roleModerator, roles.roleAdmin, roles.roleSimpleUser]
     },
     {
         name: 'Commissions',
         link: '/commissions',
-        icon: <Story variant='Outline' />
-    },
-    {
-        name: 'Mes demandes',
-        link: '/mes-demandes',
-        icon: <DocumentText1 variant='Outline' />
+        icon: <Story variant='Outline' />,
+        allowed: [roles.roleModerator, roles.roleAdmin]
     },
     {
         name: 'Messages',
         link: '/messages',
-        icon: <Sms variant='Outline' />
+        icon: <Sms variant='Outline' />,
+        allowed: [roles.roleModerator, roles.roleAdmin, roles.roleSimpleUser]
     },
-    // {
-    //     name: 'Utilisateurs',
-    //     link: '/users',
-    //     icon: <User variant='Outline' />
-    // },
+    {
+        name: 'Utilisateurs',
+        link: '/users',
+        icon: <User variant='Outline' />,
+        allowed: [roles.roleModerator, roles.roleAdmin]
+    },
+    {
+        name: 'Mon profile',
+        link: '/users',
+        icon: <ProfileCircle variant='Outline' />,
+        allowed: [roles.roleModerator, roles.roleAdmin, roles.roleSimpleUser]
+    },
 ]
-
 const Sidebar = props => {
 
     let rootClass = classes.root
 
     const dispatch = useDispatch()
-    const loginState = useSelector(state => state.login)
+    const authenticationState = useSelector(state => state.login)
 
     const theme = useTheme();
 
@@ -72,17 +80,20 @@ const Sidebar = props => {
             <div className={classes.container}>
                 <div className={classes.closeIcon}>
                     <IconButton onClick={props.closeSideBar}>
-                        <Add className={classes.icon}/>
+                        <Add className={classes.icon} />
                     </IconButton>
                 </div>
                 <div className={classes.logo}>
-                    LOGO<br />PLACEHOLDER
+                    <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'}
+                        className={classes.img}
+                        alt='asf-logo' />
                 </div>
                 <div>
-                    {NAVLIST.map(item =>
+                    {NAVLIST.map(item => item.allowed.includes(authenticationState.user.role) &&
                         <Navitem link={item.link} key={item.name}
                             icon={item.icon} theme={theme}>
-                            {item.name}</Navitem>)}
+                            {item.name}</Navitem>)
+                    }
                 </div>
                 <div className={classes.disconnect}>
                     <Divider className={classes.dvdr} />

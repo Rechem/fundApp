@@ -1,0 +1,7 @@
+.btnContainer {
+    padding: 0.5rem;
+}
+
+.btnSecondary:hover {
+    background-color: transparent;
+}

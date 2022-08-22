@@ -1,8 +1,11 @@
-export const STATUS = {
+const STATUS = {
     accepted : 'Acceptée',
     refused : 'Refusée',
     pending : 'En attente',
-    complement : 'En attente complément',
+    complement : 'Besoin complément',
     programmee : 'Programmée',
+    preselectionnee : 'Préselectionnée',
     terminee : 'Terminée',
 }
+
+export default STATUS

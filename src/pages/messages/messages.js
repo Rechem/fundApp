@@ -30,7 +30,8 @@ const Messages = () => {
                 variant='h3' className={classes.hdr}>
                 Messages
             </Typography>
-            <Toolbar onClick={onClickHandler} buttonLabel='Nouveau message'
+            <Toolbar className={classes.toolbar}
+            onClick={onClickHandler} buttonLabel='Nouveau message'
             onSearchChangeHandler={onChangeHandler} searchValue={searchInput}/>
             <MessagesTable />
         </React.Fragment>

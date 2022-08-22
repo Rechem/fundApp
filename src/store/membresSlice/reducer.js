@@ -26,15 +26,9 @@ export const membresSlice = createSlice({
     }
 })
 
-export const addMembre = createAsyncThunk('membres/addMembre',
-    async ({ nom, prenom, email }) => {
-        console.log(nom);
-        const response = await axios.post('/commissions/membres', { nom, prenom, email })
-    })
-
 export const fetchAllMembres = createAsyncThunk('membres/fetchAllMembres',
     async searchInput => {
-        const response = await axios.get('/commissions/membres',
+        const response = await axios.get('/membres',
             {
                 params: {
                     searchInput,

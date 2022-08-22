@@ -30,12 +30,11 @@ export const demandesSlice = createSlice({
 })
 
 export const fetchUserDemandes = createAsyncThunk('demandes/fetchDemandesByUserId',
-    async ({searchInput, idUser, }) => {
+    async ({ searchInput, idUser, }) => {
         try {
-            const {data} = await axios.get(
-                `/demandes/user`, {
+            const { data } = await axios.get(
+                `/demandes/user/${idUser}`, {
                 params: {
-                    idUser,
                     searchInput,
                 }
             })
@@ -46,7 +45,8 @@ export const fetchUserDemandes = createAsyncThunk('demandes/fetchDemandesByUserI
     })
 
 export const fetchAllDemandes = createAsyncThunk('demandes/fetchAllDemandes',
-    async searchInput => {
+// { search, orderBy, sortBy, page, size, }
+    async (searchInput) => {
         try {
             const response = await axios.get(
                 `/demandes`, {

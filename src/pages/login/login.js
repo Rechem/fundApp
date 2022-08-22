@@ -54,7 +54,7 @@ const Login = () => {
 
     if(authenticationState.status === 'connected'){
         if(authenticationState.user.completedSignup){
-            redirect = <Navigate to="/mes-demandes"/>
+            redirect = <Navigate to="/demandes"/>
         }else{
             redirect = <Navigate to="/complete-signup"/>
         }
@@ -114,7 +114,8 @@ const Login = () => {
                     </span> */}
                     <Button variant='contained' className={classes.btn} onClick={submitSignInForm}
                     disabled={authenticationState.status==='loading'}
-                    startIcon={authenticationState.status==='loading' ? <CircularProgress size="1rem"/> : null}>
+                    startIcon={authenticationState.status==='loading' ? <CircularProgress size="1rem"
+                    color='background'/> : null}>
                         <Typography color='white' fontWeight={600} >Se connecter</Typography>
                     </Button>
                 </form>

@@ -15,7 +15,11 @@ export default function setupAxios(axios, store) {
         async (error) => {
             if (error.response.status === 401) {
                 await store.dispatch(signOut(error.response.data.message))
+                // navigate('/unauthorized')
+                // window.location = '/unauthorized'
             }
+            // else if (error.response.status === 404)
+            // window.location = '/notfound'
             return Promise.reject(error);
         }
     );

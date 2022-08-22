@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { CustomTextField } from '../../theme';
 import classes from './form-commission.module.css'
-import { Button, Typography, Autocomplete, CircularProgress, Box } from '@mui/material';
+import { Button, Typography, Autocomplete, CircularProgress, Box, TextField } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllMembres } from '../../store/membresSlice/reducer';
 import { CustomCheckBox } from '../../theme';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Calendar1 } from 'iconsax-react';
 import { addCommission, fetchAllCommissions } from '../../store/commissionsSlice/reducer';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+
 
 const FormCommission = props => {
 
     const dispatch = useDispatch()
     const membresState = useSelector(state => state.membres)
 
-    const [president, setPresident] = useState(null)
-    const [membres, setMembres] = useState([])
-    const [dateCommission, setDateCommission] = useState(null)
+    const [president, setPresident] = useState(props.values ? props.values.president : null)
+    const [membres, setMembres] = useState(props.values ? props.values.membres : [])
+    const [dateCommission, setDateCommission] = useState(props.values ? props.values.dateCommission : null)
+    const [isLoadingSubmit, setIsLoadingSubmit] = useState(false)
 
     const onChangeDateHander = newValue => {
         setDateCommission(newValue)
@@ -71,21 +75,33 @@ const FormCommission = props => {
     const submit = async e => {
         e.preventDefault()
         if (validate()) {
-            await dispatch(addCommission({
-                president: president.idMembre,
-                membres: membres.map(membre => membre.idMembre),
-                dateCommission
-            }))
-            dispatch(fetchAllCommissions())
-            props.onClose()
+            setIsLoadingSubmit(true)
+
+            try {
+                await axios.patch('/commissions', {
+                    idCommission: props.idCommission,
+                    president: president.idMembre,
+                    membres: membres.map((m, i) => m.idMembre),
+                    dateCommission
+                })
+                props.onClose()
+                props.afterSubmit()
+            } catch (e) {
+                console.log(e);
+                toast.error(e.response.data.message)
+            }
+            setIsLoadingSubmit(false)
         }
     }
 
     return (
         <div className={classes.container}>
             <form onSubmit={submit}>
-                <Typography fontWeight={700} className={classes.hdr}
-                    variant='subtitle2'>Ajouter une commission</Typography>
+                <div className={classes.hdr}>
+                    <Typography fontWeight={700} display='inline' marginRight='0.5rem'
+                        variant='subtitle2'>Ajouter une commission</Typography>
+                    {isLoadingSubmit && <CircularProgress size='1rem' />}
+                </div>
                 <Typography fontWeight={400}
                     variant='body2'>Président</Typography>
 
@@ -105,6 +121,7 @@ const FormCommission = props => {
                         const filterOption = ["nomMembre", "prenomMembre", "emailMembre"]
                         return option.filter(o => state.inputValue.split(' ').every(el => filterOption.some(e => o[e].startsWith(el))))
                     }}
+                    ListboxProps={{ style: { maxHeight: 160, overflow: 'auto' } }}
                     isOptionEqualToValue={(option, value) => option.idMembre === value.idMembre}
                     getOptionLabel={(option) => `${option.nomMembre} ${option.prenomMembre}`}
                     options={optionPresident}
@@ -149,6 +166,7 @@ const FormCommission = props => {
                         const filterOption = ["nomMembre", "prenomMembre", "emailMembre"]
                         return option.filter(o => state.inputValue.split(' ').every(el => filterOption.some(e => o[e].startsWith(el))))
                     }}
+                    ListboxProps={{ style: { maxHeight: 150, overflow: 'auto' } }}
                     isOptionEqualToValue={(option, value) => option.idMembre === value.idMembre}
                     getOptionLabel={(option) => `${option.nomMembre} ${option.prenomMembre}`}
                     options={optionMembres}
@@ -165,6 +183,8 @@ const FormCommission = props => {
                     )}
                     renderInput={(params) => (
                         <CustomTextField
+                            multiline
+                            minRows={2}
                             className={classes.field}
                             {...params}
                             size='small' margin='none'
@@ -187,8 +207,9 @@ const FormCommission = props => {
                 <Typography fontWeight={400}
                     variant='body2'>Date</Typography>
 
-                <LocalizationProvider dateAdapter={AdapterMoment} >
+                <LocalizationProvider dateAdapter={AdapterDayjs} >
                     <DatePicker
+                        inputFormat='DD/MM/YYYY'
                         value={dateCommission}
                         onChange={onChangeDateHander}
                         components={{
@@ -216,7 +237,7 @@ const FormCommission = props => {
                         type='submit' variant='contained'
                     >
                         <Typography color='white' fontWeight={400}
-                            variant='body2'>Ajouter</Typography>
+                            variant='body2'>{props.values ? 'Sauvgarder' : 'Ajouter'}</Typography>
                     </Button>
                 </div>
             </form>

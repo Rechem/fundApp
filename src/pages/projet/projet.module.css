@@ -1,0 +1,55 @@
+.img {
+    height: 3rem;
+    width: 3rem;
+    background-color: grey;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.stepper{
+    display: inline-block;
+}
+
+.alignFlexRight{
+    display: flex;
+    align-items: center;
+    column-gap: 0.5rem;
+}
+
+.alignRight{
+    display: flex;
+    align-items: flex-end;
+    flex-flow: column;
+}
+
+.dashboard{
+    margin-bottom: 2rem;
+    margin-top: 4rem;
+}
+
+.btnContainer {
+    margin-top: 4rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.btn{
+    width: 13rem;
+}
+
+.outerBtnContainer {
+    display: flex;
+    justify-content: center;
+}
+
+/* .center{
+    text-align: center;
+    width: 100%;
+} */
+
+/* @media screen and (max-width : 600px) {
+    .center{
+        text-align: center;
+        width: 100%;
+    }
+} */

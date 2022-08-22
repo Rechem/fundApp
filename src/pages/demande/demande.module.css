@@ -1,0 +1,95 @@
+.hdr {
+    margin-bottom: 1rem;
+}
+
+.etatContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.img {
+    height: 4rem;
+    width: 4rem;
+    background-color: grey;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.userContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.outerBtnContainer {
+    display: flex;
+    justify-content: center;
+}
+
+.btnContainer {
+    margin-top: 4rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.btnSecondary {
+    width: 13rem;
+}
+
+.filebtn {
+    border-radius: 100px;
+    max-width: 5rem;
+    height: 2rem;
+}
+
+.filebtn:hover {
+    background-color: transparent;
+}
+
+.fileBtnContainer{
+    display: flex;
+    width: 100%;
+    /* display: block; */
+    align-items: center;
+    /* flex-direction: column; */
+}
+
+.btnSecondary:hover {
+    background-color: transparent;
+}
+
+.btn {
+    width: 13rem;
+}
+
+.modelContainer {
+    padding: 2rem;
+    border-radius: 50px; 
+    max-width: 90%;
+}
+
+.gridContainer {
+    justify-content: flex-start;
+    padding-right: 2rem;
+}
+
+@media screen and (max-width: 599px) {
+    .gridContainer {
+        padding-right: 0;
+    }
+    .fileBtnContainer{
+        justify-content: space-between;
+    }
+}
+
+.gridBtn{
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;   
+}
+
+.gridBtn button {
+    width: 13rem;
+}
