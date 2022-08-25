@@ -6,9 +6,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllCommissions } from '../../store/commissionsSlice/reducer';
 import useDebounce from '../../custom-hooks/use-debounce';
 import axios from 'axios';
-import STATUS from '../status/status-enum';
 import Toolbar from '../toolbar/toolbar';
 import { toast } from 'react-toastify';
+import { statusCommission, statusDemande } from '../../utils';
 
 const FormAccepter = props => {
 
@@ -49,10 +49,10 @@ const FormAccepter = props => {
     const accepterDemande = async idCommission => {
 
         setIsLoading(true)
-        let requestObject = { idDemande: props.idDemande, etat: STATUS.preselectionnee }
+        let requestObject = { idDemande: props.idDemande, etat: statusDemande.preselectionnee }
 
         if (idCommission) {
-            requestObject.etat = STATUS.programmee
+            requestObject.etat = statusCommission.programmee
             requestObject.idCommission = idCommission
         }
 
@@ -100,7 +100,7 @@ const FormAccepter = props => {
             </div>
             <div className={classes.buttons}>
                 <div>
-                    {props.etat !== STATUS.preselectionnee &&
+                    {props.etat !== statusDemande.preselectionnee &&
                         <Button className={classes.btnSecondary}
                             onClick={() => accepterDemande(null)}
                         >

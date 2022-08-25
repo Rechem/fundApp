@@ -1,7 +1,6 @@
 import React from 'react';
 import MaterialTable from "@material-table/core";
 import Status from "../../components/status/status";
-import STATUS from "../../components/status/status-enum";
 import { Paper, Typography, Modal, Box, MenuItem } from "@mui/material";
 import { Link } from "react-router-dom";
 import { CustomCheckBox } from "../../theme";
@@ -92,7 +91,7 @@ const SelectDemandeTable = props => {
             body:
             {
                 emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                    "Aucun résultat" : "Vous n'avez pas de demandes"
+                    "Aucun résultat" : "Rien à afficher"
             }
         }}
         columns={columns}

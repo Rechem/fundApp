@@ -4,8 +4,8 @@ import classes from './form-complement.module.css'
 import { CustomTextField } from '../../theme';
 import { CloseOutlined, AddOutlined, DoneOutlined } from '@mui/icons-material';
 import axios from 'axios';
-import STATUS from '../status/status-enum';
 import { toast } from 'react-toastify';
+import { statusDemande } from '../../utils';
 
 const FormComplement = props => {
 
@@ -106,7 +106,7 @@ const FormComplement = props => {
                 `/demandes`,
                 {
                     idDemande: props.idDemande,
-                    etat: STATUS.complement,
+                    etat: statusDemande.complement,
                     listComplements: combinedState.listComplements.map(c => c.value),
                     message
                 })

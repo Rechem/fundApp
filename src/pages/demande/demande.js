@@ -13,7 +13,7 @@ import FormAccepter from '../../components/form-accepter/form-accepter';
 import FormRefuser from '../../components/form-refuser/form-refuser';
 import axios from 'axios';
 import { isAdmin, isModo, isSimpleUser } from '../../utils';
-import STATUS from '../../components/status/status-enum';
+import { statusDemande } from '../../utils';
 import { toast } from 'react-toastify';
 import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog'
 import { useNavigate } from 'react-router-dom';
@@ -58,6 +58,7 @@ const Demande = () => {
 
     const [demande, setDemande] = useState('')
     const [isLoading, setIsloading] = useState(true)
+    const [submitting, setSubmitting] = useState(false)
 
     const [files, setFiles] = useState({});
     const [isValid, setValidating] = useState({});
@@ -75,7 +76,7 @@ const Demande = () => {
     const [openAlert, setOpenAlert] = useState(false)
 
     const closeDialog = () => {
-        
+
     }
 
     const openAccepterForm = () => {
@@ -124,22 +125,28 @@ const Demande = () => {
 
         if (filesValid) {
             const keys = Object.keys(files)
+
+            setSubmitting(true)
+            let hasErrorOccured = false;
             for await (const key of keys) {
 
                 const formData = new FormData()
                 formData.append('idComplement', key)
                 formData.append('complementFile', files[key].file)
-                // console.log(files[key].file);
+
                 try {
-                    // setLoading(true)
-                    // await axios.patch('/complements', formData)
-                    throw new Error()
+                    await axios.patch('/complements', formData)
+
                 } catch (e) {
-                    // throw e
-                    //TOAST IT 
+                    hasErrorOccured = true
                     toast.error(`Une erreur est survenue lors de l'upload du document ${files[key].filename}`)
                 }
-                // setLoading(false)
+
+            }
+            setSubmitting(false)
+            await fetchDemande()
+            if (!hasErrorOccured) {
+                toast.success("Succès")
             }
         }
     }
@@ -160,7 +167,7 @@ const Demande = () => {
     const deprogrammerDemande = async id => {
         try {
             await axios.patch(
-                `/demandes`, { idDemande: id, etat: STATUS.pending })
+                `/demandes`, { idDemande: id, etat: statusDemande.pending })
             setOpenAlert(false)
         } catch (e) {
             throw e
@@ -194,7 +201,7 @@ const Demande = () => {
             break;
     }
 
-    
+
 
     useEffect(() => {
         fetchDemande()
@@ -226,9 +233,8 @@ const Demande = () => {
                             <Status status={demande.etat} />
                         </div>
                     </div>
-                    <Typography marginBottom='0.5rem' fontWeight={600}>
-                        Demandeur
-                    </Typography>
+                    <Box sx={{ fontWeight: 700, color: theme.palette.text.main, }} mb={1.5}
+                    >Demandeur</Box>
                     <div className={classes.userContainer}>
                         <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'} alt='Avatar'
                             className={classes.img} />
@@ -236,11 +242,8 @@ const Demande = () => {
                             <Typography fontWeight={400}>{demande.user.nom} {demande.user.prenom}</Typography>
                         }
                     </div>
-                    <Typography color={theme.palette.text.main}
-                        marginBottom='0.5rem'
-                        fontWeight={700}>
-                        Détails sur l'entreprise
-                    </Typography>
+                    <Box sx={{ fontWeight: 700, color: theme.palette.text.main, }} mb={1.5}
+                    >Détails sur l'entreprise</Box>
                     <InfoDemande {...demande} />
                     {demande && demande.complements.length > 0 &&
                         <>
@@ -251,19 +254,24 @@ const Demande = () => {
                                 Compléments
                             </Typography>
                             <div>
-                                <Grid container columnSpacing={2} rowSpacing={2}>
+                                <Grid container columnSpacing={2} rowSpacing={1.5}>
                                     {demande.complements.map((c, i) => {
-                                        return <Grid container item key={i} sm={6} columnSpacing={1} 
+                                        return <Grid container item key={i} sm={6} columnSpacing={1}
                                             className={classes.gridContainer}>
-                                            <Grid xs={12} style={{ marginBottom: '0.5rem'}} item>
-                                                {c.nomComplement}:
+                                            <Grid xs={12} item style={{ display: 'flex', alignItems: 'center' }}>
+                                                <Box sx={{ display: 'block' }}>
+                                                    {c.nomComplement}:
+                                                </Box>
                                                 {c.cheminComplement ?
-                                                    <span onClick={() => downloadComplement(c.idComplement)} style={{ cursor: 'pointer' }}>
-                                                        <Typography
-                                                            color={theme.palette.primary.main}
-                                                            display='inline' marginLeft='0.5rem'
-                                                        >Voir</Typography>
-                                                    </span>
+                                                    <Box
+                                                        component="a"
+                                                        href={`${process.env.REACT_APP_BASE_URL}${c.cheminComplement}`}
+                                                        target='_blank' sx={{
+                                                            color: theme.palette.primary.main,
+                                                            display: 'inline', marginLeft: '0.5rem'
+                                                        }}>
+                                                        Voir
+                                                    </Box >
                                                     : !isSimpleUser(authenticationState) ?
                                                         <Typography variant='body2' noWrap display='inline'
                                                             marginLeft='0.5rem'>
@@ -284,7 +292,7 @@ const Demande = () => {
                                                             <Button
                                                                 onClick={() => onClickUpload(refs.current[i], c.idComplement)}
                                                                 className={classes.filebtn} variant='outlined'
-                                                                disabled={demande.etat !== STATUS.complement}>
+                                                                disabled={demande.etat !== statusDemande.complement}>
                                                                 <input type='file'
                                                                     onChange={(e) => fileUploadHandler(e, c)}
                                                                     style={{ display: 'none' }}
@@ -298,7 +306,7 @@ const Demande = () => {
                                                                     {files[c.idComplement].filename}
                                                                 </Typography>}
                                                             {isValid && [c.idComplement] in isValid && !isValid[c.idComplement] &&
-                                                                <FormHelperText style={{marginLeft:'0.5rem'}}>
+                                                                <FormHelperText style={{ marginLeft: '0.5rem' }}>
                                                                     Vous devez fournir un fichier
                                                                 </FormHelperText>}
                                                         </div>
@@ -311,9 +319,14 @@ const Demande = () => {
                                 </Grid>
                                 {isSimpleUser(authenticationState) &&
                                     !demande.complements.every(c => c.cheminComplement)
-                                    && demande.etat === STATUS.complement &&
+                                    && demande.etat === statusDemande.complement &&
                                     <div className={classes.gridBtn}>
                                         <Button variant='contained'
+                                            disabled={submitting}
+                                            startIcon={submitting ?
+                                                <CircularProgress color='background'
+                                                    size='1rem' marginRight={1} /> :
+                                                null}
                                             onClick={validateAndSubmitComplements}
                                         >
                                             <Typography color='white'
@@ -324,7 +337,7 @@ const Demande = () => {
                             </div>
                         </>}
                     {isAdmin(authenticationState) &&
-                        (demande.etat !== STATUS.accepted && demande.etat !== STATUS.refused) &&
+                        (demande.etat !== statusDemande.accepted && demande.etat !== statusDemande.refused) &&
                         <>
                             <div className={classes.outerBtnContainer}>
                                 <div className={classes.btnContainer}>
@@ -337,17 +350,17 @@ const Demande = () => {
                                         <Typography color='primary'>Refuser</Typography>
                                     </Button>
                                     <Button variant={
-                                        demande.etat === STATUS.programmee ?
+                                        demande.etat === statusDemande.programmee ?
                                             'outlined' : 'contained'}
-                                        className={demande.etat === STATUS.programmee ?
+                                        className={demande.etat === statusDemande.programmee ?
                                             classes.btnSecondary : classes.btn}
-                                        onClick={demande.etat === STATUS.programmee ?
+                                        onClick={demande.etat === statusDemande.programmee ?
                                             openDeprogrammerForm : openAccepterForm}>
-                                        {demande.etat === STATUS.programmee ?
+                                        {demande.etat === statusDemande.programmee ?
                                             <Typography color='primary'>Déprogrammer</Typography>
                                             : <Typography
                                                 color='white' fontWeight={700}>
-                                                {demande.etat === STATUS.preselectionnee ?
+                                                {demande.etat === statusDemande.preselectionnee ?
                                                     'Programmer' : 'Accepter'}
                                             </Typography>
                                         }

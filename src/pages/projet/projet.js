@@ -1,14 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import classes from './projet.module.css'
-import { Grid, Divider, useTheme, Box, CircularProgress, Typography, Button } from '@mui/material';
+import {
+    Grid, Divider, useTheme, Box, CircularProgress,
+    Dialog, Button, ButtonGroup, MenuItem, MenuList,
+    ClickAwayListener, Paper, Grow, Popper
+} from '@mui/material';
 import InfoDemande from '../../components/details-demande/info-demande';
 import CustomStepper from '../../components/custom-stepper/custom-stepper';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import FormMontant from '../../components/form-montant/form-montant'
+import FormTranche from '../../components/form-tranche/form-tranche';
+import { Link } from 'react-router-dom';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 
 const Projet = props => {
+
+    const navigate = useNavigate()
 
     const theme = useTheme()
     const primaryColor = theme.palette.primary.main
@@ -19,6 +31,60 @@ const Projet = props => {
     const authenticationState = useSelector(state => state.login)
 
     const [projet, setProjet] = useState('')
+
+    const [open, setOpen] = useState(false);
+
+
+    const handleDialogOpen = () => {
+        setOpen(true);
+    };
+
+    const handleDialogClose = () => {
+        setOpen(false);
+    };
+
+    const [openButtonGroup, setOpenButtonGroup] = useState(false);
+    const anchorRef = React.useRef(null);
+
+    const handleToggleButtonGroup = () => {
+        setOpenButtonGroup((prevOpen) => !prevOpen);
+    };
+
+    const handleCloseButtonGroup = (event) => {
+        if (anchorRef.current && anchorRef.current.contains(event.target)) {
+            return;
+        }
+        setOpenButtonGroup(false);
+    };
+
+    const inputFile = useRef(null)
+    const fileUploadHandler = async (event) => {
+        if (!event.target.files[0])
+            return
+        const formData = new FormData()
+
+        formData.append('documentAccordFinancement', event.target.files[0])
+
+        try {
+            await axios.patch(`/projets/${projet.idProjet}`, formData)
+            await fetchProjet()
+        } catch (e) {
+            toast.error(e.response.data.message)
+        }
+    }
+    const onClickUpload = () => {
+        inputFile.current.click();
+    };
+
+    const deleteDocument = async (e) => {
+        handleCloseButtonGroup(e)
+        try {
+            await axios.delete(`/projets/${idProjet}/documentAccordFinancement`)
+            await fetchProjet()
+        } catch (e) {
+            toast.error(e.response.data.message)
+        }
+    }
 
     const fetchProjet = async () => {
         if (authenticationState.user.idUser) {
@@ -31,9 +97,73 @@ const Projet = props => {
         }
     }
 
+    const getMaxTranchePrevisions = () => {
+        return projet.previsions.length === 0 ? 0 : Math.max(...projet.previsions.map(p => p.numeroTranche))
+    }
+
+    const getMaxTrancheRealisations = () => {
+        return projet.realisations.length === 0 ? 0 : Math.max(...projet.realisations.map(p => p.numeroTranche))
+    }
+
     useEffect(() => {
         fetchProjet()
     }, [authenticationState.user.idUser])
+
+    const checkMontantTranche = () => {
+        if (!projet.montant || !projet.tranche) {
+            handleDialogOpen()
+            return false
+        } else
+            return true
+    }
+
+    const unlockPrevision = () => {
+
+    }
+
+    const viewPrevisions = async () => {
+        if (!checkMontantTranche())
+            return
+        if (getMaxTranchePrevisions() === 0) {
+            try {
+                await axios.post('/previsions', {
+                    projetId: projet.idProjet,
+                    numeroTranche: 1
+                })
+                toast.success("Succès")
+                await fetchProjet()
+            } catch (e) {
+                toast.error(e.response.data.message)
+            }
+        } else if (projet.realisations.length > 0
+            && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée') {
+            try {
+                await axios.post('/previsions', {
+                    projetId: projet.idProjet,
+                    numeroTranche: getMaxTranchePrevisions() + 1
+                })
+                toast.success("Succès")
+                await fetchProjet()
+            } catch (e) {
+                toast.error(e.response.data.message)
+            }
+        }else {navigate(`prevision/${getMaxTranchePrevisions()}`)
+        }
+
+        // : projet.realisations.length > 0 ?
+        //     projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations).etat !== 'Terminée' ?
+        //         'Réalisations' : `Débloquer prévisions (${getMaxTranchePrevisions}ème tranche)` : 'Réalisations'}
+    }
+    const viewRealisations = () => {
+        if (checkMontantTranche()) {
+
+        }
+    }
+    const viewRevenu = () => {
+        if (checkMontantTranche()) {
+
+        }
+    }
 
     return !projet ?
         <CircularProgress size='2rem' style={{ marginTop: '1rem' }} /> :
@@ -64,59 +194,232 @@ const Projet = props => {
                             </div>
                         </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={4} sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                        <Box sx={{ typography: 'body2', color: textColor }}>
+                    <Grid item xs={12} sm={4}
+                        className={classes.center}
+                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                        <Box sx={{ typography: 'body2', color: textColor }} mb={1}>
                             Tranches
                         </Box>
                         {projet.tranche ?
-                            <CustomStepper steps={projet.tranche.nbTranches} activeSteps={[1, 2]}
-                                className={classes.stepper} />
+                            <CustomStepper steps={projet.tranche.nbTranches} activeSteps={getMaxTranchePrevisions()} />
                             : <i style={{ display: 'block' }}>Pas encore soumis</i>}
                     </Grid>
-                    <Grid continer item xs={12} sm={4}
-                        className={classes.alignFlexRight}>
-                        <div className={classes.alignRight}>
-                            <Box sx={{ color: textColor }} >
-                                Montant accordé:{' '}
+                    <Grid container item xs={12} sm={4}
+                        columnSpacing={1}
+                    >
+                        <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                            <Box sx={{ color: textColor }}  >
+                                Montant accordé:
                             </Box>
-                            <Box sx={{ color: textColor }}>
+                        </Grid>
+
+                        <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                            <Box sx={{ fontWeight: 600, color: projet.montant ? primaryColor : theme.palette.warning.main }}    >
+                                {projet.montant ?
+                                    `${projet.montant}DZD` :
+                                    <Button variant='contained'
+                                        sx={{ padding: 0 }} onClick={handleDialogOpen}>
+                                        <Box sx={{ color: 'white' }} >
+                                            Définir
+                                        </Box>
+                                    </Button>
+                                }
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                            <Box sx={{ color: textColor }} >
                                 Revenu:{' '}
                             </Box>
-                        </div>
-                        <div>
-                            <Box sx={{ fontWeight: 600, color: projet.montant ? primaryColor : theme.palette.warning.main }}>
-                                {projet.montant ?
-                                projet.montant :
-                                <Button variant='outlined'
-                                sx={{padding : 0}}>Définir</Button>}
-                            </Box>
-                            <Box sx={{ fontWeight: 600, color: primaryColor }}>
+                        </Grid>
+                        <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                            <Box sx={{ fontWeight: 600, color: primaryColor }}  >
                                 {projet.revenu ? projet.revenu : 0}
                             </Box>
-                        </div>
+                        </Grid>
                     </Grid>
                 </Grid>
             </div>
             <Box className={classes.center}
                 sx={{ typography: 'body1', fontWeight: 600, color: theme.palette.warning.main, }}
-                marginY={2}>
+                mb={1}>
                 Montant et document d'accord de financement non soumis
             </Box>
             <Divider />
+            <Box sx={{ typography: 'body1', fontWeight: 600, color: textColor, }}
+                mb={0.5} mt={2}>
+                Document d'accord de financement
+            </Box>
+            {projet.documentAccordFinancement &&
+                <Box
+                    component="a"
+                    href={`${process.env.REACT_APP_BASE_URL}${projet.documentAccordFinancement}`}
+                    target='_blank'
+                    sx={{
+                        color: theme.palette.primary.main,
+                        display: 'inline',
+                        marginRight: '1rem'
+                    }}>
+                    Télécharger
+                </Box>}
+            <div className={classes.fileBtnContainer}>
+                <ButtonGroup variant='outlined' ref={anchorRef}>
+                    <Button
+                        onClick={onClickUpload}
+                        className={classes.filebtn} >
+                        <input type='file'
+                            onChange={fileUploadHandler}
+                            style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                            id='file' ref={inputFile} />
+                        {projet.documentAccordFinancement ? 'Remplacer' : 'Ajouter'}
+                    </Button>
+                    {projet.documentAccordFinancement &&
+                        <Button
+                            size="small" className={classes.filebtn}
+                            onClick={handleToggleButtonGroup}
+                        ><ArrowDropDownIcon /></Button>}
+                </ButtonGroup>
+                <Popper
+                    sx={{
+                        zIndex: 1,
+                    }}
+                    open={openButtonGroup}
+                    anchorEl={anchorRef.current}
+                    role={undefined}
+                    transition
+                    disablePortal
+                >
+                    {({ TransitionProps, placement }) => (
+                        <Grow
+                            {...TransitionProps}
+                            style={{
+                                transformOrigin:
+                                    placement === 'bottom' ? 'top right' : 'bottom right',
+                            }}
+                        >
+                            <Paper>
+                                <ClickAwayListener onClickAway={handleCloseButtonGroup}>
+                                    <MenuList id="split-button-menu">
+                                        <MenuItem onClick={deleteDocument}>
+                                            <Box sx={{ typography: 'body2', color: 'red', width: '5.5rem' }}>
+                                                Supprimer</Box>
+                                        </MenuItem>
+                                    </MenuList>
+                                </ClickAwayListener>
+                            </Paper>
+                        </Grow>
+                    )}
+                </Popper>
+            </div>
+            <Box sx={{ typography: 'body1', fontWeight: 600, color: textColor, }}
+                mb={1} mt={3}>
+                Détails sur l'entreprise</Box>
             <InfoDemande {...projet.demande} />
+            <Box sx={{ typography: 'body1', fontWeight: 600, color: textColor, }}
+                mb={1} mt={3}>
+                Historique</Box>
+
+            <Grid container rowSpacing={1.5}>
+                <Grid container item xs={12} sm={6} columnSpacing={0.5}>
+                    <Grid item >
+                        <Box sx={{ color: theme.palette.text.main }}>
+                            Ajouté le:
+                        </Box>
+                    </Grid>
+                    <Grid item>
+                        <Box sx={{ color: theme.palette.text.main, fontWeight: 600 }}>
+                            {dayjs(projet.demande.createdAt).format("DD/MM/YYYY")}
+                        </Box>
+                    </Grid>
+                </Grid>
+                <Grid container item xs={12} sm={6} columnSpacing={0.5}>
+                    <Box
+                        component={Link}
+                        to={`/demandes/${projet.demande.idDemande}`}
+                        sx={{
+                            color: theme.palette.primary.main,
+                            display: 'inline',
+                        }}
+                    >
+                        Voir demande
+
+                    </Box>
+                </Grid>
+                <Grid container item xs={12} sm={6} columnSpacing={0.5}>
+                    <Grid item >
+                        <Box sx={{ color: theme.palette.text.main }}>
+                            Accepté le:
+                        </Box>
+                    </Grid>
+                    <Grid item>
+                        <Box sx={{ color: theme.palette.text.main, fontWeight: 600 }}>
+                            {projet.demande.commission.dateCommission}
+                        </Box>
+                    </Grid>
+                </Grid>
+                <Grid container item xs={12} sm={6} columnSpacing={0.5}>
+                    <Box component={Link}
+                        to={`/commissions/${projet.demande.commission.idCommission}`}
+                        sx={{
+                            color: theme.palette.primary.main,
+                            display: 'inline',
+                        }}>
+                        Voir commission
+                    </Box>
+                </Grid>
+            </Grid>
+            <Dialog open={open} onClose={handleDialogClose}
+                maxWidth='100%'>
+                <Box className={classes.modelContainer}>
+                    {projet.montant && !projet.tranche
+                        && <FormTranche
+                            idProjet={projet.idProjet}
+                            montant={projet.montant}
+                            afterSubmit={fetchProjet}
+                            onClose={handleDialogClose}
+                        />}
+                    {!projet.montant && <FormMontant
+                        idProjet={projet.idProjet}
+                        nomProjet={projet.demande.denominationCommerciale}
+                        afterSubmit={fetchProjet}
+                        onClose={handleDialogClose}
+                    />}
+                </Box>
+            </Dialog>
             <div className={classes.outerBtnContainer}>
                 <div className={classes.btnContainer}>
+                    <ButtonGroup>
+                        <Button variant='outlined' className={classes.btn}
+                            onClick={viewPrevisions}>
+                            <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
+                                {getMaxTranchePrevisions() === 0 ? 'Débloquer prévisions (1ère tranche)'
+                                    : projet.realisations.length > 0 ?
+                                        projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat !== 'Terminée' ?
+                                            'Prévisions' : `Débloquer prévisions (${getMaxTranchePrevisions()}ème tranche)` : 'Prévisions'}
+
+                            </Box>
+                        </Button>
+                        {getMaxTranchePrevisions() !== 0 && projet.realisations.length > 0 &&
+                            projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée'
+                            &&
+                            <Button
+                                size="small"
+                            // onClick={handleToggleButtonGroup}
+                            ><ArrowDropDownIcon /></Button>}
+                    </ButtonGroup>
+                    {projet.realisations.length > 0 &&
+                        < Button variant='outlined' className={classes.btn}
+                            onClick={viewRealisations}>
+                            <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
+                                Réalisations
+                            </Box>
+                        </Button>
+                    }
+                    {/* TODO  */}
                     <Button variant='outlined' className={classes.btn}
-                    // onClick={openComplementForm}
-                    >Prévisions
-                    </Button>
-                    <Button variant='outlined' className={classes.btn}
-                    // onClick={openRefuserForm}
-                    >Réalisations
-                    </Button>
-                    <Button variant='outlined' className={classes.btn}
-                    // onClick={demande.etat === STATUS.programmee ?
-                    >Revenu
+                        onClick={viewRevenu}>
+                        <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
+                            Débloquer revenus
+                        </Box>
                     </Button>
                 </div>
             </div>

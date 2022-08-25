@@ -23,6 +23,7 @@ import Unauthorized from './pages/util-pages/unauthorized'
 import { isAdmin, isModo, isSimpleUser } from './utils';
 import Projets from './pages/projets/projets';
 import Projet from './pages/projet/projet';
+import Prevision from './pages/prevision/prevision';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -87,6 +88,7 @@ const App = () => {
               isSimpleUser(authenticationState)
               && authenticationState.user.completedSignUp)}
           redirectPath={redirectCompleteSignup} />}>
+        <Route path="/projets/:idProjet/prevision/:tranche" exact element={<Layout><Prevision /></Layout>} />
         <Route path="/projets" exact element={<Layout><Projets /></Layout>} />
         <Route path="/projets/:idProjet" exact element={<Layout><Projet /></Layout>} />
         <Route path="/demandes" exact element={<Layout><Demandes /></Layout>} />

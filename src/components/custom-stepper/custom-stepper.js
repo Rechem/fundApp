@@ -28,20 +28,20 @@ const CustomStepper = props => {
                     style={
                         props.active === 1 ?
                             selectedStyle :
-                            activeItems.includes(1) ?
+                            activeItems >= 1 ?
                                 activeStyle :
                                 null}>1</div>
                 {Array(props.steps - 1).fill(0).map((s, index) => {
-                    return <React.Fragment key={index}>
+                    return <div key={index} className={classes.container}>
                         <div className={classes.separation}></div>
                         <div className={classes.item}
                             style={props.active === index + 2 ?
                                 selectedStyle :
-                                activeItems.includes(index + 2) ?
+                                activeItems >= index + 2 ?
                                     activeStyle :
                                     null}>
                             {index + 2}</div>
-                    </React.Fragment>
+                    </div>
                 })}
             </div>
         </div>
@@ -54,7 +54,6 @@ CustomStepper.propTypes = {
     stepsLabels: PropTypes.array,
     active: PropTypes.number,
     onClick: PropTypes.func,
-    //add colors later
 }
 
 export default CustomStepper;

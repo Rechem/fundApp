@@ -51,6 +51,7 @@
 .fileBtnContainer{
     display: flex;
     width: 100%;
+    margin-top: 0.5rem;
     /* display: block; */
     align-items: center;
     /* flex-direction: column; */

@@ -121,7 +121,6 @@ export const signUp = createAsyncThunk('authentication/signUp',
                 email,
                 password,
             })
-            console.log(response);
             return response.data
         } catch (e) {
             throw new Error(e.response.data.message)

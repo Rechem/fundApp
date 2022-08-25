@@ -1,0 +1,25 @@
+.container {
+    width: 30rem;
+}
+
+.hdr{
+    margin-bottom: 1.5rem;
+}
+
+.option{
+    max-width: 20rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem auto 0 auto;
+}
+
+.btnContainer{
+    margin-top: 3rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.control{
+    display: block;
+}

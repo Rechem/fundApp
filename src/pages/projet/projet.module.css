@@ -6,8 +6,13 @@
     border-radius: 50%;
 }
 
+.filebtn {
+    border-radius: 100px;
+    height: 2rem;
+}
+
 .stepper{
-    display: inline-block;
+    display: inline;
 }
 
 .alignFlexRight{
@@ -23,7 +28,7 @@
 }
 
 .dashboard{
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     margin-top: 4rem;
 }
 
@@ -31,6 +36,10 @@
     margin-top: 4rem;
     display: flex;
     gap: 1rem;
+}
+
+.fileBtnContainer{
+    display: inline-block;
 }
 
 .btn{
@@ -42,14 +51,21 @@
     justify-content: center;
 }
 
-/* .center{
-    text-align: center;
-    width: 100%;
-} */
+.modelContainer {
+    padding: 2rem;
+    border-radius: 50px; 
+    max-width: 90%;
+}
 
-/* @media screen and (max-width : 600px) {
+@media screen and (max-width : 600px) {
     .center{
         text-align: center;
         width: 100%;
     }
-} */
+
+    .img {
+        height: 5rem;
+        width: 5rem;
+        margin: auto;
+    }
+}

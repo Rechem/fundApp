@@ -68,7 +68,7 @@ const SelectCommissionTable = props => {
                 body:
                 {
                     emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                        "Aucun résultat" : "Vous n'avez pas de demandes"
+                        "Aucun résultat" : "Rien à afficher"
                 }
             }}
             onRowClick={(_, rowData) => { props.onChangeHandler(rowData.idCommission) }}

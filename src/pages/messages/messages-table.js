@@ -30,7 +30,7 @@ const MessagesTable = props => {
                 body:
                 {
                     emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                        "Aucun résultat" : "Vous n'avez pas de demandes"
+                        "Aucun résultat" : "Rien à afficher"
                 }
             }}
             columns={columns}

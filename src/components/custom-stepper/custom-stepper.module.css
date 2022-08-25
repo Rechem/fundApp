@@ -1,5 +1,4 @@
 .container{
-    width: 100%;
     display: flex;
     align-items: center;
 }
@@ -18,7 +17,7 @@
 .separation{
     background-color: rgb(190, 190, 190);
     height: 1px;
-    min-width: 2rem;
+    min-width: 1.5rem;
     margin: auto;
     flex: 1
 }

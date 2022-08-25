@@ -2,49 +2,55 @@ import MaterialTable from "@material-table/core";
 import React, { useEffect, useState } from 'react';
 import Status from "../../../components/status/status";
 import { Paper, Typography, useTheme, Modal, Box } from "@mui/material";
-import moment from "moment";
 import { useNavigate } from "react-router-dom";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
-const CommissionsTable = props => {
+const InvestissementsTable = props => {
 
     const navigate = useNavigate()
 
     const theme = useTheme()
 
+    const [open, setOpen] = React.useState(false);
+
+    const handleOpen = item => {
+        setSelectedItem(item)
+        setOpen(true);
+    };
+
+    const handleClose = () => setOpen(false);
+
+    const [selectedItem, setSelectedItem] = useState(null)
+
     const columns = [
         {
-            title: "Date",
-            width: '10%',
-            field: 'dateCommission',
-            align: 'center',
-            render: (rowData) =>
-                <Typography align="left" marginX='1rem'>
-                    {rowData.dateCommission}
-                </Typography>,
+            title: "Type",
+            field: 'type.nomType',
+            // align: 'center',
         },
         {
-            title: "Etat",
-            field: "etat",
-            width: '15%',
-            align: 'center',
-            render: (rowData) => <Status status={rowData.etat} />,
-        },
-
-        {
-            title: "Président",
-            align: 'center',
-            render: (rowData) =>
-                <Typography align="left" marginX='2rem'
-                >{rowData.president.nomMembre} {rowData.president.prenomMembre}
-                </Typography>
+            title: "Montant unitaire",
+            field: "montantUnitaire",
+            align: 'right',
         },
         {
-            title: "Demandes",
-            field: "nbDemandes",
+            title: "Lien/Facture",
+            field: "lien",
             align: 'center',
             width: '20%'
+            // render: (rowData) => () TODO
+        },
+        {
+            title: "Quantité",
+            field: "quantite",
+            align: 'center',
+            width: '20%'
+        },
+        {
+            title: "Total",
+            align: 'center',
+            render : (rowData) => rowData.montantUnitaire * rowData.quantite
         },
         {
             title: "Détails",
@@ -52,7 +58,7 @@ const CommissionsTable = props => {
             align: 'center',
             sorting: false,
             render: (rowData) => (
-                <span onClick={() => navigate(`${rowData.idCommission}`)} style={{ cursor: 'pointer' }}>
+                <span onClick={() => setSelectedItem(rowData.idArticlePrevision)} style={{ cursor: 'pointer' }}>
                     <Typography
                         color={theme.palette.primary.main}
                         display='inline'
@@ -71,7 +77,7 @@ const CommissionsTable = props => {
                 }
             }}
             columns={columns}
-            data={props.commissions}
+            data={props.investissements}
             isLoading={props.isLoading}
             options={{
                 toolbar: false, draggable: false, search: true, padding: 'dense',
@@ -85,4 +91,4 @@ const CommissionsTable = props => {
     </React.Fragment>
 };
 
-export default CommissionsTable;
+export default InvestissementsTable;

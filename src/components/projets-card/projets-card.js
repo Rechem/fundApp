@@ -16,7 +16,8 @@ const ProjetsCard = props => {
         <Paper variant="outlined" className={classes.container}>
             <Grid container columns={12} columnSpacing={6} rowSpacing={2}>
                 <Grid container item md={8} xs={12} rowSpacing={3} columnSpacing={2} >
-                    <Grid item container md={7} xs={12} sm={6} columnSpacing={2} className={classes.center}>
+                    <Grid item container md={7} xs={12} sm={6}
+                    columnSpacing={2} className={classes.center} sx={{ alignItems: 'center' }}>
                         <Grid item className={classes.center}>
                             <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'} alt='Avatar'
                                 className={classes.img} />
@@ -49,7 +50,7 @@ const ProjetsCard = props => {
                         </Box>
                         <Box sx={{ fontWeight: 600, color: props.montant ? primaryColor :theme.palette.warning.main}}
                         component='span'>
-                            {props.montant ? props.montant : <i>Non spécifié</i>}
+                            {props.montant ? `${props.montant}DZD` : <i>Non spécifié</i>}
                         </Box>
                     </Grid>
                     <Grid item md={5} xs={12} sm={6} className={classes.center}>
@@ -74,7 +75,9 @@ const ProjetsCard = props => {
                     </div>
                 </Grid>
             </Grid>
-            <Box className={classes.center} sx={{ typography: 'body2', color: theme.palette.warning.main, }} mt={1}>
+            <Box className={classes.center}
+            sx={{ typography: 'body2', color: theme.palette.warning.main,
+            fontWeight: 600 }} mt={1}>
                 Montant et document d'accord de financement non soumis
             </Box>
         </Paper>

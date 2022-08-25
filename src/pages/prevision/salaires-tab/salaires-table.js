@@ -2,22 +2,31 @@ import MaterialTable from "@material-table/core";
 import React, { useEffect, useState } from 'react';
 import Status from "../../../components/status/status";
 import { Paper, Typography, useTheme, Modal, Box } from "@mui/material";
-import moment from "moment";
 import { useNavigate } from "react-router-dom";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
-const CommissionsTable = props => {
+const SalairesTable = props => {
 
     const navigate = useNavigate()
 
     const theme = useTheme()
 
+    const [open, setOpen] = React.useState(false);
+
+    const handleOpen = item => {
+        setSelectedItem(item)
+        setOpen(true);
+    };
+
+    const handleClose = () => setOpen(false);
+
+    const [selectedItem, setSelectedItem] = useState(null)
+
     const columns = [
         {
-            title: "Date",
-            width: '10%',
-            field: 'dateCommission',
+            title: "Poste",
+            field: 'poste',
             align: 'center',
             render: (rowData) =>
                 <Typography align="left" marginX='1rem'>
@@ -25,24 +34,26 @@ const CommissionsTable = props => {
                 </Typography>,
         },
         {
-            title: "Etat",
-            field: "etat",
-            width: '15%',
+            title: "Nb. de mois",
+            field: "nbMois",
             align: 'center',
-            render: (rowData) => <Status status={rowData.etat} />,
-        },
-
-        {
-            title: "Président",
-            align: 'center',
-            render: (rowData) =>
-                <Typography align="left" marginX='2rem'
-                >{rowData.president.nomMembre} {rowData.president.prenomMembre}
-                </Typography>
+            width: '20%'
         },
         {
-            title: "Demandes",
-            field: "nbDemandes",
+            title: "Salaire Mensuel",
+            field: "salaireMensuel",
+            align: 'center',
+            width: '20%'
+        },
+        {
+            title: "Nb. de personnes",
+            field: "nbPersonnes",
+            align: 'center',
+            width: '20%'
+        },
+        {
+            title: "Total",
+            field: "nbPersonnes",
             align: 'center',
             width: '20%'
         },
@@ -52,7 +63,7 @@ const CommissionsTable = props => {
             align: 'center',
             sorting: false,
             render: (rowData) => (
-                <span onClick={() => navigate(`${rowData.idCommission}`)} style={{ cursor: 'pointer' }}>
+                <span onClick={() => setSelectedItem(rowData.idArticlePrevision)} style={{ cursor: 'pointer' }}>
                     <Typography
                         color={theme.palette.primary.main}
                         display='inline'
@@ -71,7 +82,7 @@ const CommissionsTable = props => {
                 }
             }}
             columns={columns}
-            data={props.commissions}
+            data={props.salaires}
             isLoading={props.isLoading}
             options={{
                 toolbar: false, draggable: false, search: true, padding: 'dense',
@@ -85,4 +96,4 @@ const CommissionsTable = props => {
     </React.Fragment>
 };
 
-export default CommissionsTable;
+export default SalairesTable;

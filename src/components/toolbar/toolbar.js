@@ -6,7 +6,7 @@ import { CustomTextField } from '../../theme';
 import PropTypes from 'prop-types';
 
 const Toolbar = props => {
-    return (<div className={[classes.toolbar, props.className].join(' ')}>
+    return (<div className={[classes.toolbar, props.className].join(' ')} style={props.style}>
             <div className={classes.container}>
                 {!props.hideButton &&
                     <Button variant='outlined' className={classes.btn}

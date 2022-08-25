@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Grid, Box, useTheme } from '@mui/material';
 import axios from 'axios';
 
 const getFileName = (response) => {
@@ -43,36 +43,35 @@ const InfoDemande = props => {
         {
             title: 'Business plan',
             value: (
-                <Typography
-                    color={theme.palette.primary.main}
-                    display='inline'>
-                    <span onClick={downloadBusinessPlan} style={{ cursor: 'pointer' }}>
-                        Voir
-                    </span>
-                </Typography>
+                <Box
+                    component="a"
+                    href={`${process.env.REACT_APP_BASE_URL}${props.businessPlan}`}
+                    target='_blank' sx={{
+                        color: theme.palette.primary.main,
+                        display: 'inline',
+                    }}>
+                    Voir
+                </Box>
             )
         },
         { title: 'Date de création', value: props.dateCreation },
         { title: 'Montant demandé', value: props.montant },
     ]
 
-
-
     return (
-        <Grid container rowSpacing={2}>
+        <Grid container rowSpacing={1.5}>
             {INFO.map((e, i) => (e.value ?
                 <Grid container item xs={12} sm={6} key={i}>
-                    <Grid item container columnSpacing={1}>
+                    <Grid item container columnSpacing={0.5}>
                         <Grid item >
-                            <Typography color={theme.palette.textmain}>
+                            <Box sx={{ color: theme.palette.text.main }}>
                                 {e.title}:
-                            </Typography>
+                            </Box>
                         </Grid>
                         <Grid item>
-                            <Typography color={theme.palette.textmain}
-                                fontWeight={700}>
+                            <Box sx={{ color: theme.palette.text.main, fontWeight: 600 }}>
                                 {e.value}
-                            </Typography>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

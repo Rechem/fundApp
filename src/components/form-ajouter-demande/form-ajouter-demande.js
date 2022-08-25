@@ -9,10 +9,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllDemandes } from '../../store/demandesSlice/reducer'
 import tinycolor from 'tinycolor2';
 import axios from 'axios';
-import STATUS from '../status/status-enum';
 import { toast } from 'react-toastify'
 import Toolbar from '../toolbar/toolbar';
 import useDebounce from '../../custom-hooks/use-debounce';
+import { statusDemande } from '../../utils';
 
 const FormAjouterDemande = props => {
 
@@ -51,7 +51,7 @@ const FormAjouterDemande = props => {
             for await (const demande of selectedDemandes) {
                 let requestObject = {
                     idDemande: demande,
-                    etat: STATUS.programmee,
+                    etat: statusDemande.programmee,
                     idCommission: props.idCommission
                 }
 
@@ -59,7 +59,6 @@ const FormAjouterDemande = props => {
                     await axios.patch(
                         `/demandes`,
                         requestObject)
-                    throw new Error()
 
                 } catch (e) {
                     hasErrorOccured = true

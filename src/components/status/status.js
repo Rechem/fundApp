@@ -1,8 +1,18 @@
 import React from 'react';
-import STATUS from './status-enum'
 import { useTheme } from '@mui/system';
 import tinycolor from 'tinycolor2';
 import { Typography } from '@mui/material';
+
+const STATUS = {
+    accepted: 'Acceptée',
+    refused: 'Refusée',
+    pending: 'En attente',
+    complement: 'Besoin complément',
+    programmee: 'Programmée',
+    preselectionnee: 'Préselectionnée',
+    terminee: 'Terminée',
+    brouillon: 'Brouillon'
+}
 
 const Status = ({status}) => {
 

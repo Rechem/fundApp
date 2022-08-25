@@ -1,5 +1,4 @@
 .container {
-    padding: 2rem;
     width:25rem;
 }
 
@@ -11,10 +10,6 @@
 
 .btn{
     margin-left: 1rem;
-}
-
-.btn:nth-child(1):hover {
-    background-color: transparent;
 }
 
 .hdr{

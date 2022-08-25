@@ -42,7 +42,7 @@ const Projets = () => {
             <div className={classes.projectsList}>
                 {projetsState.status === 'fetching' &&
                     <CircularProgress size='2rem' style={{ marginTop: '1rem' }} />}
-                {projetsState.projets &&
+                {projetsState.status !== 'fetching' && projetsState.projets &&
                     projetsState.projets.map((p, i) => {
                         return <ProjetsCard key={i}
                         denominationCommerciale={p.demande.denominationCommerciale}

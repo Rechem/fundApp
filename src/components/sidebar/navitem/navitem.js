@@ -21,7 +21,7 @@ const Navitem = props => {
                 <Typography display='inline' noWrap
                 fontWeight={
                     location.pathname.startsWith(props.link)?
-                    700 : 400
+                    600 : 400
                 }
                 className={classes.txt}>
                     {props.children}

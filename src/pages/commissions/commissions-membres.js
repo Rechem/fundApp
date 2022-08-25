@@ -16,13 +16,6 @@ const Commissions = () => {
         setTabValue(newValue);
     };
 
-    const a11yProps = (index) => {
-        return {
-            id: `simple-tab-${index}`,
-            'aria-controls': `simple-tabpanel-${index}`,
-        };
-    }
-
     return (
         <React.Fragment>
             <Typography color={theme.palette.text.main}
@@ -30,8 +23,8 @@ const Commissions = () => {
                 Commissions
             </Typography>
             <Tabs value={tabValue} onChange={handleTabChange}>
-                <CustomTab label="Commissions" {...a11yProps(0)} />
-                <CustomTab label="Membres" {...a11yProps(1)} />
+                <CustomTab label="Commissions" />
+                <CustomTab label="Membres" />
             </Tabs>
             <Divider />
             <TabPanel value={tabValue} index={0}>

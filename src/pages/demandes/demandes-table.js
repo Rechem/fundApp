@@ -4,7 +4,7 @@ import Status from "../../components/status/status";
 import { Paper, Typography, useTheme, Modal, Box, MenuItem } from "@mui/material";
 import moment from "moment";
 import { Link } from "react-router-dom";
-import STATUS from "../../components/status/status-enum";
+import { statusDemande } from "../../utils";
 import { CustomSelect } from "../../theme";
 import tinycolor from "tinycolor2";
 
@@ -37,10 +37,10 @@ const DemandesTable = props => {
                     return <Status status={rowData.etat} />
                 else {
                     let backgroundColor, color;
-                    if (props.etatDemandes[rowData.idDemande] === STATUS.accepted) {
+                    if (props.etatDemandes[rowData.idDemande] === statusDemande.accepted) {
                         backgroundColor = tinycolor(theme.palette.success.main).setAlpha(.1)
                         color = theme.palette.success.main
-                    } else if (props.etatDemandes[rowData.idDemande] === STATUS.refused) {
+                    } else if (props.etatDemandes[rowData.idDemande] === statusDemande.refused) {
                         backgroundColor = tinycolor(theme.palette.error.main).setAlpha(.1)
                         color = theme.palette.error.main
                     } else {
@@ -56,13 +56,13 @@ const DemandesTable = props => {
                         style={{ height: '2.5rem', width: '8rem', overflow: 'hidden', color, backgroundColor }}                    >
                         <MenuItem
                             style={{ color: theme.palette.success.main }}
-                            value={STATUS.accepted}>
-                            {STATUS.accepted}
+                            value={statusDemande.accepted}>
+                            {statusDemande.accepted}
                         </MenuItem>
                         <MenuItem
                             style={{ color: theme.palette.error.main }}
-                            value={STATUS.refused}>
-                            {STATUS.refused}
+                            value={statusDemande.refused}>
+                            {statusDemande.refused}
                         </MenuItem>
                     </CustomSelect>)
                 }
@@ -93,7 +93,7 @@ const DemandesTable = props => {
             body:
             {
                 emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                    "Aucun résultat" : "Vous n'avez pas de demandes"
+                    "Aucun résultat" : "Rien à afficher"
             }
         }}
         columns={columns}

@@ -78,16 +78,22 @@ const FormCommission = props => {
             setIsLoadingSubmit(true)
 
             try {
-                await axios.patch('/commissions', {
-                    idCommission: props.idCommission,
-                    president: president.idMembre,
-                    membres: membres.map((m, i) => m.idMembre),
-                    dateCommission
-                })
+                if (props.values)
+                    await axios.patch('/commissions', {
+                        idCommission: props.idCommission,
+                        president: president.idMembre,
+                        membres: membres.map((m, i) => m.idMembre),
+                        dateCommission
+                    })
+                else
+                    await axios.post('/commissions', {
+                        president: president.idMembre,
+                        membres: membres.map((m, i) => m.idMembre),
+                        dateCommission
+                    })
                 props.onClose()
                 props.afterSubmit()
             } catch (e) {
-                console.log(e);
                 toast.error(e.response.data.message)
             }
             setIsLoadingSubmit(false)
@@ -99,7 +105,12 @@ const FormCommission = props => {
             <form onSubmit={submit}>
                 <div className={classes.hdr}>
                     <Typography fontWeight={700} display='inline' marginRight='0.5rem'
-                        variant='subtitle2'>Ajouter une commission</Typography>
+                        variant='subtitle2'>
+                        {props.values ?
+                            'Modifer cette commission'
+                            : 'Ajouter une commission'}
+
+                    </Typography>
                     {isLoadingSubmit && <CircularProgress size='1rem' />}
                 </div>
                 <Typography fontWeight={400}

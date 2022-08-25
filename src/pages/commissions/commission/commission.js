@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { CustomSelect } from '../../../theme'
 import Status from '../../../components/status/status'
-import STATUS from '../../../components/status/status-enum'
+import { statusCommission, statusDemande } from '../../../utils';
 import Toolbar from '../../../components/toolbar/toolbar';
 import DemandesTable from '../../demandes/demandes-table';
 import { useParams } from 'react-router-dom';
@@ -27,7 +27,7 @@ const Commission = () => {
 
     const theme = useTheme()
 
-    const [etatCommission, setEtatCommission] = useState(STATUS.pending)
+    const [etatCommission, setEtatCommission] = useState(statusCommission.pending)
     const [etatDemandes, setEtatDemandes] = useState({})
     const authenticationState = useSelector(state => state.login)
 
@@ -71,7 +71,7 @@ const Commission = () => {
     const onChangeHandler = e => {
         const { name, value } = e.target
         setEtatCommission(value)
-        if (value === STATUS.pending)
+        if (value === statusCommission.pending)
             setErrors({})
     }
 
@@ -85,16 +85,16 @@ const Commission = () => {
         setSelectedFileName(event.target.files[0].name)
     }
 
-    const validateCommission = async () => {
+    const validateCommission = () => {
 
         let temp = {}
 
-
         const demandesAreValid = Object.values(etatDemandes)
-            .every(d => d === STATUS.accepted || d === STATUS.refused)
+            .every(d => d === statusDemande.accepted || d === statusDemande.refused)
 
-        temp.demandes = !demandesAreValid ? "L'état d'une ou plusieurs demande n'as pas été modifié" : ""
-        temp.rapport = !selectedFile ? "Vous devez ajouter le rapport de commission" : ''
+        temp.demandes = commission.demandes.length > 0 ? !demandesAreValid ? "L'état d'une ou plusieurs demande n'as pas été modifié" : ''
+            : "Vous n'avez pas de demandes pour cette commission"
+        temp.rapport = !selectedFile ? "Vous devez ajouter le rapport de commission" : ''   
 
         setErrors({ ...temp })
         return Object.values(temp).every(x => x === '')
@@ -146,7 +146,7 @@ const Commission = () => {
                 const response = await axios.get(`/commissions/${idCommission}`)
                 setCommission(response.data.data.commission);
                 setEtatCommission(response.data.data.commission.etat)
-                if (etatCommission === STATUS.pending) {
+                if (etatCommission === statusCommission.pending) {
                     let etatDemandesDraft = {}
                     response.data.data.commission.demandes.forEach(d => {
                         etatDemandesDraft = { ...etatDemandesDraft, [d.idDemande]: d.etat }
@@ -203,7 +203,7 @@ const Commission = () => {
                 </Typography>
                 {commission &&
                     <Button variant='contained' className={classes.btn}
-                        disabled={etatCommission === STATUS.pending}
+                        disabled={etatCommission === statusCommission.pending}
                         onClick={acceptCommission}>
                         <Typography color='white'>
                             <strong>Sauvgarder</strong>
@@ -222,11 +222,10 @@ const Commission = () => {
                     <div className={classes.container}>
                         <div className={classes.leftColumn}>
                             <div className={classes.etatContainer}>
-                                <Typography color={theme.palette.text.main} display='inline'
-                                    fontWeight={700} >
+                                <Typography color={theme.palette.text.main} display='inline'>
                                     Etat
                                 </Typography>
-                                {commission.etat === STATUS.pending ?
+                                {commission.etat === statusCommission.pending ?
                                     <CustomSelect
                                         id='select-etat'
                                         value={etatCommission}
@@ -235,78 +234,35 @@ const Commission = () => {
                                         className={classes.slct}>
                                         <MenuItem
                                             className={classes.item}
-                                            value={STATUS.pending}>
-                                            {STATUS.pending}
+                                            value={statusCommission.pending}>
+                                            {statusCommission.pending}
                                         </MenuItem>
                                         <MenuItem
-                                            value={STATUS.terminee}
+                                            value={statusCommission.terminee}
                                             className={classes.item}>
-                                            {STATUS.terminee}
+                                            {statusCommission.terminee}
                                         </MenuItem>
                                     </CustomSelect> :
                                     <Status status={commission.etat} />
                                 }
                             </div>
-                            {etatCommission === STATUS.terminee &&
-                                <div className={classes.txt}>
-                                    <Typography color={theme.palette.text.main}
-                                        display='inline' fontWeight={700} marginRight='0.5rem'
-                                    >Rapport de commission
-                                    </Typography>
-                                    {commission.rapportCommission ?
-                                        <span style={{ cursor: 'pointer' }}>
-                                            <Typography
-                                                color={theme.palette.primary.main}
-                                                display='inline'
-                                            >Voir</Typography>
-                                        </span> :
-                                        <FormControl fullWidth
-                                            error={errors.rapport !== ''}>
-                                            <div className={classes.fileBtnContainer}>
-                                                <Button
-                                                    onClick={onClickUpload}
-                                                    className={classes.filebtn} variant='outlined'>
-                                                    <input type='file' accept='.pdf,.doc,.docx'
-                                                        onChange={fileUploadHandler}
-                                                        style={{ display: 'none' }}
-                                                        id='file' ref={inputFile} />
-                                                    {selectedFile ? 'Remplacer' : 'Ajouter'}
-                                                </Button>
-                                                {selectedFile &&
-                                                    <Typography variant='body2'
-                                                        style={{
-                                                            textOverflow: 'ellipsis',
-                                                            overflow: 'hidden',
-                                                        }}
-                                                        noWrap>
-                                                        {selectedFileName}
-                                                    </Typography>}
-                                            </div>
-                                            {errors.rapport !== '' &&
-                                                <FormHelperText className={classes.helper}>
-                                                    {errors.rapport}
-                                                </FormHelperText>}
-                                        </FormControl>
-                                    }
-                                </div>
-                            }
                             <div className={classes.txt}>
                                 <Typography color={theme.palette.text.main}
-                                    fontWeight={700} marginRight='0.5rem'
+                                marginRight='0.5rem'
                                     display='inline'>
                                     Président
                                 </Typography>
                                 {commission &&
                                     <Typography color={theme.palette.text.main}
                                         display='inline'>
-                                        <Chip style={{cursor : 'text'}}
-                                        label={`${commission.president.nomMembre} ${commission.president.prenomMembre}`}/>
+                                        <Chip style={{ cursor: 'text' }}
+                                            label={`${commission.president.nomMembre} ${commission.president.prenomMembre}`} />
                                     </Typography>
                                 }
                             </div>
                             <div className={classes.txt}>
                                 <Typography color={theme.palette.text.main}
-                                    fontWeight={700} marginRight='0.5rem'
+                                    marginRight='0.5rem'
                                     display='inline'>
                                     Membres
                                 </Typography>
@@ -314,17 +270,18 @@ const Commission = () => {
                                     <Typography color={theme.palette.text.main}
                                         display='inline'>
                                         {commission.membres.map((c, i) => <Chip key={c.idMembre}
-                                        label={`${c.nomMembre} ${c.prenomMembre}`}  
-                                        style={{marginRight:'0.25rem', marginBottom: '0.25rem', cursor : 'text'}}/>)}
+                                            label={`${c.nomMembre} ${c.prenomMembre}`}
+                                            style={{ marginRight: '0.25rem', marginBottom: '0.25rem', cursor: 'text' }} />)}
                                     </Typography>
                                 }
                             </div>
                         </div>
+
                         <div className={classes.rightColumn}>
                             <Typography color={theme.palette.text.main}>
                                 {commission.dateCommission}
                             </Typography>
-                            {commission.etat === STATUS.pending &&
+                            {commission.etat === statusCommission.pending &&
                                 <Button variant='outlined' onClick={openEditDialog}
                                     className={[classes.btn, classes.btnSecondary].join(' ')}>
                                     <Typography color='primary'>
@@ -334,26 +291,71 @@ const Commission = () => {
                             }
                         </div>
                     </div>
+                    {etatCommission === statusCommission.terminee &&
+                        <div className={classes.txt}>
+                            <Typography color={theme.palette.text.main}
+                                display='inline'marginRight='0.5rem'
+                            >Rapport de commission
+                            </Typography>
+                            {commission.rapportCommission ?
+                                <Box
+                                    component="a"
+                                    href={`${process.env.REACT_APP_BASE_URL}${commission.rapportCommission}`}
+                                    target='_blank' sx={{
+                                        color: theme.palette.primary.main,
+                                        display: 'inline',
+                                    }}
+                                >Voir</Box> :
+                                <FormControl fullWidth
+                                    error={errors.rapport !== ''}>
+                                    <div className={classes.fileBtnContainer}>
+                                        <Button
+                                            onClick={onClickUpload}
+                                            className={classes.filebtn} variant='outlined'>
+                                            <input type='file' accept='.pdf,.doc,.docx'
+                                                onChange={fileUploadHandler}
+                                                style={{ display: 'none' }}
+                                                id='file' ref={inputFile} />
+                                            {selectedFile ? 'Remplacer' : 'Ajouter'}
+                                        </Button>
+                                        {selectedFile &&
+                                            <Typography variant='body2'
+                                                style={{
+                                                    textOverflow: 'ellipsis',
+                                                    overflow: 'hidden',
+                                                }}
+                                                noWrap>
+                                                {selectedFileName}
+                                            </Typography>}
+                                        {errors.rapport !== '' &&
+                                            <FormHelperText>
+                                                {errors.rapport}
+                                            </FormHelperText>}
+                                    </div>
+                                </FormControl>
+                            }
+                        </div>
+                    }
                     <div className={classes.demandesContainer}>
-                        <Typography variant='subtitle2'>
-                            Demandes
-                        </Typography>
+                        <FormControl fullWidth
+                            error={errors.demandes !== ''}>
+                            <Box sx={{ typography: 'subtitle2' }}>
+                                Demandes
+                                {errors.demandes !== '' &&
+                                    <FormHelperText style={{ display: 'inline-block', marginLeft: '0.5rem' }}>
+                                        {errors.demandes}
+                                    </FormHelperText>}
+                            </Box>
+                        </FormControl>
                         <Toolbar className={classes.toolbar}
-                            hideButton={commission.etat === STATUS.terminee}
+                            hideButton={commission.etat === statusCommission.terminee}
                             onClick={openAjouterDemandeDialog} />
                         <DemandesTable
                             etatDemandes={etatDemandes}
                             updateEtatDemandes={updateEtatDemandes}
                             demandes={commission.demandes}
-                            isBeingEdited={etatCommission === STATUS.terminee
-                                && commission.etat === STATUS.pending} />
-                        <FormControl fullWidth
-                            error={errors.demandes !== ''}>
-                            {errors.demandes !== '' &&
-                                <FormHelperText style={{ margin: 'auto' }}>
-                                    {errors.demandes}
-                                </FormHelperText>}
-                        </FormControl>
+                            isBeingEdited={etatCommission === statusCommission.terminee
+                                && commission.etat === statusCommission.pending} />
                     </div>
                 </React.Fragment>
             }

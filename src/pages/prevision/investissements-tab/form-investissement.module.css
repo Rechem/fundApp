@@ -3,8 +3,7 @@
 }
 
 .field {
-    width: 20.5rem;
-    margin-bottom: 1rem;
+    max-width: 30.5rem;
 }
 
 .btnContainer{
@@ -19,4 +18,16 @@
 
 .hdr{
     margin-bottom: 3rem;
+}
+
+.filebtn {
+    margin-right: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 100px;
+    height: 2rem;
+}
+
+.fileBtnContainer {
+    display: flex;
+    align-items: center;
 }

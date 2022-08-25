@@ -22,7 +22,7 @@ let theme = createTheme({
     },
     typography: {
         htmlFontSize: 16,
-        fontFamily: ["inter", "sans-serif"],
+        fontFamily: "Inter",
         body1: {
             fontSize: "1rem",
             color: "#424141"
@@ -59,6 +59,7 @@ theme = createTheme(theme, {
             styleOverrides: {
                 root:{
                     textTransform: "none",
+                    fontSize : '1rem'
                 },
                 // outlined: {
                 //     '&:hover': {

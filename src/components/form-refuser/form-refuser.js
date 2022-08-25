@@ -3,7 +3,7 @@ import { Typography, Button, CircularProgress} from '@mui/material';
 import classes from './form-refuser.module.css'
 import { CustomTextField } from '../../theme';
 import axios from 'axios';
-import STATUS from '../status/status-enum';
+import { statusDemande } from '../../utils';
 import { toast } from 'react-toastify';
 
 const FormRefuser = props => {
@@ -22,7 +22,7 @@ const FormRefuser = props => {
                 `/demandes`,
                 {
                     idDemande: props.idDemande,
-                    etat: STATUS.refused,
+                    etat: statusDemande.refused,
                     message
                 })
                 setIsLoading(false)

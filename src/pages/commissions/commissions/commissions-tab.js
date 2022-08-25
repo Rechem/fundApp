@@ -43,7 +43,7 @@ const CommissionTab = () => {
         try {
             await axios.post('/commissions', { president, membres, dateCommission })
             handleDialogClose()
-        }catch (e){
+        } catch (e) {
             //TOAST IT
         }
     }
@@ -57,7 +57,7 @@ const CommissionTab = () => {
             <Dialog open={open} onClose={handleDialogClose} maxWidth='100%'>
                 <Box className={classes.modelContainer}>
                     <FormCommission
-                        submit={addCommissionHandler}
+                        afterSubmit={()=>dispatch(fetchAllCommissions(debouncedSearchTerm))}
                         onClose={handleDialogClose} />
                 </Box>
             </Dialog>
