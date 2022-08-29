@@ -18,6 +18,13 @@ export const statusRealisation = {
     terminee: 'Terminée',
 }
 
+export const statusArticleRealisation = {
+    accepted: 'Acceptée',
+    refused: 'Refusée',
+    pending: 'En attente évaluation',
+    waiting: 'En attente saisie',
+}
+
 export const statusCommission = {
     pending: 'En attente',
     terminee: 'Terminée',

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { CustomTextField } from '../../../theme';
-import classes from './form-investissement.module.css'
+import { CustomTextField } from '../../theme';
+import classes from './form-investissement-charge.module.css'
 import {
     Button, Typography, Box, Autocomplete, FormControl, FormControlLabel,
     Radio, RadioGroup, CircularProgress, Grid, FormHelperText,
@@ -24,7 +24,7 @@ const FormInvestissement = props => {
     const [openType, setOpenType] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const [typeInvestissements, setTypeInvestissements] = useState([])
+    const [types, setTypes] = useState([])
 
     const [radio, setRadio] = useState('facture');
 
@@ -65,7 +65,6 @@ const FormInvestissement = props => {
         let temp = {}
 
         temp.type = type === null ? 'Vous devez choisir un type' : ''
-        temp.description = values.description === '' ? 'Vous devez entrer une valeur' : ''
         if (values.description === '' && type && type.nomType === 'Autres') {
             temp.description = 'Vous devez fournir une description lorsqu\'il s\'agit du type "Autre"'
         } else
@@ -84,27 +83,33 @@ const FormInvestissement = props => {
         e.preventDefault()
         if (validate()) {
             try {
+                let response
                 if (props.values) {
                     // await axios.patch('/membres', { ...values, idMembre: props.membre.idMembre })
                 } else {
                     const formData = new FormData()
-                    formData.append('idTypeInvestissement', type.idTypeInvestissement)
+                    if (props.type === 'investissement')
+                        formData.append('idType', type.idTypeInvestissement)
+                    else
+                        formData.append('idType', type.idTypeChargeExterne)
+
                     formData.append('description', values.description)
                     formData.append('montantUnitaire', values.montant)
                     formData.append('quantite', values.quantite)
                     formData.append('lienOuFacture', radio)
                     formData.append('projetId', props.projetId)
                     formData.append('numeroTranche', props.numeroTranche)
+                    formData.append('investissementOuCharge', props.type)
                     if (radio === 'lien')
                         formData.append('lien', values.lien)
                     else
                         formData.append('factureArticlePrevision', selectedFile)
 
-                    await axios.post('/previsions/investissements', formData)
+                    response = await axios.post('/previsions/investissementsChargesExternes', formData)
                 }
-                toast.success("Investissement ajouté avec succès")
-                props.onClose()
+                toast.success(response.data.message)
                 props.afterSubmit()
+                props.onClose()
             } catch (e) {
                 toast.error(e.response.data.message)
             }
@@ -114,8 +119,13 @@ const FormInvestissement = props => {
     const fetchTypes = async () => {
         setIsLoading(true)
         try {
-            const response = await axios.get('/previsions/typesinvestissements')
-            setTypeInvestissements(response.data.data.typesInvestissement)
+            let response
+            if (props.type === 'investissement')
+                response = await axios.get('/previsions/typesinvestissements')
+            else
+                response = await axios.get('/previsions/typeschargesexternes')
+
+            setTypes(response.data.data.types)
         } catch (e) {
             toast.error(e.response.data.message)
         }
@@ -132,7 +142,7 @@ const FormInvestissement = props => {
             <form onSubmit={submit}>
                 <Box sx={{ typography: 'subtitle2', fontWeight: 700, }}
                     className={classes.hdr}
-                >Ajouter un investissement</Box>
+                >Ajouter {props.type === 'investissement' ? 'un investissement' : 'une charge externe'}</Box>
 
                 <Box sx={{
                     typography: 'body2',
@@ -152,9 +162,13 @@ const FormInvestissement = props => {
                     onChange={(_, value) => onChangeTypeHandler(value)}
                     value={type}
                     ListboxProps={{ style: { maxHeight: 160, overflow: 'auto' } }}
-                    isOptionEqualToValue={(option, value) => option.idTypeInvestissement === value.idTypeInvestissement}
+                    isOptionEqualToValue={(option, value) => {
+                        return props.type === 'investissement' ?
+                            option.idTypeInvestissement === value.idTypeInvestissement
+                            : option.idTypeChargeExterne === value.idTypeChargeExterne
+                    }}
                     getOptionLabel={(option) => option.nomType}
-                    options={typeInvestissements}
+                    options={types}
                     loading={isLoading}
                     renderInput={(params) => (
                         <CustomTextField

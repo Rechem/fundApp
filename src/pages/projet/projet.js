@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
+import { statusPrevision, statusRealisation } from '../../utils';
 
 const Projet = props => {
 
@@ -117,53 +118,76 @@ const Projet = props => {
             return true
     }
 
-    const unlockPrevision = () => {
-
-    }
-
     const viewPrevisions = async () => {
         if (!checkMontantTranche())
             return
-        if (getMaxTranchePrevisions() === 0) {
+        if (getMaxTranchePrevisions() === 0
+            || (projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat === statusPrevision.accepted
+                && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
+                && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === statusRealisation.terminee)) {
             try {
                 await axios.post('/previsions', {
                     projetId: projet.idProjet,
-                    numeroTranche: 1
                 })
                 toast.success("Succès")
                 await fetchProjet()
             } catch (e) {
                 toast.error(e.response.data.message)
             }
-        } else if (projet.realisations.length > 0
-            && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée') {
-            try {
-                await axios.post('/previsions', {
-                    projetId: projet.idProjet,
-                    numeroTranche: getMaxTranchePrevisions() + 1
-                })
-                toast.success("Succès")
-                await fetchProjet()
-            } catch (e) {
-                toast.error(e.response.data.message)
-            }
-        }else {navigate(`prevision/${getMaxTranchePrevisions()}`)
+        } else {
+            navigate(`prevision/${getMaxTranchePrevisions()}`)
         }
 
         // : projet.realisations.length > 0 ?
         //     projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations).etat !== 'Terminée' ?
         //         'Réalisations' : `Débloquer prévisions (${getMaxTranchePrevisions}ème tranche)` : 'Réalisations'}
     }
-    const viewRealisations = () => {
-        if (checkMontantTranche()) {
 
+    const viewRealisations = async () => {
+        if (!checkMontantTranche())
+            return
+
+        if (projet.previsions.length > 0 &&
+            projet.previsions.every(p => p.etat === statusPrevision.accepted)
+            && getMaxTranchePrevisions() > getMaxTrancheRealisations()) {
+
+            //should never happen
+            if (projet.realisations.length !== 0
+                && !projet.realisations.every(p => p.etat === statusRealisation.terminee))
+                return toast.error('Il existe des réalisation non complètes')
+            try {
+                await axios.post('/realisations', {
+                    projetId: projet.idProjet,
+                })
+                toast.success("Succès")
+                await fetchProjet()
+            } catch (e) {
+                toast.error(e.response.data.message)
+            }
+        } else {
+            navigate(`realisation/${getMaxTrancheRealisations()}`)
         }
     }
+
     const viewRevenu = () => {
         if (checkMontantTranche()) {
 
         }
     }
+
+    const isDebloquerPrevision = () => getMaxTranchePrevisions() === 0
+        || (projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat !== statusPrevision.accepted
+            && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
+            && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée');
+
+    const isPrevision = () =>
+        projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat !== statusPrevision.accepted
+
+    const isDebloquerRealisation = () => projet.previsions.length > 0 &&
+        projet.previsions.every(p => p.etat === statusPrevision.accepted)
+        && getMaxTranchePrevisions() > getMaxTrancheRealisations()
+
+    const isRealisation = () => projet.realisation.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat !== 'Terminée'
 
     return !projet ?
         <CircularProgress size='2rem' style={{ marginTop: '1rem' }} /> :
@@ -392,28 +416,46 @@ const Projet = props => {
                             onClick={viewPrevisions}>
                             <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
                                 {getMaxTranchePrevisions() === 0 ? 'Débloquer prévisions (1ère tranche)'
-                                    : projet.realisations.length > 0 ?
-                                        projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat !== 'Terminée' ?
-                                            'Prévisions' : `Débloquer prévisions (${getMaxTranchePrevisions()}ème tranche)` : 'Prévisions'}
+                                    : projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat === 'Terminée'
+                                        && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
+                                        && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée' ?
+                                        `Débloquer prévisions (${getMaxTranchePrevisions()}ème tranche)` : 'Prévisions'}
 
                             </Box>
                         </Button>
-                        {getMaxTranchePrevisions() !== 0 && projet.realisations.length > 0 &&
-                            projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée'
+                        {getMaxTranchePrevisions() > 0 &&
+                            projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
+                            && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée'
                             &&
                             <Button
                                 size="small"
                             // onClick={handleToggleButtonGroup}
                             ><ArrowDropDownIcon /></Button>}
                     </ButtonGroup>
-                    {projet.realisations.length > 0 &&
-                        < Button variant='outlined' className={classes.btn}
-                            onClick={viewRealisations}>
-                            <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
-                                Réalisations
-                            </Box>
-                        </Button>
-                    }
+                    {projet.previsions.length > 0 &&
+                        projet.previsions.find(r => r.numeroTranche === 1).etat === statusPrevision.accepted
+                        &&
+                        <ButtonGroup>
+                            <Button variant='outlined' className={classes.btn}
+                                onClick={viewRealisations}>
+                                <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
+                                    {getMaxTrancheRealisations() === 0 ? 'Débloquer réalisations (1ère tranche)'
+                                        : projet.previsions.every(p => p.etat === statusPrevision.accepted)
+                                            && getMaxTranchePrevisions() > getMaxTrancheRealisations()
+                                            && projet.realisations.every(p => p.etat === statusRealisation.terminee)
+                                            ? `Débloquer réalisations (${getMaxTrancheRealisations() + 1}ème tranche)` : 'Réalisations'}
+                                </Box>
+                            </Button>
+                            {getMaxTrancheRealisations() > 0 &&
+                                projet.previsions.every(p => p.etat === statusPrevision.accepted)
+                                && getMaxTranchePrevisions() > getMaxTrancheRealisations()
+                                && projet.realisations.every(p => p.etat === statusRealisation.terminee)
+                                &&
+                                <Button
+                                    size="small"
+                                // onClick={handleToggleButtonGroup}
+                                ><ArrowDropDownIcon /></Button>}
+                        </ButtonGroup>}
                     {/* TODO  */}
                     <Button variant='outlined' className={classes.btn}
                         onClick={viewRevenu}>

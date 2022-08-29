@@ -24,8 +24,10 @@ import { isAdmin, isModo, isSimpleUser } from './utils';
 import Projets from './pages/projets/projets';
 import Projet from './pages/projet/projet';
 import Prevision from './pages/prevision/prevision';
+import Realisation from './pages/realisation/realisation';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ScrollToTop from './pages/util-pages/scroll-to-top';
 
 const App = () => {
 
@@ -89,6 +91,7 @@ const App = () => {
               && authenticationState.user.completedSignUp)}
           redirectPath={redirectCompleteSignup} />}>
         <Route path="/projets/:idProjet/prevision/:tranche" exact element={<Layout><Prevision /></Layout>} />
+        <Route path="/projets/:idProjet/realisation/:tranche" exact element={<Layout><Realisation /></Layout>} />
         <Route path="/projets" exact element={<Layout><Projets /></Layout>} />
         <Route path="/projets/:idProjet" exact element={<Layout><Projet /></Layout>} />
         <Route path="/demandes" exact element={<Layout><Demandes /></Layout>} />
@@ -123,6 +126,7 @@ const App = () => {
     <Router>
       <ThemeProvider theme={theme}>
         <StyledEngineProvider injectFirst>
+          <ScrollToTop />
           {authenticationState.status === 'init'
             ? standByScreen : protectedRoutes}
           <ToastContainer

@@ -1,26 +1,24 @@
-import React, { useEffect, useState, useRef } from 'react';
-import classes from './prevision.module.css'
+import React, { useEffect, useState } from 'react';
+import classes from './realisation.module.css'
 import {
     Box, Tabs, useTheme, Divider, Grid, MenuItem, Dialog,
     CircularProgress, Popper, Grow, Button, Paper
 } from '@mui/material';
 import TabPanel from '../../components/tab-panel/tab-panel';
 import { CustomSelect, CustomTab } from '../../theme';
-import InvestissementsTab from './investissements-tab/investissements-tab';
-import SalairesTab from './salaires-tab/salaires-tab';
-import ChargesTab from './charges-tab/charges-tab';
+import InvestissementsTab from '../prevision/investissements-tab/investissements-tab';
+import SalairesTab from '../prevision/salaires-tab/salaires-tab';
+import ChargesTab from '../prevision/charges-tab/charges-tab';
 import { useParams, useNavigate } from 'react-router-dom';
 import CustomStepper from '../../components/custom-stepper/custom-stepper';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllProjets } from '../../store/projetsSlice/reducer';
-import { isSimpleUser, statusPrevision } from '../../utils'
+import { isSimpleUser, statusRealisation } from '../../utils'
 import Status from '../../components/status/status';
 import { isAdmin } from '../../utils';
 import FormEvaluerPrevision from '../../components/form-evaluer-prevision/form-evaluer-prevision';
-
-const scrollToRef = (ref) => window.scrollTo(0, ref.current.offsetTop)
 
 const Prevision = () => {
 
@@ -41,7 +39,7 @@ const Prevision = () => {
 
     const handleChangeSelect = async (event) => {
         if (event.target.value.idProjet != idProjet) {
-            setPrevision(null)
+            setRealisation(null)
             navigate(`/projets/${event.target.value.idProjet}/prevision/1`)
         }
     };
@@ -55,16 +53,10 @@ const Prevision = () => {
         dispatch(fetchAllProjets())
     };
 
-    const [tabValue, setTabValue] = useState(0);
-
-
-
-    const myRef = useRef(null)
-    const executeScroll = () => scrollToRef(myRef)
+    const [tabValue, setTabValue] = React.useState(0);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
-        executeScroll()
     };
 
     const [openDialog, setOpenDialog] = useState(false);
@@ -83,63 +75,40 @@ const Prevision = () => {
     const [open, setOpen] = useState(false);
     const [total, setTotal] = useState(0)
 
-    const [prevision, setPrevision] = useState(null)
+    const [realisation, setRealisation] = useState(null)
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
         setOpen((prev) => !prev);
     };
 
-    const submitPrevision = async _ => {
+    const fetchRealisationDetails = async () => {
         try {
-            const response = await axios.patch(`/previsions/${idProjet}/${tranche}`,
-                { etat: statusPrevision.pending })
-            toast.success(response.data.message)
-        } catch (e) {
-            toast.error(e.response.data.message)
-        }
-        await fetchPrevisionDetails()
-    }
-
-    const fetchPrevisionDetails = async () => {
-        try {
-            const response = await axios.get(`/previsions/${idProjet}/${tranche}`)
-            setCurrentIdProjet(response.data.data.prevision.projet)
-            setPrevision(response.data.data.prevision)
+            const response = await axios.get(`/realisations/${idProjet}/${tranche}`)
+            setCurrentIdProjet(response.data.data.realisation.projet)
+            setRealisation(response.data.data.realisation)
         } catch (e) {
             toast.error(e.response.data.message)
         }
     }
 
     useEffect(() => {
-        fetchPrevisionDetails()
+        fetchRealisationDetails()
     }, [idProjet, tranche])
 
     return (
         <>
-            <div className={classes.headerContainer} ref={myRef}>
+            <div className={classes.headerContainer}>
                 <Box sx={{
                     color: theme.palette.text.main,
                     typography: 'h3'
                 }} className={classes.hdr}>
-                    Prévision
+                    Réalisation
                 </Box>
-                {!prevision ? <CircularProgress size='2rem' /> :
-                    prevision.etat === statusPrevision.pending && isAdmin(authenticationState)
-                        || prevision.etat !== statusPrevision.pending && isSimpleUser(authenticationState) ?
-                        <Button variant='contained'
-                            onClick={isSimpleUser(authenticationState) ? submitPrevision : handleDialogClickOpen}
-                            className={classes.submitButton}>
-                            <Box color='white'>
-                                {isAdmin(authenticationState) ? 'Evaluer' : 'Envoyer'}
-                            </Box>
-                        </Button> :
-                        <div>
-                            <Status status={prevision.etat} />
-                        </div>
-                }
+                {realisation && realisation.etat === statusRealisation.terminee &&
+                    <Status status={realisation.etat} />}
             </div>
-            {!prevision ?
+            {!realisation ?
                 <CircularProgress sx={{ display: 'block', margin: 'auto' }}
                     size='2rem' /> :
                 <>
@@ -171,13 +140,13 @@ const Prevision = () => {
                             <Box sx={{ typography: 'body2', color: textColor }} mb={1}>
                                 Tranches
                             </Box>
-                            {prevision.projet.tranche ?
+                            {realisation.projet.tranche ?
                                 <CustomStepper
-                                    active={prevision.numeroTranche}
-                                    steps={prevision.projet.tranche.nbTranches}
-                                    activeSteps={prevision.maxTranche}
-                                    onClick={Array(prevision.maxTranche).fill(0).map((e) =>
-                                        `/projets/${idProjet}/prevision/${e + 1}`)}
+                                    active={realisation.numeroTranche}
+                                    steps={realisation.projet.tranche.nbTranches}
+                                    activeSteps={realisation.maxTranche}
+                                    onClick={Array(realisation.maxTranche).fill(0).map((e) =>
+                                        `/projets/${idProjet}/realisation/${e + 1}`)}
                                 /> :
                                 <i style={{ display: 'block' }}>Pas encore soumis</i>
                             }
@@ -187,22 +156,12 @@ const Prevision = () => {
                                 color: theme.palette.text.main,
                                 typography: 'subtitle2',
                             }} >
-                                {prevision && prevision.valeurPrevision}
-                                {' '}/ {prevision &&
-                                    prevision.projet.tranche.pourcentage[prevision.numeroTranche]
-                                    * prevision.projet.montant} DZD
+                                {realisation && realisation.valeurRealisation} DZD
                             </Box>
                         </Grid>
                     </Grid>
                     <Dialog open={openDialog} onClose={handleDialogClose} fullWidth>
                         <Box>
-                            <FormEvaluerPrevision
-                                projetId={idProjet}
-                                numeroTranche={tranche}
-                                nom={prevision.projet.demande.denominationCommerciale}
-                                valeur={prevision.valeurPrevision}
-                                afterSubmit={fetchPrevisionDetails}
-                                onClose={handleDialogClose} />
                         </Box>
                     </Dialog>
                 </>
@@ -215,15 +174,18 @@ const Prevision = () => {
             <Divider />
             <TabPanel value={tabValue} index={0} >
                 <InvestissementsTab setTotal={setTotal}
-                    disabledAddButton={prevision && prevision.etat !== statusPrevision.brouillon} />
+                    isRealisation={true}
+                    disabledAddButton={true} />
             </TabPanel>
             <TabPanel value={tabValue} index={1} >
                 <SalairesTab setTotal={setTotal}
-                    disabledAddButton={prevision && prevision.etat !== statusPrevision.brouillon} />
+                    isRealisation={true}
+                    disabledAddButton={true} />
             </TabPanel>
             <TabPanel value={tabValue} index={2} >
                 <ChargesTab setTotal={setTotal}
-                    disabledAddButton={prevision && prevision.etat !== statusPrevision.brouillon} />
+                    isRealisation={true}
+                    disabledAddButton={true} />
             </TabPanel>
             <div className={classes.footer}>
                 <div>

@@ -1,0 +1,33 @@
+.container {
+    padding: 2rem;
+}
+
+.field {
+    max-width: 30.5rem;
+}
+
+.btnContainer{
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn{
+    margin-left: 1rem;
+}
+
+.hdr{
+    margin-bottom: 3rem;
+}
+
+.filebtn {
+    margin-right: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 100px;
+    height: 2rem;
+}
+
+.fileBtnContainer {
+    display: flex;
+    align-items: center;
+}

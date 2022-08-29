@@ -44,19 +44,14 @@ const Demandes = () => {
 
     useEffect(
         () => {
-            // if (isAdmin(authenticationState) || isModo(authenticationState))
             if (authenticationState.user.idUser)
                 dispatch(fetchAllDemandes(searchInput))
-            // else if (authenticationState.user.idUser)
-            // dispatch(fetchUserDemandes({
-            // searchInput,
-            // idUser: authenticationState.user.idUser
-            // }))
         },
         [debouncedSearchTerm, authenticationState.user.idUser] // Only call effect if debounced search term changes
     );
 
     const theme = useTheme()
+
 
     return (
         <React.Fragment>

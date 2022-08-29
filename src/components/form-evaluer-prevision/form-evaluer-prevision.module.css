@@ -1,0 +1,22 @@
+.container {
+    padding: 2rem;
+}
+
+.btnContainer{
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.subBtnContainer{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn{
+    margin-left: 1rem;
+}
+
+.hdr{
+    margin-bottom: 1rem;
+}

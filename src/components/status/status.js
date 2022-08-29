@@ -11,10 +11,12 @@ const STATUS = {
     programmee: 'Programmée',
     preselectionnee: 'Préselectionnée',
     terminee: 'Terminée',
-    brouillon: 'Brouillon'
+    brouillon: 'Brouillon',
+    pendingEvaluation: 'En attente évaluation',
+    waiting: 'En attente saisie'
 }
 
-const Status = ({status}) => {
+const Status = ({ status }) => {
 
     const theme = useTheme()
 
@@ -22,37 +24,39 @@ const Status = ({status}) => {
 
     switch (status) {
         case STATUS.accepted:
-            message = 'Acceptée'
+            message = status
             messageColor = theme.palette.success.main
             containerColor = tinycolor(theme.palette.success.main).setAlpha(.1)
             break;
         case STATUS.refused:
-            message = 'Refusée'
+            message = status
             messageColor = theme.palette.error.main
             containerColor = tinycolor(theme.palette.error.main).setAlpha(.1)
             break;
         case STATUS.pending:
-            message = 'En attente'
+        case STATUS.pendingEvaluation:
+            message = status
             messageColor = theme.palette.warning.main
             containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
             break;
         case STATUS.preselectionnee:
-            message = 'Préselectionnée'
+            message = status
             messageColor = theme.palette.warning.main
             containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
             break;
         case STATUS.programmee:
-            message = 'Programmée'
+            message = status
             messageColor = '#706fd3'
             containerColor = tinycolor('#706fd3').setAlpha(.1)
             break;
-        case STATUS.complement :
-            message = 'Besoin complément'
+        case STATUS.complement:
+        case STATUS.waiting:
+            message = status
             messageColor = theme.palette.info.main
             containerColor = tinycolor(theme.palette.info.main).setAlpha(.1)
             break;
         case STATUS.terminee:
-            message = 'Terminée'
+            message = status
             messageColor = theme.palette.success.main
             containerColor = tinycolor(theme.palette.success.main).setAlpha(.1)
             break;
@@ -64,23 +68,24 @@ const Status = ({status}) => {
     }
 
     const styles = {
-        backgroundColor : containerColor,
-        borderRadius : 10,
-        width : '6.5rem',
-        height : '2.5rem',
-        padding : 'auto',
-        display : 'flex',
-        alignItems : 'center',
-        justifyContent : 'center',
-        margin : 'auto'
+        backgroundColor: containerColor,
+        borderRadius: 10,
+        width: '6.5rem',
+        height: '2.5rem',
+        padding: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: 'auto',
     }
 
     return (
         <div style={styles}>
             <Typography
-            variant='body2'
-            color={messageColor}
-            align='center'
+                variant='body2'
+                fontWeight={500}
+                color={messageColor}
+                align='center' lineHeight={1.3}
             >{message}</Typography>
         </div>
     );

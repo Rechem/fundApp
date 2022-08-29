@@ -36,7 +36,6 @@ const MembresTable = props => {
             field: "emailMembre",
         },
         {
-            title: "Action",
             align: 'center',
             sorting: false,
             render: (rowData) =>
