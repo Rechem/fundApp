@@ -6,6 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 const ProjetsCard = props => {
 
+    const getMaxTranchePrevisions = () => {
+        return props.previsions.length === 0 ? 0 : Math.max(...props.previsions.map(p => p.numeroTranche))
+    }
+
     const navigate = useNavigate()
 
     const theme = useTheme()
@@ -40,7 +44,7 @@ const ProjetsCard = props => {
                                 Tranches
                             </Box>
                             {props.tranche ?
-                            <CustomStepper steps={props.tranche.nbTranches} activeSteps={[1, 2]}
+                            <CustomStepper steps={props.tranche.nbTranches} activeSteps={getMaxTranchePrevisions()}
                                 className={classes.stepper} />
                                 : <i>Pas encore soumis</i>}
                     </Grid>

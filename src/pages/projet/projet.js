@@ -11,13 +11,13 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import FormMontant from '../../components/form-montant/form-montant'
-import FormTranche from '../../components/form-tranche/form-tranche';
+import FormMontant from '../../components/form/form-montant/form-montant'
+import FormTranche from '../../components/form/form-tranche/form-tranche';
 import { Link } from 'react-router-dom';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { statusPrevision, statusRealisation } from '../../utils';
+import { isAdmin, isSimpleUser, statusPrevision, statusRealisation } from '../../utils';
 
 const Projet = props => {
 
@@ -110,13 +110,17 @@ const Projet = props => {
         fetchProjet()
     }, [authenticationState.user.idUser])
 
-    const checkMontantTranche = () => {
-        if (!projet.montant || !projet.tranche) {
-            handleDialogOpen()
-            return false
-        } else
-            return true
-    }
+    // const checkMontantTranche = () => {
+    //     if (isAdmin(authenticationState)) {
+    //         if (!projet.montant) {
+    //             handleDialogOpen()
+    //             return false
+    //         } else if (!projet.tranche)
+    //             toast.error('L\'utilisateur n\'as pas encore choisit le nombre de tranche')
+    //         else
+    //             return true
+    //     }
+    // }
 
     const viewPrevisions = async () => {
         if (!checkMontantTranche())
@@ -129,7 +133,7 @@ const Projet = props => {
                 await axios.post('/previsions', {
                     projetId: projet.idProjet,
                 })
-                toast.success("Succès")
+                toast.success('Succès')
                 await fetchProjet()
             } catch (e) {
                 toast.error(e.response.data.message)
@@ -189,6 +193,53 @@ const Projet = props => {
 
     const isRealisation = () => projet.realisation.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat !== 'Terminée'
 
+    let formUI;
+
+    const [form, setForm] = useState('')
+
+    const checkMontantTranche = () => {
+        if (!projet.montant) {
+            if (isAdmin(authenticationState)) {
+                setForm('montant')
+                handleDialogOpen()
+            } else {
+                toast.error('L\'administrateur n\'a pas encore défini le montant accordé')
+            }
+            return false
+        } else {
+            if (!projet.tranche) {
+                if (isSimpleUser(authenticationState)) {
+                    setForm('tranche')
+                    handleDialogOpen()
+                } else {
+                    toast.error('L\'utilisateur n\'a pas encore choisit le nombre de tranches')
+                }
+                return false
+            } else
+                return true
+        }
+    }
+
+    switch (form) {
+        case 'montant':
+            formUI = <FormMontant
+                idProjet={projet.idProjet}
+                nomProjet={projet.demande.denominationCommerciale}
+                afterSubmit={fetchProjet}
+                onClose={handleDialogClose} />
+            break;
+        case 'tranche':
+            formUI = <FormTranche
+                idProjet={projet.idProjet}
+                montant={projet.montant}
+                afterSubmit={fetchProjet}
+                onClose={handleDialogClose} />
+            break;
+
+        default:
+            break;
+    }
+
     return !projet ?
         <CircularProgress size='2rem' style={{ marginTop: '1rem' }} /> :
         <>
@@ -224,9 +275,11 @@ const Projet = props => {
                         <Box sx={{ typography: 'body2', color: textColor }} mb={1}>
                             Tranches
                         </Box>
-                        {projet.tranche ?
-                            <CustomStepper steps={projet.tranche.nbTranches} activeSteps={getMaxTranchePrevisions()} />
-                            : <i style={{ display: 'block' }}>Pas encore soumis</i>}
+                        {projet.tranche && getMaxTranchePrevisions() ?
+                            <CustomStepper steps={projet.tranche.nbTranches}
+                                activeSteps={getMaxTranchePrevisions()}
+                            />
+                            : <i style={{ display: 'block' }}>Pas encore créées</i>}
                     </Grid>
                     <Grid container item xs={12} sm={4}
                         columnSpacing={1}
@@ -242,7 +295,8 @@ const Projet = props => {
                                 {projet.montant ?
                                     `${projet.montant}DZD` :
                                     <Button variant='contained'
-                                        sx={{ padding: 0 }} onClick={handleDialogOpen}>
+                                        sx={{ padding: 0 }}
+                                        onClick={handleDialogOpen}>
                                         <Box sx={{ color: 'white' }} >
                                             Définir
                                         </Box>
@@ -394,19 +448,7 @@ const Projet = props => {
             <Dialog open={open} onClose={handleDialogClose}
                 maxWidth='100%'>
                 <Box className={classes.modelContainer}>
-                    {projet.montant && !projet.tranche
-                        && <FormTranche
-                            idProjet={projet.idProjet}
-                            montant={projet.montant}
-                            afterSubmit={fetchProjet}
-                            onClose={handleDialogClose}
-                        />}
-                    {!projet.montant && <FormMontant
-                        idProjet={projet.idProjet}
-                        nomProjet={projet.demande.denominationCommerciale}
-                        afterSubmit={fetchProjet}
-                        onClose={handleDialogClose}
-                    />}
+                    {formUI}
                 </Box>
             </Dialog>
             <div className={classes.outerBtnContainer}>
@@ -416,10 +458,10 @@ const Projet = props => {
                             onClick={viewPrevisions}>
                             <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
                                 {getMaxTranchePrevisions() === 0 ? 'Débloquer prévisions (1ère tranche)'
-                                    : projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat === 'Terminée'
+                                    : projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat === statusPrevision.accepted
                                         && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
-                                        && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée' ?
-                                        `Débloquer prévisions (${getMaxTranchePrevisions()}ème tranche)` : 'Prévisions'}
+                                        && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === statusRealisation.terminee ?
+                                        `Débloquer prévisions (${getMaxTranchePrevisions()+1}ème tranche)` : 'Prévisions'}
 
                             </Box>
                         </Button>

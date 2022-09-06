@@ -10,49 +10,50 @@ const CustomStepper = props => {
 
     const theme = useTheme()
 
-    const activeStyle = {
+    const activeStyle = (isClickable) => ({
         backgroundColor: theme.palette.primary.main,
         color: 'white',
-        cursor: 'pointer',
-    }
+        cursor: isClickable ? 'pointer' : 'text',
+    })
 
-    const selectedStyle = {
+    const selectedStyle = (isClickable) => ({
         backgroundColor: theme.palette.primary.main,
         color: 'white',
         height: '2.5rem',
         width: '2.5rem',
-        cursor: 'pointer',
-    }
+        cursor: isClickable ? 'pointer' : 'text',
+    })
 
     const activeItems = props.activeSteps
 
-    if (!props.steps || !props.activeSteps || !props.onClick
-        || props.steps < 0 || props.activeSteps !== props.onClick.length)
+    if (!props.steps || !props.activeSteps || props.steps < 0)
         return 'Paramètres incorrectes'
 
+    if (props.onClick && props.activeSteps !== props.onClick.length)
+        return 'Paramètres incorrectes'
     return (
         <div className={props.className}>
             <div className={classes.container}>
                 <div className={classes.item}
                     style={
-                        props.active === 1 ? selectedStyle :
-                            activeItems >= 1 ? activeStyle : null}
-                    onClick={activeItems >= 1 && props.active !== 1 ?
+                        props.active === 1 ? selectedStyle(props.onClick) :
+                            activeItems >= 1 ? activeStyle(props.onClick) : null}
+                    onClick={props.onClick && activeItems >= 1 && props.active !== 1 ?
                         () => navigate(props.onClick[0]) : null}
                 >1</div>
                 {Array(props.steps - 1).fill(0).map((s, index) => {
                     return <div key={index} className={classes.container}>
                         <div className={classes.separation}
                             style={activeItems >= index + 2 ?
-                                activeStyle :
+                                activeStyle(props.onClick) :
                                 null}></div>
                         <div className={classes.item}
 
                             style={props.active === index + 2 ?
-                                selectedStyle : activeItems >= index + 2 ?
-                                    activeStyle : null}
+                                selectedStyle(props.onClick) : activeItems >= index + 2 ?
+                                    activeStyle(props.onClick) : null}
 
-                            onClick={activeItems >= index + 2 && props.active !== index + 2 ?
+                            onClick={props.onClick &&  activeItems >= index + 2 && props.active !== index + 2 ?
                                 () => navigate(props.onClick[index + 1]) : null}>
                             {index + 2}</div>
                     </div>

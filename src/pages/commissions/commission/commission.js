@@ -13,11 +13,11 @@ import DemandesTable from '../../demandes/demandes-table';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import FormCommission from '../../../components/form-commission/form-commission';
+import FormCommission from '../../../components/form/form-commission/form-commission';
 import dayjs from 'dayjs'
 import CreationProjetsInfo from '../../../components/creation-projets-info/creation-projets-info';
 import { useNavigate } from 'react-router-dom'
-import FormAjouterDemande from '../../../components/form-ajouter-demande/form-ajouter-demande';
+import FormAjouterDemande from '../../../components/form/form-ajouter-demande/form-ajouter-demande';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

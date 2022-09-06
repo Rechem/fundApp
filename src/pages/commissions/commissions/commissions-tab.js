@@ -3,7 +3,7 @@ import Toolbar from '../../../components/toolbar/toolbar';
 import CommissionsTable from './commissions-table';
 import useDebounce from '../../../custom-hooks/use-debounce';
 import { useDispatch, useSelector } from 'react-redux';
-import FormCommission from '../../../components/form-commission/form-commission';
+import FormCommission from '../../../components/form/form-commission/form-commission';
 import { Dialog, Box } from '@mui/material';
 import { fetchAllCommissions } from '../../../store/commissionsSlice/reducer';
 import classes from './commissions-tab.module.css'

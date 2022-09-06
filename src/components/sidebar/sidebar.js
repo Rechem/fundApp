@@ -48,8 +48,8 @@ const NAVLIST = [
         allowed: [roles.roleModerator, roles.roleAdmin]
     },
     {
-        name: 'Mon profile',
-        link: '/users',
+        name: 'Mon profil',
+        link: '/me',
         icon: <ProfileCircle variant='Outline' />,
         allowed: [roles.roleModerator, roles.roleAdmin, roles.roleSimpleUser]
     },

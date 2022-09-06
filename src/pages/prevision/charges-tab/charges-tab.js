@@ -5,7 +5,9 @@ import FormInvestissement from '../form-investissement-charge';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
-import { Dialog, Box } from '@mui/material';
+import { Modal, Box } from '@mui/material';
+import DetailArticle from '../../../components/detail-article-realisation/detail-article-realisation';
+import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
 
 const ChargesTab = props => {
     //provide an argument to specify wheter its charge or investissement for the type.
@@ -16,6 +18,10 @@ const ChargesTab = props => {
     const [chargesExternes, setChargesExternes] = useState([]);
 
     const [isLoading, setIsLoading] = useState(true);
+
+    const [openAlert, setOpenAlert] = useState(false);
+
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const handleDialogClickOpen = () => {
         setOpen(true);
@@ -44,28 +50,87 @@ const ChargesTab = props => {
         setIsLoading(false)
     }
 
+    const deleteInvestissement = async () => {
+        await axios.delete(
+            `previsions/${selectedItem.projetId}/${selectedItem.numeroTranche}/charge-externe/${selectedItem.idChargeExterne}`)
+    }
+
+    const handleOpenDelete = (item) => {
+        setSelectedItem(item)
+        setOpenAlert(true)
+    }
+
+    const handleOpenEdit = (item) => {
+        setForm('ajouter-modifier')
+        setSelectedItem(item)
+        handleDialogClickOpen()
+    }
+
+    const handleOpenDetails = (item) => {
+        setForm('details')
+        setSelectedItem(item)
+        handleDialogClickOpen()
+    }
+
+    const handleOpenAdd = () => {
+        setSelectedItem(null)
+        setForm('ajouter-modifier')
+        handleDialogClickOpen()
+    }
+
+    let formUI = null
+
+    const [form, setForm] = useState('ajouter-modifier')
+
+    switch (form) {
+        case 'ajouter-modifier':
+            formUI = <FormInvestissement
+                values={selectedItem}
+                type='charge-externe'
+                projetId={idProjet}
+                numeroTranche={tranche}
+                afterSubmit={fetchChargesExternes}
+                onClose={handleDialogClose} />
+            break;
+        case 'details':
+            formUI = <DetailArticle
+                isRealisation={props.isRealisation ? true : false}
+                type='charge-externe'
+                afterSubmit={fetchChargesExternes}
+                selectedItem={selectedItem}
+                onClose={handleDialogClose} />
+            break;
+        default:
+            break;
+    }
+
     useEffect(() => {
         fetchChargesExternes()
     }, [idProjet, tranche])
 
     return (
         <div>
-            <Toolbar style={{ marginBlock: '1rem' }} onClick={handleDialogClickOpen}
-                hideButton={props.disabledAddButton} />
+            <Toolbar style={{ marginBlock: '1rem' }} onClick={handleOpenAdd}
+                hideButton={props.cannotEdit} />
             <InvestissementsTable
+                openDeleteConfirmation={handleOpenDelete}
+                openEditForm={handleOpenEdit}
+                handleOpenDetails={handleOpenDetails}
+                cannotEdit={props.cannotEdit}
                 isRealisation={props.isRealisation ? true : false}
                 isLoading={isLoading}
                 data={chargesExternes} />
-            <Dialog open={open} onClose={handleDialogClose}>
+            <Modal open={open} onClose={handleDialogClose}>
                 <Box>
-                    <FormInvestissement
-                        type='charge-externe'
-                        projetId={idProjet}
-                        numeroTranche={tranche}
-                        afterSubmit={fetchChargesExternes}
-                        onClose={handleDialogClose} />
+                    {formUI}
                 </Box>
-            </Dialog>
+            </Modal>
+            {selectedItem && <ConfirmationDialog open={openAlert}
+                afterSubmit={fetchChargesExternes}
+                onClose={() => setOpenAlert(false)}
+                onConfirm={deleteInvestissement}>
+                Voulez vous vraiment supprimer cet article ?
+            </ConfirmationDialog>}
         </div>
     );
 };

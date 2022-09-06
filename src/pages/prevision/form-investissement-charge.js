@@ -10,23 +10,23 @@ import axios from 'axios';
 
 const initialValues = {
     description: '',
-    montant: '',
+    montantUnitaire: '',
     quantite: '',
     lien: '',
 }
 
 const FormInvestissement = props => {
 
-    const [values, setValues] = useState(initialValues)
+    const [values, setValues] = useState(props.values ? props.values : initialValues)
     const [errors, setErrors] = useState({})
 
-    const [type, setType] = useState(null)
+    const [type, setType] = useState(props.values ? props.values.type : null)
     const [openType, setOpenType] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const [types, setTypes] = useState([])
 
-    const [radio, setRadio] = useState('facture');
+    const [radio, setRadio] = useState(props.values && props.values.lien ? 'lien' : 'facture');
 
     const handleChangeRadio = (event) => {
         setRadio(event.target.value);
@@ -70,9 +70,10 @@ const FormInvestissement = props => {
         } else
             temp.description = ''
 
-        temp.montant = values.montant === '' ? 'Vous devez entrer le montant unitaire' : ''
+        temp.montantUnitaire = values.montantUnitaire === '' ? 'Vous devez entrer le montant unitaire' : ''
         temp.quantite = values.quantite === '' ? 'Vous devez entrer la quantité' : ''
-        temp.lien = selectedFile === null && values.lien === '' ?
+        temp.lien = (radio === 'facture' && (selectedFile === null || (props.values && !props.values.facture)))
+            || (radio === 'lien' && values.lien === '') ?
             'Vous devez fournir une facture (devi) ou un lien vers un plan de paiement' : ''
 
         setErrors({ ...temp })
@@ -84,29 +85,34 @@ const FormInvestissement = props => {
         if (validate()) {
             try {
                 let response
-                if (props.values) {
-                    // await axios.patch('/membres', { ...values, idMembre: props.membre.idMembre })
-                } else {
-                    const formData = new FormData()
-                    if (props.type === 'investissement')
-                        formData.append('idType', type.idTypeInvestissement)
-                    else
-                        formData.append('idType', type.idTypeChargeExterne)
+                const formData = new FormData()
+                if (props.type === 'investissement')
+                    formData.append('idType', type.idTypeInvestissement)
+                else
+                    formData.append('idType', type.idTypeChargeExterne)
 
-                    formData.append('description', values.description)
-                    formData.append('montantUnitaire', values.montant)
-                    formData.append('quantite', values.quantite)
-                    formData.append('lienOuFacture', radio)
-                    formData.append('projetId', props.projetId)
-                    formData.append('numeroTranche', props.numeroTranche)
-                    formData.append('investissementOuCharge', props.type)
-                    if (radio === 'lien')
-                        formData.append('lien', values.lien)
-                    else
+                formData.append('projetId', props.projetId)
+                formData.append('numeroTranche', props.numeroTranche)
+                formData.append('description', values.description)
+                formData.append('montantUnitaire', values.montantUnitaire)
+                formData.append('quantite', values.quantite)
+                formData.append('lienOuFacture', radio)
+                formData.append('investissementOuCharge', props.type)
+                if (radio === 'lien')
+                    formData.append('lien', values.lien)
+                else {
+                    if (selectedFile)
                         formData.append('factureArticlePrevision', selectedFile)
-
-                    response = await axios.post('/previsions/investissementsChargesExternes', formData)
                 }
+
+                if (props.values) {
+                    if (props.type === 'investissement')
+                        formData.append('id', props.values.idInvestissement)
+                    else
+                        formData.append('id', props.values.idChargeExterne)
+                    response = await axios.patch('/previsions/investissementsChargesExternes', formData,)
+                } else
+                    response = await axios.post('/previsions/investissementsChargesExternes', formData,)
                 toast.success(response.data.message)
                 props.afterSubmit()
                 props.onClose()
@@ -219,13 +225,13 @@ const FormInvestissement = props => {
                             variant='body2'>Montant unitaire</Typography>
                         <CustomTextField
                             fullWidth
-                            name='montant'
-                            id='montant-field'
+                            name='montantUnitaire'
+                            id='montantUnitaire-field'
                             size='small' margin='none'
                             type='number' onChange={onChangeHandler}
-                            value={values.montant}
-                            {...(errors.montant && errors.montant !== ''
-                                && { error: true, helperText: errors.montant })}
+                            value={values.montantUnitaire}
+                            {...(errors.montantUnitaire && errors.montantUnitaire !== ''
+                                && { error: true, helperText: errors.montantUnitaire })}
                         >
                         </CustomTextField>
                     </Grid>
@@ -245,12 +251,12 @@ const FormInvestissement = props => {
                     </Grid>
                 </Grid>
                 {
-                    values.montant && values.quantite &&
+                    values.montantUnitaire && values.quantite &&
                     <Box sx={{
                         typography: 'body2', fontWeight: 400,
                         my: '0.5rem', display: 'flex', justifyContent: 'center'
                     }} >
-                        Total: {Number(values.montant * values.quantite)} DZD
+                        Total: {Number(values.montantUnitaire * values.quantite)} DZD
                     </Box>
                 }
                 <div>
@@ -274,7 +280,7 @@ const FormInvestissement = props => {
                         fullWidth
                         size='small' margin='none'
                         type='url' onChange={onChangeHandler}
-                        value={values.lien}
+                        value={values.lien || ''}
                     >
                     </CustomTextField>
                 }
@@ -282,6 +288,12 @@ const FormInvestissement = props => {
                     <FormControl fullWidth
                         error={errors.rapport !== ''}>
                         <div className={classes.fileBtnContainer}>
+                            {!selectedFile && props.values && props.values.facture &&
+                                <Typography component='a'
+                                    target='_blank' mr='1rem'
+                                    href={`${process.env.REACT_APP_BASE_URL}${props.values.facture}`}
+                                    color='primary'
+                                >Voir</Typography>}
                             <Button
                                 onClick={onClickUpload}
                                 className={classes.filebtn} variant='outlined'>
@@ -289,7 +301,8 @@ const FormInvestissement = props => {
                                     onChange={fileUploadHandler}
                                     style={{ display: 'none' }}
                                     id='file' ref={inputFile} />
-                                {selectedFile ? 'Remplacer' : 'Ajouter'}
+                                {selectedFile || (props.values && props.values.facture) ?
+                                    'Remplacer' : 'Ajouter'}
                             </Button>
                             {selectedFile &&
                                 <Typography variant='body2'
@@ -303,13 +316,11 @@ const FormInvestissement = props => {
                         </div>
                     </FormControl>}
                 {errors.lien !== '' &&
-                    <div>
-                        <FormControl error={errors.lien !== ''}>
-                            <FormHelperText>
-                                {errors.lien}
-                            </FormHelperText>
-                        </FormControl>
-                    </div>}
+                    <FormControl error={errors.lien !== ''}>
+                        <FormHelperText>
+                            {errors.lien}
+                        </FormHelperText>
+                    </FormControl>}
                 <div className={classes.btnContainer}>
                     <Button className={classes.btn}
                         onClick={props.onClose}
@@ -322,7 +333,7 @@ const FormInvestissement = props => {
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body2'>
-                            {props.membre ? 'Sauvgarder' : 'Ajouter'}
+                            {props.values ? 'Sauvgarder' : 'Ajouter'}
                         </Typography>
                     </Button>
                 </div>

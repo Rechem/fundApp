@@ -38,16 +38,16 @@ const MembresTable = props => {
         {
             align: 'center',
             sorting: false,
-            render: (rowData) =>
-            (<CustomPopover
-            membre={{
-                idMembre : rowData.idMembre,
-                nomMembre : rowData.nomMembre,
-                prenomMembre : rowData.prenomMembre,
-                emailMembre : rowData.emailMembre,
-            }}
-            
-            />)
+            render: (rowData) => {
+                let membre = structuredClone(rowData);
+                delete membre.tableData;
+                return (<CustomPopover
+                    options={[
+                        { label: 'Modifer', action: () => props.openEditForm(membre) },
+                        { label: 'Supprimer', action: () => props.openDeleteConfirmation(membre) },
+                    ]}
+                />)
+            }
         },
     ];
 
@@ -64,8 +64,8 @@ const MembresTable = props => {
             data={props.membres}
             isLoading={props.isLoading}
             options={{
-                toolbar: false,  draggable: false, search: true, padding: 'dense',
-                pageSize: 8, paginationType: 'stepped', pageSizeOptions: [], 
+                toolbar: false, draggable: false, search: true, padding: 'dense',
+                pageSize: 8, paginationType: 'stepped', pageSizeOptions: [],
                 rowStyle: (rowData, index) => ({
                     backgroundColor:
                         index % 2 !== 0 ? "#fff" : "#f7f7f7",

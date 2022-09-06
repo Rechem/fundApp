@@ -21,7 +21,6 @@ let theme = createTheme({
         background: { main: "#fff" },
     },
     typography: {
-        htmlFontSize: 16,
         fontFamily: "Inter",
         body1: {
             fontSize: "1rem",
@@ -156,6 +155,7 @@ export const CustomCheckBox = (props) =>
 
 export const CustomTab = styled((props) => <Tab disableRipple {...props} />)(
     ({ theme }) => ({
+        color : theme.palette.text.main,
         textTransform: 'none',
         fontWeight: 500,
         fontSize: "1rem",

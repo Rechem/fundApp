@@ -4,11 +4,15 @@ import Status from "../../../components/status/status";
 import { Paper, Typography, useTheme, IconButton, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { MoreVert } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import CustomPopover from "../../../components/popover/popover";
+import { isAdmin, isSimpleUser, statusArticleRealisation } from "../../../utils";
+import { useSelector } from "react-redux";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
 const InvestissementsTable = props => {
+
+    const authenticationState = useSelector(state => state.login)
 
     const navigate = useNavigate()
 
@@ -36,7 +40,6 @@ const InvestissementsTable = props => {
             title: "Montant unitaire",
             align: 'right',
             render: rowData => props.isRealisation ? rowData[rowData.type].montantUnitaire : rowData.montantUnitaire
-            // width: '18%'
         },
         {
             title: "Lien/Facture",
@@ -47,9 +50,9 @@ const InvestissementsTable = props => {
                     component="a"
                     href={
                         props.isRealisation ?
-                            rowData[rowData.type].Link ? rowData[rowData.type].Link :
+                            rowData[rowData.type].lien ? rowData[rowData.type].lien :
                                 `${process.env.REACT_APP_BASE_URL}${rowData[rowData.type].facture}`
-                            : rowData.Link ? rowData.Link :
+                            : rowData.lien ? rowData.lien :
                                 `${process.env.REACT_APP_BASE_URL}${rowData.facture}`
                     }
                     target='_blank'
@@ -70,22 +73,45 @@ const InvestissementsTable = props => {
                 : rowData.montantUnitaire * rowData.quantite
         },
         {
-            // title: "Détails",
             width: '15%',
             align: 'center',
             sorting: false,
-            render: (rowData) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                    <Button onClick={() => setSelectedItem(rowData.idArticlePrevision)}>
-                        <Typography color={theme.palette.primary.main}>
-                            {props.Realisation ? 'Détails' : 'Ouvrir'}</Typography>
+            render: (rowData) => {
+
+                let buttonMessage = 'Détails'
+                let buttonVariant = 'text'
+
+                let action = () => props.handleOpenDetails(rowData)
+
+                if (props.isRealisation
+                    && rowData.etat === statusArticleRealisation.pending
+                    && isAdmin(authenticationState)) {
+                    buttonMessage = 'Evaluer'
+                    buttonVariant = 'contained'
+                } else if (props.isRealisation
+                    && isSimpleUser(authenticationState)
+                    && (rowData.etat === statusArticleRealisation.waiting
+                        || rowData.etat === statusArticleRealisation.refused)) {
+                    buttonMessage = 'Justifier'
+                    buttonVariant = 'contained'
+                }
+
+                return <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                    <Button onClick={action}
+                        variant={buttonVariant}>
+                        <Typography color={buttonVariant === 'contained' ? 'white' : theme.palette.primary.main}>
+                            {buttonMessage}</Typography>
                     </Button>
-                    {!props.isRealisation &&
-                        <IconButton size="small">
-                            <MoreVert color='text' />
-                        </IconButton>}
+                    {!props.cannotEdit &&
+                        <CustomPopover
+                            options={[
+                                { label: 'Modifer', action: () => props.openEditForm(rowData) },
+                                { label: 'Supprimer', action: () => props.openDeleteConfirmation(rowData) },
+                            ]}
+
+                        />}
                 </Box>
-            ),
+            }
         },
     ];
 

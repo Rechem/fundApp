@@ -18,7 +18,7 @@ import { fetchAllProjets } from '../../store/projetsSlice/reducer';
 import { isSimpleUser, statusRealisation } from '../../utils'
 import Status from '../../components/status/status';
 import { isAdmin } from '../../utils';
-import FormEvaluerPrevision from '../../components/form-evaluer-prevision/form-evaluer-prevision';
+import FormEvaluerPrevision from '../../components/form/form-evaluer-prevision/form-evaluer-prevision';
 
 const Prevision = () => {
 
@@ -106,7 +106,9 @@ const Prevision = () => {
                     Réalisation
                 </Box>
                 {realisation && realisation.etat === statusRealisation.terminee &&
-                    <Status status={realisation.etat} />}
+                    <div>
+                        <Status status={realisation.etat} />
+                    </div>}
             </div>
             {!realisation ?
                 <CircularProgress sx={{ display: 'block', margin: 'auto' }}
@@ -145,8 +147,8 @@ const Prevision = () => {
                                     active={realisation.numeroTranche}
                                     steps={realisation.projet.tranche.nbTranches}
                                     activeSteps={realisation.maxTranche}
-                                    onClick={Array(realisation.maxTranche).fill(0).map((e) =>
-                                        `/projets/${idProjet}/realisation/${e + 1}`)}
+                                    onClick={Array(realisation.maxTranche).fill(0).map((e, i) =>
+                                        `/projets/${idProjet}/realisation/${i + 1}`)}
                                 /> :
                                 <i style={{ display: 'block' }}>Pas encore soumis</i>
                             }
@@ -175,17 +177,17 @@ const Prevision = () => {
             <TabPanel value={tabValue} index={0} >
                 <InvestissementsTab setTotal={setTotal}
                     isRealisation={true}
-                    disabledAddButton={true} />
+                    cannotEdit={true} />
             </TabPanel>
             <TabPanel value={tabValue} index={1} >
                 <SalairesTab setTotal={setTotal}
                     isRealisation={true}
-                    disabledAddButton={true} />
+                    cannotEdit={true} />
             </TabPanel>
             <TabPanel value={tabValue} index={2} >
                 <ChargesTab setTotal={setTotal}
                     isRealisation={true}
-                    disabledAddButton={true} />
+                    cannotEdit={true} />
             </TabPanel>
             <div className={classes.footer}>
                 <div>

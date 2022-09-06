@@ -10,7 +10,7 @@ import { SearchNormal1 } from 'iconsax-react';
 import useDebounce from '../../custom-hooks/use-debounce';
 import { fetchAllDemandes, fetchUserDemandes } from '../../store/demandesSlice/reducer';
 import { isAdmin, isModo, isSimpleUser } from '../../utils';
-import FormDemande from '../../components/form-demande/form-demande';
+import FormDemande from '../../components/form/form-demande/form-demande';
 import Toolbar from '../../components/toolbar/toolbar';
 
 const Transition = React.forwardRef(function Transition(props, ref) {

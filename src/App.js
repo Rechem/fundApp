@@ -25,6 +25,8 @@ import Projets from './pages/projets/projets';
 import Projet from './pages/projet/projet';
 import Prevision from './pages/prevision/prevision';
 import Realisation from './pages/realisation/realisation';
+import Revenu from './pages/revenu/revenu'
+import Utilisateurs from './pages/users/users'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ScrollToTop from './pages/util-pages/scroll-to-top';
@@ -90,6 +92,7 @@ const App = () => {
               isSimpleUser(authenticationState)
               && authenticationState.user.completedSignUp)}
           redirectPath={redirectCompleteSignup} />}>
+        <Route path="/projets/:idProjet/revenu" exact element={<Layout><Revenu /></Layout>} />
         <Route path="/projets/:idProjet/prevision/:tranche" exact element={<Layout><Prevision /></Layout>} />
         <Route path="/projets/:idProjet/realisation/:tranche" exact element={<Layout><Realisation /></Layout>} />
         <Route path="/projets" exact element={<Layout><Projets /></Layout>} />
@@ -103,6 +106,7 @@ const App = () => {
           isAllowed={
             authenticationState.status === 'connected'
             && isAdmin(authenticationState)} />}>
+        <Route path="/users" exact element={<Layout><Utilisateurs /></Layout>} />
         <Route path="/commissions" exact element={<Layout><Commissions /></Layout>} />
         <Route path="/commissions/:idCommission" exact element={<Layout><Commission /></Layout>} />
       </Route>
@@ -130,7 +134,7 @@ const App = () => {
           {authenticationState.status === 'init'
             ? standByScreen : protectedRoutes}
           <ToastContainer
-            position="top-right"
+            position="bottom-right"
             autoClose={4000}
             hideProgressBar
             newestOnTop={false}

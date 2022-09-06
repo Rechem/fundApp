@@ -5,6 +5,25 @@ const roles = {
     roleSuperAdmin: 'superAdmin'
 }
 
+export const statusUser = {
+    banned: 'Désactivé',
+    confirmed: 'Confirmé',
+    notConfirmed: 'Non confirmé',
+}
+
+export const getRoleName = (role) => {
+    switch (role) {
+        case roles.roleSimpleUser:
+            return 'Simple utilisateur'
+        case roles.roleModerator:
+            return 'Modérateur'
+        case roles.roleAdmin:
+            return 'Administrateur'
+        default:
+            return 'Inconnu'
+    }
+}
+
 export const statusPrevision = {
     accepted: 'Acceptée',
     refused: 'Refusée',
@@ -22,7 +41,7 @@ export const statusArticleRealisation = {
     accepted: 'Acceptée',
     refused: 'Refusée',
     pending: 'En attente évaluation',
-    waiting: 'En attente saisie',
+    waiting: "En attente saisie",
 }
 
 export const statusCommission = {
@@ -37,6 +56,12 @@ export const statusDemande = {
     complement: 'Besoin complément',
     programmee: 'Programmée',
     preselectionnee: 'Préselectionnée',
+}
+
+export const statusArticleRevenu = {
+    accepted: 'Acceptée',
+    refused: 'Refusée',
+    pending: 'En attente évaluation',
 }
 
 export const isAdmin = (authenticationState) => {

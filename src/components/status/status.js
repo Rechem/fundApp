@@ -2,6 +2,7 @@ import React from 'react';
 import { useTheme } from '@mui/system';
 import tinycolor from 'tinycolor2';
 import { Typography } from '@mui/material';
+import { statusUser } from '../../utils';
 
 const STATUS = {
     accepted: 'Acceptée',
@@ -24,17 +25,20 @@ const Status = ({ status }) => {
 
     switch (status) {
         case STATUS.accepted:
+        case statusUser.confirmed:
             message = status
             messageColor = theme.palette.success.main
             containerColor = tinycolor(theme.palette.success.main).setAlpha(.1)
             break;
         case STATUS.refused:
+        case statusUser.banned:
             message = status
             messageColor = theme.palette.error.main
             containerColor = tinycolor(theme.palette.error.main).setAlpha(.1)
             break;
         case STATUS.pending:
         case STATUS.pendingEvaluation:
+        case statusUser.notConfirmed:
             message = status
             messageColor = theme.palette.warning.main
             containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
@@ -58,12 +62,17 @@ const Status = ({ status }) => {
         case STATUS.terminee:
             message = status
             messageColor = theme.palette.success.main
-            containerColor = tinycolor(theme.palette.success.main).setAlpha(.1)
+            containerColor = tinycolor(theme.palette.success.main).setAlpha(.2)
+            break;
+        case STATUS.brouillon:
+            message = status
+            messageColor = '#424242'
+            containerColor = tinycolor('#424242').setAlpha(.2)
             break;
         default:
             message = 'Inconnu'
-            messageColor = theme.palette.warning.main
-            containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
+            messageColor = '#424242'
+            containerColor = tinycolor('#424242').setAlpha(.2)
             break;
     }
 

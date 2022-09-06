@@ -51,6 +51,7 @@ const Projets = () => {
                         nom={p.demande.user.nom}
                         prenom={p.demande.user.prenom}
                         revenu={p.revenu}
+                        previsions={p.previsions}
                         idProjet={p.idProjet}
                         />
                     })}

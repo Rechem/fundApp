@@ -18,7 +18,7 @@ import { fetchAllProjets } from '../../store/projetsSlice/reducer';
 import { isSimpleUser, statusPrevision } from '../../utils'
 import Status from '../../components/status/status';
 import { isAdmin } from '../../utils';
-import FormEvaluerPrevision from '../../components/form-evaluer-prevision/form-evaluer-prevision';
+import FormEvaluerPrevision from '../../components/form/form-evaluer-prevision/form-evaluer-prevision';
 
 const scrollToRef = (ref) => window.scrollTo(0, ref.current.offsetTop)
 
@@ -56,8 +56,6 @@ const Prevision = () => {
     };
 
     const [tabValue, setTabValue] = useState(0);
-
-
 
     const myRef = useRef(null)
     const executeScroll = () => scrollToRef(myRef)
@@ -111,6 +109,11 @@ const Prevision = () => {
         }
     }
 
+    const cannotEdit = !prevision ||
+    !((prevision.etat === statusPrevision.brouillon
+        || prevision.etat === statusPrevision.refused)
+    && isSimpleUser(authenticationState))
+
     useEffect(() => {
         fetchPrevisionDetails()
     }, [idProjet, tranche])
@@ -126,7 +129,8 @@ const Prevision = () => {
                 </Box>
                 {!prevision ? <CircularProgress size='2rem' /> :
                     prevision.etat === statusPrevision.pending && isAdmin(authenticationState)
-                        || prevision.etat !== statusPrevision.pending && isSimpleUser(authenticationState) ?
+                        || ((prevision.etat === statusPrevision.brouillon || prevision.etat === statusPrevision.refused)
+                            && isSimpleUser(authenticationState)) ?
                         <Button variant='contained'
                             onClick={isSimpleUser(authenticationState) ? submitPrevision : handleDialogClickOpen}
                             className={classes.submitButton}>
@@ -176,8 +180,8 @@ const Prevision = () => {
                                     active={prevision.numeroTranche}
                                     steps={prevision.projet.tranche.nbTranches}
                                     activeSteps={prevision.maxTranche}
-                                    onClick={Array(prevision.maxTranche).fill(0).map((e) =>
-                                        `/projets/${idProjet}/prevision/${e + 1}`)}
+                                    onClick={Array(prevision.maxTranche).fill(0).map((e,i) =>
+                                        `/projets/${idProjet}/prevision/${i + 1}`)}
                                 /> :
                                 <i style={{ display: 'block' }}>Pas encore soumis</i>
                             }
@@ -189,7 +193,7 @@ const Prevision = () => {
                             }} >
                                 {prevision && prevision.valeurPrevision}
                                 {' '}/ {prevision &&
-                                    prevision.projet.tranche.pourcentage[prevision.numeroTranche]
+                                    prevision.projet.tranche.pourcentage[prevision.numeroTranche - 1]
                                     * prevision.projet.montant} DZD
                             </Box>
                         </Grid>
@@ -205,8 +209,8 @@ const Prevision = () => {
                                 onClose={handleDialogClose} />
                         </Box>
                     </Dialog>
-                </>
-            }
+                {/* </>
+            } */}
             <Tabs value={tabValue} onChange={handleTabChange}>
                 <CustomTab label="Investissements" />
                 <CustomTab label="Salaires" />
@@ -215,15 +219,15 @@ const Prevision = () => {
             <Divider />
             <TabPanel value={tabValue} index={0} >
                 <InvestissementsTab setTotal={setTotal}
-                    disabledAddButton={prevision && prevision.etat !== statusPrevision.brouillon} />
+                    cannotEdit={cannotEdit} />
             </TabPanel>
             <TabPanel value={tabValue} index={1} >
                 <SalairesTab setTotal={setTotal}
-                    disabledAddButton={prevision && prevision.etat !== statusPrevision.brouillon} />
+                    cannotEdit={cannotEdit} />
             </TabPanel>
             <TabPanel value={tabValue} index={2} >
                 <ChargesTab setTotal={setTotal}
-                    disabledAddButton={prevision && prevision.etat !== statusPrevision.brouillon} />
+                    cannotEdit={cannotEdit} />
             </TabPanel>
             <div className={classes.footer}>
                 <div>
@@ -246,6 +250,8 @@ const Prevision = () => {
                     </Popper>
                 </Box>
             </div>
+            </>
+            }
         </>
     );
 };

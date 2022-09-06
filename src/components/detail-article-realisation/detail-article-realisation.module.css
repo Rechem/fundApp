@@ -1,0 +1,48 @@
+.hdr{
+    margin-bottom: 1.5rem;
+}
+
+.container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    overflow-y: auto;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+    padding: 1.5rem 2rem;
+    width: min(90%, 30rem);
+    background-color: white;
+}
+
+.btnContainer{
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    /* align-items: flex-end; */
+}
+
+.txt {
+    margin-bottom: 1rem;
+}
+
+.filebtn {
+    margin-right: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 100px;
+    height: 2rem;
+}
+
+.fileBtnContainer {
+    display: flex;
+    align-items: center;
+}
+
+.subBtnContainer{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn{
+    margin-left: 0.5rem;
+}

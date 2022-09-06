@@ -1,13 +1,17 @@
 import MaterialTable from "@material-table/core";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Status from "../../../components/status/status";
-import { Paper, Typography, useTheme, Modal, Box, Button, IconButton } from "@mui/material";
+import { Paper, Typography, useTheme, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { MoreVert } from "@mui/icons-material";
+import { isAdmin, isSimpleUser, statusArticleRealisation } from "../../../utils";
+import { useSelector } from "react-redux";
+import CustomPopover from "../../../components/popover/popover";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
 const SalairesTable = props => {
+
+    const authenticationState = useSelector(state => state.login)
 
     const navigate = useNavigate()
 
@@ -56,22 +60,44 @@ const SalairesTable = props => {
                 : rowData.salaireMensuel * rowData.nbPersonne * rowData.nbMois
         },
         {
-            title: "Détails",
             width: '15%',
             align: 'center',
             sorting: false,
-            render: (rowData) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                    <Button onClick={() => setSelectedItem(rowData.idArticlePrevision)}>
-                        <Typography color={theme.palette.primary.main}>
-                            {props.Realisation ? 'Détails' : 'Ouvrir'}</Typography>
+            render: (rowData) => {
+                let buttonMessage = 'Détails'
+                let buttonVariant = 'text'
+
+                let action = () => props.handleOpenDetails(rowData)
+
+                if (props.isRealisation
+                    && rowData.etat === statusArticleRealisation.pending
+                    && isAdmin(authenticationState)) {
+                    buttonMessage = 'Evaluer'
+                    buttonVariant = 'contained'
+                } else if (props.isRealisation
+                    && isSimpleUser(authenticationState)
+                    && (rowData.etat === statusArticleRealisation.waiting
+                        || rowData.etat === statusArticleRealisation.refused)) {
+                    buttonMessage = 'Justifier'
+                    buttonVariant = 'contained'
+                }
+
+                return <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                    <Button onClick={action}
+                        variant={buttonVariant}>
+                        <Typography color={buttonVariant === 'contained' ? 'white' : theme.palette.primary.main}>
+                            {buttonMessage}</Typography>
                     </Button>
-                    {!props.isRealisation &&
-                        <IconButton size="small">
-                            <MoreVert color='text' />
-                        </IconButton>}
+                    {!props.cannotEdit &&
+                        <CustomPopover
+                            options={[
+                                { label: 'Modifer', action: () => props.openEditForm(rowData) },
+                                { label: 'Supprimer', action: () => props.openDeleteConfirmation(rowData) },
+                            ]}
+
+                        />}
                 </Box>
-            ),
+            }
         },
     ];
 

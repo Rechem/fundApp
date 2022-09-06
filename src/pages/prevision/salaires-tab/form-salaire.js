@@ -17,10 +17,10 @@ const initialValues = {
 
 const FormSalaire = props => {
 
-    const [values, setValues] = useState(initialValues)
+    const [values, setValues] = useState(props.values ? props.values : initialValues)
     const [errors, setErrors] = useState({})
 
-    const [poste, setPoste] = useState(null)
+    const [poste, setPoste] = useState(props.values ? props.values.type : null)
     const [openPoste, setOpenPoste] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +50,8 @@ const FormSalaire = props => {
         } else
             temp.description = ''
 
-        temp.salaireMensuel = values.salaireMensuel === '' ? 'Vous devez entrer le salaire mensuel du poste' : ''
+        temp.salaireMensuel = values.salaireMensuel === '' ? 'Vous devez entrer le salaire mensuel du poste' :
+            values.salaireMensuel < 1000 ? 'Le salaire mensuel doit être supèrieur à 1000 DZD' : ''
         temp.nbMois = values.nbMois === '' ? 'Vous devez entrer le nombre de mois' : ''
         temp.nbPersonne = values.nbPersonne === '' ? 'Vous devez entrer le nombre de personnes' : ''
         setErrors({ ...temp })
@@ -62,19 +63,20 @@ const FormSalaire = props => {
         if (validate()) {
             try {
                 let response
-                if (props.values) {
-                    // await axios.patch('/membres', { ...values, idMembre: props.membre.idMembre })
-                } else {
-                    const requestObject = {
-                        typePosteId: poste.idTypePoste,
-                        description: values.description,
-                        salaireMensuel: values.salaireMensuel,
-                        nbMois: values.nbMois,
-                        nbPersonne: values.nbMois,
-                        projetId: props.projetId,
-                        numeroTranche: props.numeroTranche,
-                    }
 
+                const requestObject = {
+                    typePosteId: poste.idTypePoste,
+                    description: values.description,
+                    salaireMensuel: values.salaireMensuel,
+                    nbMois: values.nbMois,
+                    nbPersonne: values.nbPersonne,
+                    projetId: props.projetId,
+                    numeroTranche: props.numeroTranche,
+                }
+                if (props.values) {
+                    requestObject.idSalaire = props.values.idSalaire
+                    response = await axios.patch('/previsions/salaires', requestObject)
+                } else {
                     response = await axios.post('/previsions/salaires', requestObject)
                 }
                 toast.success(response.data.message)
@@ -240,7 +242,7 @@ const FormSalaire = props => {
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body2'>
-                            {props.membre ? 'Sauvgarder' : 'Ajouter'}
+                            {props.values ? 'Sauvgarder' : 'Ajouter'}
                         </Typography>
                     </Button>
                 </div>

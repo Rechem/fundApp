@@ -1,7 +1,7 @@
 import MaterialTable from "@material-table/core";
 import React, { useEffect, useState } from 'react';
 import Status from "../../components/status/status";
-import { Paper, Typography, useTheme, Modal, Box, MenuItem } from "@mui/material";
+import { Paper, Typography, useTheme, FormControl, Box, MenuItem } from "@mui/material";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { statusDemande } from "../../utils";
@@ -48,23 +48,29 @@ const DemandesTable = props => {
                         color = 'inherit';
                     }
 
-                    return (<CustomSelect
-                        value={props.etatDemandes[rowData.idDemande]}
-                        displayEmpty={true}
-                        renderValue={(value) => value}
-                        onChange={(e) => onChangeHandler(e, rowData.idDemande)}
-                        style={{ height: '2.5rem', width: '8rem', overflow: 'hidden', color, backgroundColor }}                    >
-                        <MenuItem
-                            style={{ color: theme.palette.success.main }}
-                            value={statusDemande.accepted}>
-                            {statusDemande.accepted}
-                        </MenuItem>
-                        <MenuItem
-                            style={{ color: theme.palette.error.main }}
-                            value={statusDemande.refused}>
-                            {statusDemande.refused}
-                        </MenuItem>
-                    </CustomSelect>)
+                    return (
+                        <FormControl size='small'>
+                            <CustomSelect
+                                value={props.etatDemandes[rowData.idDemande]}
+                                displayEmpty={true}
+                                renderValue={(value) =>
+                                    <Typography variant='body2' color={color} fontWeight={500}>
+                                        {value}</Typography>}
+                                onChange={(e) => onChangeHandler(e, rowData.idDemande)}
+                                style={{ width: '7rem', color, backgroundColor }}                    >
+                                <MenuItem
+                                    variant
+                                    style={{ color: theme.palette.success.main }}
+                                    value={statusDemande.accepted}>
+                                    {statusDemande.accepted}
+                                </MenuItem>
+                                <MenuItem
+                                    style={{ color: theme.palette.error.main }}
+                                    value={statusDemande.refused}>
+                                    {statusDemande.refused}
+                                </MenuItem>
+                            </CustomSelect>
+                        </FormControl>)
                 }
             },
         },
@@ -78,13 +84,23 @@ const DemandesTable = props => {
             width: '10%',
             sorting: false,
             render: (rowData) => (
-                <Link to={`/demandes/${rowData.idDemande}`}
-                    style={{ textDecoration: 'none' }}>
-                    <Typography
-                        color={theme.palette.primary.main}
-                        display='inline'
-                    >Voir</Typography>
-                </Link>),
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                    {/* {isSimpleUser(authenticationState)
+                        && rowData.etat !== statusArticleRevenu.accepted
+                        &&
+                        <CustomPopover
+                            options={[
+                                { label: 'Supprimer', action: () => props.openDeleteConfirmation(rowData) },
+                            ]}
+                        />} */}
+                    <Link to={`/demandes/${rowData.idDemande}`}
+                        style={{ textDecoration: 'none' }}>
+                        <Typography
+                            color={theme.palette.primary.main}
+                            display='inline'
+                        >Détails</Typography>
+                    </Link>
+                </Box>),
         },
     ];
 

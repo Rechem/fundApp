@@ -8,10 +8,11 @@ const ConfirmationDialog = props => {
   const onConfirm = async () => {
     try {
       await props.onConfirm();
+      toast.success('Succès')
       props.onClose();
       props.afterSubmit()
     } catch (e) {
-      toast.error(e.response.data.message, { toastId: 'deprogrammerId' })
+      toast.error(e.response.data.message)
     }
   }
 
