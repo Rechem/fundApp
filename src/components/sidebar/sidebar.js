@@ -11,12 +11,12 @@ import roles from '../../utils';
 
 
 const NAVLIST = [
-    {
-        name: 'Dashboard',
-        link: '/dashboard',
-        icon: <Diagram variant='Outline' />,
-        allowed: [roles.roleModerator, roles.roleAdmin]
-    },
+    // {
+    //     name: 'Dashboard',
+    //     link: '/dashboard',
+    //     icon: <Diagram variant='Outline' />,
+    //     allowed: [roles.roleModerator, roles.roleAdmin]
+    // },
     {
         name: 'Projets',
         link: '/projets',
@@ -37,7 +37,7 @@ const NAVLIST = [
     },
     {
         name: 'Messages',
-        link: '/messages',
+        link: '/tickets',
         icon: <Sms variant='Outline' />,
         allowed: [roles.roleModerator, roles.roleAdmin, roles.roleSimpleUser]
     },

@@ -62,11 +62,10 @@ const FormMontant = props => {
         <div className={classes.container}>
             <form onSubmit={submit}>
                 <div className={classes.hdr}>
-                    <Box sx={{ typography: 'subtitle2', fontWeight: 700, display:'inline' }}
+                    <Box sx={{ typography: 'subtitle2', fontWeight: 700 }}
                         mr={1}>
                         Entrer le montant accordé
                     </Box>
-                    {isLoading && <CircularProgress size='1rem' />}
                 </div>
                 {step === 0 ?
                     <>
@@ -88,7 +87,11 @@ const FormMontant = props => {
                 <div className={classes.btnContainer}>
                     <Button onClick={step > 0 ? previousStep : props.onClose}
                         variant='text'>{step > 0 ? 'Retour' : 'Annuler'}</Button>
-                    <Button type='submit' variant='contained' disabled={isLoading}>
+                    <Button type='submit' variant='contained'
+                    disabled={isLoading}
+                    startIcon={isLoading ?
+                        <CircularProgress size='1rem' color='background' />
+                        : null}>
                         <Box sx={{ typography: 'body2', color: 'white' }}>
                             {step === 0 ? 'Suivant' : 'Confirmer'}
                         </Box>

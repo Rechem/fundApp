@@ -2,15 +2,24 @@ import MaterialTable from "@material-table/core";
 import React, { useEffect, useState } from 'react';
 import Status from "../../components/status/status";
 import { Paper, Typography, useTheme, FormControl, Box, MenuItem } from "@mui/material";
-import moment from "moment";
-import { Link } from "react-router-dom";
-import { statusDemande } from "../../utils";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { isSimpleUser, statusDemande } from "../../utils";
 import { CustomSelect } from "../../theme";
 import tinycolor from "tinycolor2";
+import { fetchAllDemandes } from "../../api/api-calls";
+import { useSelector } from "react-redux";
+import CustomPopover from '../../components/popover/popover'
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
 const DemandesTable = props => {
+
+    const authenticationState = useSelector(state => state.login)
+
+    const location = useLocation();
+
+    const [searchParams] = useSearchParams();
+    const user = searchParams.get('user')
 
     const theme = useTheme()
 
@@ -20,13 +29,7 @@ const DemandesTable = props => {
     }
 
     const columns = [
-        // {
-        //     title: "Date dépôt",
-        //     field: "createdAt",
-        //     width:'15%',
-        //     render: (rowData) => moment(rowData.createdAt).format("DD/MM/YYYY"),
-        // },
-        { title: "ID", field: "idDemande", width: "5%", cellStyle },
+        { title: "ID", field: "idDemande", width: "5%", cellStyle, sorting: false },
         {
             title: "Etat",
             field: "etat",
@@ -75,7 +78,6 @@ const DemandesTable = props => {
             },
         },
 
-        // { title: "Nom", field: "user.nom", cellStyle },
         { title: "Forme juridique", field: "formeJuridique", width: '15%', cellStyle },
         { title: "Dénomination", field: "denominationCommerciale", cellStyle },
         { title: "Montant", field: "montant", cellStyle },
@@ -84,15 +86,10 @@ const DemandesTable = props => {
             width: '10%',
             sorting: false,
             render: (rowData) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                    {/* {isSimpleUser(authenticationState)
-                        && rowData.etat !== statusArticleRevenu.accepted
-                        &&
-                        <CustomPopover
-                            options={[
-                                { label: 'Supprimer', action: () => props.openDeleteConfirmation(rowData) },
-                            ]}
-                        />} */}
+                <Box sx={{
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'space-between', columnGap: '0.5rem'
+                }}>
                     <Link to={`/demandes/${rowData.idDemande}`}
                         style={{ textDecoration: 'none' }}>
                         <Typography
@@ -100,21 +97,34 @@ const DemandesTable = props => {
                             display='inline'
                         >Détails</Typography>
                     </Link>
+                    {props.canDeprogram &&
+                        <CustomPopover
+                            options={[
+                                { label: 'Déprogrammer', action: () => props.openDeleteConfirmation(rowData) },
+                            ]}
+                        />}
                 </Box>),
         },
     ];
 
     return <MaterialTable
-        localization={{
-            body:
-            {
-                emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                    "Aucun résultat" : "Rien à afficher"
-            }
-        }}
+        // localization={{
+        //     body: "Rien à afficher"
+        // }}
+        tableRef={props.tableRef}
         columns={columns}
-        data={props.demandes}
-        isLoading={props.isLoading}
+        // data={props.demandes}
+        data={location.pathname.startsWith('/commissions') ?
+            props.demandes : query => {
+                // if (authenticationState.user.idUser) {
+                    let idUser = null
+
+                    if (user)
+                        idUser = user
+
+                    return fetchAllDemandes({ idUser: user, search: props.searchValue })(query)
+                // }
+            }}
         options={{
             toolbar: false, draggable: false, search: true, padding: 'dense',
             pageSize: 10, paginationType: 'stepped', pageSizeOptions: [],

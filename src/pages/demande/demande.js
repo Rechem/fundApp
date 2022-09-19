@@ -16,35 +16,8 @@ import { isAdmin, isModo, isSimpleUser } from '../../utils';
 import { statusDemande } from '../../utils';
 import { toast } from 'react-toastify';
 import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog'
-import { useNavigate } from 'react-router-dom';
-
-const getFileName = (response) => {
-    const headerLine = response.headers['content-disposition'];
-    const startFileNameIndex = headerLine.indexOf('"') + 1
-    const endFileNameIndex = headerLine.lastIndexOf('"');
-    const filename = headerLine.substring(startFileNameIndex, endFileNameIndex);
-    return filename;
-}
-
-const downloadComplement = async id => {
-    const BASE_URL = process.env.REACT_APP_BASE_URL
-    const response = await axios.post(BASE_URL + `/complements/${id}/download`,
-        { responseType: 'blob' })
-    const fileName = getFileName(response)
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    if (typeof window.navigator.msSaveBlob === 'function') {
-        window.navigator.msSaveBlob(
-            response.data,
-            fileName
-        );
-    } else {
-        link.setAttribute('download', fileName);
-        document.body.appendChild(link);
-        link.click();
-    }
-}
+import { useNavigate, Link } from 'react-router-dom';
+import Motif from '../../components/motif/motif';
 
 const Demande = () => {
 
@@ -159,7 +132,10 @@ const Demande = () => {
                 setDemande(response.data.data.demande);
                 setIsloading(false)
             } catch (e) {
-                navigate('/notfound')
+                if (e.response.status === 404)
+                    navigate('/notfound')
+                else
+                    toast.error(e.response.data.message)
             }
         }
     }
@@ -169,6 +145,25 @@ const Demande = () => {
             await axios.patch(
                 `/demandes`, { idDemande: id, etat: statusDemande.pending })
             setOpenAlert(false)
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const getMotifs = async () => {
+        try {
+            const response = await axios.get(
+                `/motifs/demande/${demande.idDemande}`)
+            return response.data.data.motifsDemande
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const setSeenMotifs = async () => {
+        try {
+            await axios.patch(
+                `/motifs/demande/${demande.idDemande}`)
         } catch (e) {
             throw e
         }
@@ -204,44 +199,53 @@ const Demande = () => {
 
 
     useEffect(() => {
-        fetchDemande()
+        if (authenticationState.user.idUser)
+            fetchDemande()
     }, [authenticationState.user.idUser])
 
     return (
         <React.Fragment>
             <div className={classes.hdr}>
                 <Typography color={theme.palette.text.main}
-                    variant='h3'>
-                    Demande
+                    variant='h3' display='inline'>
+                    Demande{' '}
+                </Typography>
+                <Typography color={theme.palette.text.main}
+                    variant='subtitle2' display='inline' fontWeight={400}>
+                    Id:{demande && demande.idDemande}
                 </Typography>
             </div>
-
             {isLoading ? <CircularProgress /> :
                 <React.Fragment>
-                    <Typography display='block' marginBottom='1rem'
-                        variant='subtitle2' fontWeight={400}>
-                        Demande {demande.idDemande}
-                    </Typography>
                     <div className={classes.etatContainer}>
-                        <Typography display='inline' marginRight='1rem'
-                            fontWeight={600}>
-                            Etat
-                        </Typography>
-                        <div >
-                            <Typography className={classes.test}>
+                        <div className={classes.etatSubContainer}>
+                            <Typography display='inline' marginRight='1rem'
+                                fontWeight={600}>
+                                Etat
                             </Typography>
-                            <Status status={demande.etat} />
+                            <div>
+                                <Status status={demande.etat} />
+                            </div>
                         </div>
+                        < Motif getMotifs={getMotifs}
+                            setSeenMotifs={setSeenMotifs} />
                     </div>
                     <Box sx={{ fontWeight: 700, color: theme.palette.text.main, }} mb={1.5}
                     >Demandeur</Box>
-                    <div className={classes.userContainer}>
-                        <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'} alt='Avatar'
-                            className={classes.img} />
-                        {demande &&
-                            <Typography fontWeight={400}>{demande.user.nom} {demande.user.prenom}</Typography>
-                        }
-                    </div>
+                    <Box component={Link}
+                        to={isSimpleUser(authenticationState) ? '/me' : `/users/${demande.userId}`}
+                        sx={{
+                            display: 'inline',
+                        }}>
+                        <div className={classes.userContainer}>
+                            <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'} alt='Avatar'
+                                className={classes.img} />
+                            {demande &&
+
+                                <Typography fontWeight={400}>{demande.user.nom} {demande.user.prenom}</Typography>
+                            }
+                        </div>
+                    </Box>
                     <Box sx={{ fontWeight: 700, color: theme.palette.text.main, }} mb={1.5}
                     >Détails sur l'entreprise</Box>
                     <InfoDemande {...demande} />
@@ -259,9 +263,9 @@ const Demande = () => {
                                         return <Grid container item key={i} sm={6} columnSpacing={1}
                                             className={classes.gridContainer}>
                                             <Grid xs={12} item style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Box sx={{ display: 'block' }}>
+                                                <Typography sx={{ display: 'block' }}>
                                                     {c.nomComplement}:
-                                                </Box>
+                                                </Typography>
                                                 {c.cheminComplement ?
                                                     <Box
                                                         component="a"
@@ -337,7 +341,7 @@ const Demande = () => {
                             </div>
                         </>}
                     {isAdmin(authenticationState) &&
-                        (demande.etat !== statusDemande.accepted && demande.etat !== statusDemande.refused) &&
+                        demande.etat !== statusDemande.accepted &&
                         <>
                             <div className={classes.outerBtnContainer}>
                                 <div className={classes.btnContainer}>
@@ -345,10 +349,12 @@ const Demande = () => {
                                         onClick={openComplementForm}>
                                         <Typography color='primary'>Demander compléments</Typography>
                                     </Button>
-                                    <Button variant='outlined' className={classes.btnSecondary}
-                                        onClick={openRefuserForm}>
-                                        <Typography color='primary'>Refuser</Typography>
-                                    </Button>
+                                    {demande.etat !== statusDemande.refused &&
+                                        <Button variant='outlined' className={classes.btnSecondary}
+                                            onClick={openRefuserForm}>
+                                            <Typography color='primary'>Refuser</Typography>
+                                        </Button>
+                                    }
                                     <Button variant={
                                         demande.etat === statusDemande.programmee ?
                                             'outlined' : 'contained'}
@@ -359,7 +365,7 @@ const Demande = () => {
                                         {demande.etat === statusDemande.programmee ?
                                             <Typography color='primary'>Déprogrammer</Typography>
                                             : <Typography
-                                                color='white' fontWeight={700}>
+                                                color='white' fontWeight={500}>
                                                 {demande.etat === statusDemande.preselectionnee ?
                                                     'Programmer' : 'Accepter'}
                                             </Typography>

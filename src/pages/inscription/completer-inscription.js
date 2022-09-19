@@ -1,4 +1,5 @@
-import { Button, Typography, Grid, FormHelperText, FormControl, useTheme } from '@mui/material';
+import { Button, Typography, Grid, FormHelperText,
+    FormControl, useTheme, CircularProgress } from '@mui/material';
 import { CustomTextField, CustomSelect } from '../../theme';
 import classes from './completer-inscription.module.css'
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import { setCompletedSignup } from '../../store/loginSlice/reducer'
 import ErrorDisplay from '../../components/error-display/error-display';
 import { signOut } from '../../store/loginSlice/reducer';
 import dayjs from 'dayjs'
+import { toast } from 'react-toastify';
 
 const initialValues = {
     nom: '',
@@ -34,7 +36,7 @@ const CompleterInscription = () => {
 
     const [values, setValues] = useState(initialValues)
     const [errors, setErrors] = useState({})
-    const [responseError, setResponseError] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
     const onChangeDateHander = newValue => {
         setValues({
@@ -78,17 +80,17 @@ const CompleterInscription = () => {
 
     const submitForm = async (e) => {
         e?.preventDefault()
-        setResponseError('')
         if (validateForm()) {
+            setIsLoading(true)
             try {
                 await axios.patch(
                     `/users/${authenticationState.user.idUser}`,
                     { ...values })
                 dispatch(setCompletedSignup())
             } catch (e) {
-                // console.log(e);TOAST IT
-                setResponseError(e.response.data.message)
+                toast.error(e.response.data.message)
             }
+            setIsLoading(false)
         }
     }
 
@@ -103,10 +105,6 @@ const CompleterInscription = () => {
                 Compléter votre inscription
             </Typography>
             <form onSubmit={submitForm} className={classes.subContainer}>
-                {responseError != '' &&
-                    <ErrorDisplay>
-                        {responseError}
-                    </ErrorDisplay>}
                 <Grid container rowSpacing={1} columnSpacing={3}>
                     <Grid item className={classes.col1} xs={12} sm={6}>
                         <Typography variant='body2' fontWeight={400} className={classes.lbl}>
@@ -145,7 +143,7 @@ const CompleterInscription = () => {
 
                         <LocalizationProvider dateAdapter={AdapterDayjs} >
                             <DatePicker
-                            inputFormat='DD/MM/YYYY'
+                                inputFormat='DD/MM/YYYY'
                                 disableFuture
                                 value={values.dateNaissance}
                                 onChange={onChangeDateHander}
@@ -242,9 +240,13 @@ const CompleterInscription = () => {
                 <div className={classes.btnRow}>
                     <a onClick={disconnect} className={classes.anchor}>
                         <Typography color={theme.palette.error.main} sx={{ textDecoration: "underline" }}
-                        align='center' noWrap>Déconnexion</Typography>
+                            align='center' noWrap>Déconnexion</Typography>
                     </a>
-                    <Button variant='contained' className={classes.btn} onClick={submitForm}>
+                    <Button variant='contained' className={classes.btn} onClick={submitForm}
+                        disabled={isLoading}
+                        startIcon={isLoading ?
+                            <CircularProgress size='1rem' color='background' />
+                            : null}>
                         <Typography color='white' fontWeight={600} noWrap>Sauvgarder</Typography>
                     </Button>
                 </div>

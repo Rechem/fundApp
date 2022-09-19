@@ -31,8 +31,8 @@ const FormTranche = props => {
                 })
                 setIsLoading(false)
                 toast.success('Succès')
-                props.onClose()
                 props.afterSubmit()
+                props.onClose()
             } catch (e) {
                 setIsLoading(false)
                 toast.error(e.response.data.message)
@@ -62,12 +62,12 @@ const FormTranche = props => {
                 </FormControl> : <CircularProgress style={{ display: 'block', margin: 'auto' }} />}
             <div className={classes.btnContainer}>
                 <Button onClick={props.onClose}
-                    variant='text'>Annuler</Button>
+                    variant='text'>Fermer</Button>
                 <Button onClick={submitTranches} variant='contained'
                     startIcon={isLoading && selectedOption ?
                         <CircularProgress color='background' size='1rem' /> : null}
                     disabled={isLoading || !selectedOption}>
-                    <Box sx={{ typography: 'body2', color: 'white' }}>
+                    <Box sx={{ color: 'white' }}>
                         Confirmer
                     </Box>
                 </Button>

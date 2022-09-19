@@ -1,0 +1,23 @@
+.hdr{
+    margin : 0 auto 3rem auto;
+    text-align: center;
+}
+.field {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.lbl{
+    margin-bottom: 0.25rem;
+}
+
+.btn {
+    width: 100%;
+    height: 2.5rem;
+    margin-top: 2rem;
+}
+
+.container {
+    max-width: 20.5rem;
+    margin: 2rem auto;
+}

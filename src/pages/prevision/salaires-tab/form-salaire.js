@@ -23,6 +23,7 @@ const FormSalaire = props => {
     const [poste, setPoste] = useState(props.values ? props.values.type : null)
     const [openPoste, setOpenPoste] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
     const [postes, setPostes] = useState([])
 
@@ -61,6 +62,7 @@ const FormSalaire = props => {
     const submit = async e => {
         e.preventDefault()
         if (validate()) {
+            setIsSubmitLoading(true)
             try {
                 let response
 
@@ -85,6 +87,8 @@ const FormSalaire = props => {
             } catch (e) {
                 toast.error(e.response.data.message)
             }
+
+            setIsSubmitLoading(false)
         }
     }
 
@@ -239,6 +243,10 @@ const FormSalaire = props => {
                     </Button>
                     <Button className={classes.btn}
                         type='submit' variant='contained'
+                        disabled={isSubmitLoading}
+                        startIcon={isSubmitLoading ?
+                            <CircularProgress size='1rem' color='background' />
+                            : null}
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body2'>

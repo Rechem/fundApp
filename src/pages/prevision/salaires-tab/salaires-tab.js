@@ -8,13 +8,21 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import DetailArticle from '../../../components/detail-article-realisation/detail-article-realisation';
 import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
+import { useSelector } from 'react-redux';
+import useDebounce from '../../../custom-hooks/use-debounce';
+import { flattenObject } from '../../../utils';
 
 const SalairesTab = props => {
+
+    const authenticationState = useSelector(state => state.login)
 
     const { idProjet, tranche } = useParams()
 
     const [open, setOpen] = useState(false);
     const [salaires, setSalaires] = useState([]);
+
+    const [searchInput, setSearchInput] = useState('')
+    const debouncedSearchTerm = useDebounce(searchInput, 500);
 
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -50,8 +58,9 @@ const SalairesTab = props => {
     }
 
     useEffect(() => {
+        if (authenticationState.user.idUser)
         fetchSalaires()
-    }, [idProjet, tranche])
+    }, [idProjet, tranche, authenticationState.user.idUser])
 
     const deleteSalaire = async () => {
         await axios.delete(
@@ -81,6 +90,11 @@ const SalairesTab = props => {
         handleDialogClickOpen()
     }
 
+    const onChangeHandler = e => {
+        const { name, value } = e.target
+        setSearchInput(value)
+    }
+
     let formUI = null
 
     const [form, setForm] = useState('ajouter')
@@ -91,14 +105,20 @@ const SalairesTab = props => {
                 values={selectedItem}
                 projetId={idProjet}
                 numeroTranche={tranche}
-                afterSubmit={fetchSalaires}
+                afterSubmit={() => {
+                    fetchSalaires()
+                    props.updatePrevision()
+                }}
                 onClose={handleDialogClose} />
             break;
         case 'details':
             formUI = <DetailArticle
                 type='salaire'
                 isRealisation={props.isRealisation ? true : false}
-                afterSubmit={fetchSalaires}
+                afterSubmit={()=>{
+                    fetchSalaires()
+                    props.updateRealisation()
+                }}
                 selectedItem={selectedItem}
                 onClose={handleDialogClose} />
             break;
@@ -109,7 +129,10 @@ const SalairesTab = props => {
     return (
         <div>
             <Toolbar style={{ marginBlock: '1rem' }}
-                onClick={handleOpenAdd} hideButton={props.cannotEdit} />
+                onClick={handleOpenAdd} hideButton={props.cannotEdit}
+                onRefresh={fetchSalaires}
+                searchValue={searchInput}
+                        onSearchChangeHandler={onChangeHandler}/>
             <SalairesTable
                 openDeleteConfirmation={handleOpenDelete}
                 openEditForm={handleOpenEdit}
@@ -117,12 +140,20 @@ const SalairesTab = props => {
                 cannotEdit={props.cannotEdit}
                 isRealisation={props.isRealisation ? true : false}
                 isLoading={isLoading}
-                salaires={salaires} />
+                salaires={salaires.filter(r => {
+                    const flat = flattenObject(r)
+                    const values = Object.values(flat)
+                    return values.concat(flat.nbPersonne*flat.nbMois*flat.salaireMensuel)
+                    .some(e => e?.toString().toLowerCase()
+                    .includes(debouncedSearchTerm.toLowerCase()))
+                })} />
             <CustomModal open={open} onClose={handleDialogClose}>
                 {formUI}
             </CustomModal>
             {selectedItem && <ConfirmationDialog open={openAlert}
-                afterSubmit={fetchSalaires}
+                afterSubmit={() => {
+                    fetchSalaires()
+                    props.updatePrevision()}}
                 onClose={() => setOpenAlert(false)}
                 onConfirm={deleteSalaire}>
                 Voulez vous vraiment supprimer cet article ?

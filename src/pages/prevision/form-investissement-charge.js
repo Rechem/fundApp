@@ -23,6 +23,7 @@ const FormInvestissement = props => {
     const [type, setType] = useState(props.values ? props.values.type : null)
     const [openType, setOpenType] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
     const [types, setTypes] = useState([])
 
@@ -72,7 +73,7 @@ const FormInvestissement = props => {
 
         temp.montantUnitaire = values.montantUnitaire === '' ? 'Vous devez entrer le montant unitaire' : ''
         temp.quantite = values.quantite === '' ? 'Vous devez entrer la quantité' : ''
-        temp.lien = (radio === 'facture' && (selectedFile === null || (props.values && !props.values.facture)))
+        temp.lien = (radio === 'facture' && (selectedFile === null && (!props.values || props.values && !props.values.facture)))
             || (radio === 'lien' && values.lien === '') ?
             'Vous devez fournir une facture (devi) ou un lien vers un plan de paiement' : ''
 
@@ -83,6 +84,8 @@ const FormInvestissement = props => {
     const submit = async e => {
         e.preventDefault()
         if (validate()) {
+
+            setIsSubmitLoading(true)
             try {
                 let response
                 const formData = new FormData()
@@ -119,6 +122,7 @@ const FormInvestissement = props => {
             } catch (e) {
                 toast.error(e.response.data.message)
             }
+            setIsSubmitLoading(false)
         }
     }
 
@@ -259,21 +263,20 @@ const FormInvestissement = props => {
                         Total: {Number(values.montantUnitaire * values.quantite)} DZD
                     </Box>
                 }
-                <div>
-                    <FormControl>
-                        <RadioGroup
-                            row
-                            name="controlled-radio-buttons-group"
-                            value={radio}
-                            onChange={handleChangeRadio}
-                        >
-                            <FormControlLabel value="facture" control={<Radio />} label="Facture" />
-                            <FormControlLabel value="lien" control={<Radio />} label="Lien" />
-                        </RadioGroup>
-                    </FormControl>
-                </div>
+                <FormControl fullWidth>
+                    <RadioGroup
+                        row
+                        name="controlled-radio-buttons-group"
+                        value={radio}
+                        onChange={handleChangeRadio}
+                    >
+                        <FormControlLabel value="facture" control={<Radio />} label="Facture" />
+                        <FormControlLabel value="lien" control={<Radio />} label="Lien" />
+                    </RadioGroup>
+                </FormControl>
                 {radio === 'lien' &&
                     <CustomTextField
+                        className={classes.field}
                         placeholder='http://www.example.com/'
                         name='lien'
                         id='lien-field'
@@ -316,11 +319,13 @@ const FormInvestissement = props => {
                         </div>
                     </FormControl>}
                 {errors.lien !== '' &&
-                    <FormControl error={errors.lien !== ''}>
+                    <FormControl fullWidth
+                        error={errors.lien !== ''}>
                         <FormHelperText>
                             {errors.lien}
                         </FormHelperText>
-                    </FormControl>}
+                    </FormControl>
+                }
                 <div className={classes.btnContainer}>
                     <Button className={classes.btn}
                         onClick={props.onClose}
@@ -330,6 +335,10 @@ const FormInvestissement = props => {
                     </Button>
                     <Button className={classes.btn}
                         type='submit' variant='contained'
+                        disabled={isSubmitLoading}
+                        startIcon={isSubmitLoading ?
+                            <CircularProgress size='1rem' color='background' />
+                            : null}
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body2'>

@@ -2,6 +2,9 @@ import MaterialTable from "@material-table/core";
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, useTheme, Radio, Box } from "@mui/material";
 import { Link } from "react-router-dom";
+import { statusCommission } from "../../../utils";
+import { fetchAllCommissions } from "../../../api/api-calls";
+import dayjs from "dayjs";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
@@ -22,7 +25,6 @@ const SelectCommissionTable = props => {
         },
         {
             title: "Date",
-            width: '10%',
             field: 'dateCommission',
             align: 'center',
             render: (rowData) =>
@@ -36,7 +38,7 @@ const SelectCommissionTable = props => {
             align: 'center',
             render: (rowData) =>
                 <Typography align="left" marginX='1rem'
-                >{rowData.president.nomMembre} {rowData.president.prenomMembre}
+                >{rowData.nomPrenomPresident}
                 </Typography>
         },
         {
@@ -64,17 +66,19 @@ const SelectCommissionTable = props => {
 
     return <React.Fragment>
         <MaterialTable
-            localization={{
-                body:
-                {
-                    emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                        "Aucun résultat" : "Rien à afficher"
-                }
-            }}
+        tableRef={props.tableRef}
+            // localization={{
+            //     body:
+            //     {
+            //         emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
+            //             "Aucun résultat" : "Rien à afficher"
+            //     }
+            // }}
             onRowClick={(_, rowData) => { props.onChangeHandler(rowData.idCommission) }}
             columns={columns}
-            data={props.commissions}
-            isLoading={props.isLoading}
+            data={query => fetchAllCommissions({ search: props.searchValue,
+            etat: statusCommission.pending })(query)}
+            // isLoading={props.isLoading}
             options={{
                 toolbar: false, draggable: false, search: true, padding: 'dense',
                 pageSize: 4, paginationType: 'stepped', pageSizeOptions: [],

@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 
 const CustomStepper = props => {
 
+    console.log();
+
     const navigate = useNavigate()
 
     const theme = useTheme()
@@ -26,11 +28,14 @@ const CustomStepper = props => {
 
     const activeItems = props.activeSteps
 
-    if (!props.steps || !props.activeSteps || props.steps < 0)
+    if (!props.steps || props.activeSteps < 0 || props.steps < 0) {
+        console.log('nigger');
         return 'Paramètres incorrectes'
+    }
+    if (props.activeSteps > 0 && props.onClick && props.activeSteps !== props.onClick.length) {
+            return 'Paramètres incorrectes'
+    }
 
-    if (props.onClick && props.activeSteps !== props.onClick.length)
-        return 'Paramètres incorrectes'
     return (
         <div className={props.className}>
             <div className={classes.container}>
@@ -53,7 +58,7 @@ const CustomStepper = props => {
                                 selectedStyle(props.onClick) : activeItems >= index + 2 ?
                                     activeStyle(props.onClick) : null}
 
-                            onClick={props.onClick &&  activeItems >= index + 2 && props.active !== index + 2 ?
+                            onClick={props.onClick && activeItems >= index + 2 && props.active !== index + 2 ?
                                 () => navigate(props.onClick[index + 1]) : null}>
                             {index + 2}</div>
                     </div>

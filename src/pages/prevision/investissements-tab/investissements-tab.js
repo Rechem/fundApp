@@ -8,13 +8,21 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
 import CustomModal from '../../../components/custom-modal/custom-modal';
+import { useSelector } from 'react-redux';
+import useDebounce from '../../../custom-hooks/use-debounce';
+import { flattenObject } from '../../../utils';
 
 const InvestissementsTab = props => {
+
+    const authenticationState = useSelector(state => state.login)
 
     const { idProjet, tranche } = useParams()
 
     const [open, setOpen] = useState(false);
     const [investissements, setInvestissements] = useState([]);
+
+    const [searchInput, setSearchInput] = useState('')
+    const debouncedSearchTerm = useDebounce(searchInput, 500);
 
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -77,6 +85,11 @@ const InvestissementsTab = props => {
         setIsLoading(false)
     }
 
+    const onChangeHandler = e => {
+        const { name, value } = e.target
+        setSearchInput(value)
+    }
+
     let formUI = null
 
     const [form, setForm] = useState('ajouter-modifier')
@@ -88,7 +101,9 @@ const InvestissementsTab = props => {
                 type='investissement'
                 projetId={idProjet}
                 numeroTranche={tranche}
-                afterSubmit={fetchInvestissements}
+                afterSubmit={()=> {
+                    fetchInvestissements()
+                    props.updatePrevision()}}
                 onClose={handleDialogClose} />
             break;
         case 'details':
@@ -96,7 +111,10 @@ const InvestissementsTab = props => {
                 isRealisation={props.isRealisation ? true : false}
                 type='investissement'
                 selectedItem={selectedItem}
-                afterSubmit={fetchInvestissements}
+                afterSubmit={()=> {
+                    fetchInvestissements()
+                    props.updateRealisation()
+                }}
                 onClose={handleDialogClose} />
             break;
         default:
@@ -104,13 +122,17 @@ const InvestissementsTab = props => {
     }
 
     useEffect(() => {
+        if (authenticationState.user.idUser)
         fetchInvestissements()
-    }, [idProjet, tranche])
+    }, [idProjet, tranche, authenticationState.user.idUser])
 
     return (
         <div>
             <Toolbar style={{ marginBlock: '1rem' }} onClick={handleOpenAdd}
-                hideButton={props.cannotEdit} />
+                hideButton={props.cannotEdit}
+                onRefresh={fetchInvestissements}
+                searchValue={searchInput}
+                        onSearchChangeHandler={onChangeHandler}/>
             <InvestissementsTable
                 openDeleteConfirmation={handleOpenDelete}
                 openEditForm={handleOpenEdit}
@@ -118,12 +140,20 @@ const InvestissementsTab = props => {
                 cannotEdit={props.cannotEdit}
                 isRealisation={props.isRealisation ? true : false}
                 isLoading={isLoading}
-                data={investissements} />
+                data={investissements.filter(r => {
+                    const flat = flattenObject(r)
+                    const values = Object.values(flat)
+                    return values.concat(flat.montantUnitaire*flat.quantite)
+                    .some(e => e?.toString().toLowerCase()
+                    .includes(debouncedSearchTerm.toLowerCase()))
+                })} />
             <CustomModal open={open} onClose={handleDialogClose}>
                 {formUI}
             </CustomModal>
             {selectedItem && <ConfirmationDialog open={openAlert}
-                afterSubmit={fetchInvestissements}
+                afterSubmit={()=> {
+                    fetchInvestissements()
+                    props.updatePrevision()}}
                 onClose={() => setOpenAlert(false)}
                 onConfirm={deleteInvestissement}>
                 Voulez vous vraiment supprimer cet article ?

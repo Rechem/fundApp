@@ -1,11 +1,10 @@
-import { Button, Typography, FormHelperText, FormControl } from '@mui/material';
+import { Button, Typography, FormHelperText, FormControl, CircularProgress } from '@mui/material';
 import { CustomTextField, CustomCheckBox } from '../../theme';
 import classes from './inscription.module.css'
 import React, { useState } from 'react';
-import ErrorDisplay from '../../components/error-display/error-display';
-import { Navigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux'
-import { signUp } from '../../store/loginSlice/reducer';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const initialValues = {
     email: '',
@@ -16,11 +15,11 @@ const initialValues = {
 
 const Inscription = () => {
 
-    const dispatch = useDispatch()
-    const authenticationState = useSelector(state => state.login)
+    const navigate = useNavigate()
 
     const [values, setValues] = useState(initialValues)
     const [errors, setErrors] = useState({})
+    const [isLoading, setIsLoading] = useState(false)
 
     const onChangeHandler = e => {
         const { name, value } = e.target
@@ -49,27 +48,23 @@ const Inscription = () => {
         // setResponseError(null)
         e?.preventDefault()
         if (validateForm()) {
-            console.log('Form is valid')
-            dispatch(signUp({
-                email: values.email,
-                password: values.password,
-            }))
-        }
-    }
-
-    let redirect = null
-
-    if (authenticationState.status === 'connected') {
-        if (authenticationState.user.completedSignup) {
-            redirect = <Navigate to="/demandes" />
-        } else {
-            redirect = <Navigate to="/complete-signup" />
+            setIsLoading(true)
+            try {
+                const response = await axios.post(
+                    `/users/signup`, {
+                    email: values.email,
+                    password: values.password,
+                })
+                navigate('/confirmEmail')
+            } catch (e) {
+                toast.error(e.response.data.message)
+            }
+            setIsLoading(false)
         }
     }
 
     return (
         <React.Fragment>
-            {/* {redirect} */}
             <div className={classes.container}>
                 <form onSubmit={submitSignUpForm}>
 
@@ -77,11 +72,6 @@ const Inscription = () => {
                         className={classes.hdr}>
                         Inscription
                     </Typography>
-
-                    {authenticationState.error !== '' &&
-                        <ErrorDisplay>
-                            {authenticationState.error}
-                        </ErrorDisplay>}
 
                     <Typography variant='body2' fontWeight={400} className={classes.lbl}>
                         Email
@@ -125,7 +115,7 @@ const Inscription = () => {
                         value={values.confirmPassword}
                         {...(errors.confirmPassword && errors.confirmPassword !== '' && { error: true, helperText: errors.confirmPassword })}>
                     </CustomTextField>
-                    <FormControl error={errors.agreesToTos!=null && errors.agreesToTos !== ''}>
+                    <FormControl error={errors.agreesToTos != null && errors.agreesToTos !== ''}>
                         <span className={classes.chckbxcontainer}
                             onClick={() => onChangeHandler({ target: { name: 'agreesToTos', value: !values.agreesToTos } })}>
                             <CustomCheckBox className={classes.chckbx} size='small'
@@ -137,7 +127,11 @@ const Inscription = () => {
                         {errors.agreesToTos && errors.agreesToTos !== ''
                             && <FormHelperText>{errors.agreesToTos}</FormHelperText>}
                     </FormControl>
-                    <Button variant='contained' className={classes.btn} onClick={submitSignUpForm}>
+                    <Button variant='contained' className={classes.btn}
+                        onClick={submitSignUpForm}
+                        disabled={isLoading}
+                        startIcon={isLoading ? <CircularProgress size="1rem"
+                            color='background' /> : null}>
                         <Typography color='white' fontWeight={600} >S'inscrire</Typography>
                     </Button>
                 </form>

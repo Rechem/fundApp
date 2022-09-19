@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import classes from './prevision.module.css'
 import {
     Box, Tabs, useTheme, Divider, Grid, MenuItem, Dialog,
-    CircularProgress, Popper, Grow, Button, Paper
+    CircularProgress, Popper, Grow, Button, Paper, Typography
 } from '@mui/material';
 import TabPanel from '../../components/tab-panel/tab-panel';
 import { CustomSelect, CustomTab } from '../../theme';
@@ -14,11 +14,11 @@ import CustomStepper from '../../components/custom-stepper/custom-stepper';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllProjets } from '../../store/projetsSlice/reducer';
 import { isSimpleUser, statusPrevision } from '../../utils'
 import Status from '../../components/status/status';
 import { isAdmin } from '../../utils';
 import FormEvaluerPrevision from '../../components/form/form-evaluer-prevision/form-evaluer-prevision';
+import Motif from '../../components/motif/motif';
 
 const scrollToRef = (ref) => window.scrollTo(0, ref.current.offsetTop)
 
@@ -26,8 +26,6 @@ const Prevision = () => {
 
     const navigate = useNavigate()
 
-    const dispatch = useDispatch()
-    const projetsState = useSelector(state => state.projets)
     const authenticationState = useSelector(state => state.login)
 
     const { idProjet, tranche } = useParams()
@@ -37,23 +35,6 @@ const Prevision = () => {
     const textColor = theme.palette.text.main
     const primaryColor = theme.palette.primary.main
 
-    const [currentIdProjet, setCurrentIdProjet] = useState(null)
-
-    const handleChangeSelect = async (event) => {
-        if (event.target.value.idProjet != idProjet) {
-            setPrevision(null)
-            navigate(`/projets/${event.target.value.idProjet}/prevision/1`)
-        }
-    };
-
-    const handleCloseSelect = () => {
-        setOpenSelect(false);
-    };
-
-    const handleOpenSelect = () => {
-        setOpenSelect(true);
-        dispatch(fetchAllProjets())
-    };
 
     const [tabValue, setTabValue] = useState(0);
 
@@ -74,8 +55,6 @@ const Prevision = () => {
     const handleDialogClose = () => {
         setOpenDialog(false);
     };
-
-    const [openSelect, setOpenSelect] = useState(false);
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
@@ -102,21 +81,59 @@ const Prevision = () => {
     const fetchPrevisionDetails = async () => {
         try {
             const response = await axios.get(`/previsions/${idProjet}/${tranche}`)
-            setCurrentIdProjet(response.data.data.prevision.projet)
             setPrevision(response.data.data.prevision)
         } catch (e) {
-            toast.error(e.response.data.message)
+            if (e.response.status === 404)
+                    navigate('/notfound')
+                else
+                    toast.error(e.response.data.message)
         }
     }
 
     const cannotEdit = !prevision ||
-    !((prevision.etat === statusPrevision.brouillon
-        || prevision.etat === statusPrevision.refused)
-    && isSimpleUser(authenticationState))
+        !((prevision.etat === statusPrevision.brouillon
+            || prevision.etat === statusPrevision.refused)
+            && isSimpleUser(authenticationState))
+
+    const getMotifs = async () => {
+        try {
+            const response = await axios.get(
+                `/motifs/prevision/${prevision.projet.idProjet}/${prevision.numeroTranche}`)
+            return response.data.data.motifsPrevision
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const setSeenMotifs = async () => {
+        try {
+            await axios.patch(
+                `/motifs/prevision/${prevision.projet.idProjet}/${prevision.numeroTranche}`)
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const dispatchSeenPrevisions = async () => {
+        if (isSimpleUser(authenticationState) && prevision
+        && !prevision.seenByUser
+        ) {
+            try {
+                await axios.patch(`/previsions/seenByUser/${prevision.projet.idProjet}/${prevision.numeroTranche}`)
+            } catch (e) {
+            }
+        }
+    }
 
     useEffect(() => {
+        if (authenticationState.user.idUser)
         fetchPrevisionDetails()
-    }, [idProjet, tranche])
+    }, [idProjet, tranche, authenticationState.user.idUser])
+
+    useEffect(() => {
+        if (authenticationState.user.idUser)
+        dispatchSeenPrevisions()
+    }, [prevision, authenticationState.user.idUser])
 
     return (
         <>
@@ -128,19 +145,28 @@ const Prevision = () => {
                     Prévision
                 </Box>
                 {!prevision ? <CircularProgress size='2rem' /> :
-                    prevision.etat === statusPrevision.pending && isAdmin(authenticationState)
-                        || ((prevision.etat === statusPrevision.brouillon || prevision.etat === statusPrevision.refused)
-                            && isSimpleUser(authenticationState)) ?
-                        <Button variant='contained'
-                            onClick={isSimpleUser(authenticationState) ? submitPrevision : handleDialogClickOpen}
-                            className={classes.submitButton}>
-                            <Box color='white'>
-                                {isAdmin(authenticationState) ? 'Evaluer' : 'Envoyer'}
-                            </Box>
-                        </Button> :
-                        <div>
-                            <Status status={prevision.etat} />
-                        </div>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        < Motif getMotifs={getMotifs}
+                            setSeenMotifs={setSeenMotifs}
+                            style={{ marginRight: '1rem' }} />
+                        {prevision.etat === statusPrevision.pending && isAdmin(authenticationState)
+                            || ((prevision.etat === statusPrevision.brouillon || prevision.etat === statusPrevision.refused)
+                                && isSimpleUser(authenticationState)) ?
+                            <Button variant='contained'
+                                onClick={isSimpleUser(authenticationState) ? submitPrevision : handleDialogClickOpen}
+                                className={classes.submitButton}>
+                                <Box color='white'>
+                                    {isAdmin(authenticationState) ? 'Evaluer' : 'Envoyer'}
+                                </Box>
+                            </Button> :
+                            <div>
+                                <Status status={prevision.etat} />
+                            </div>
+                        }
+                    </div>
                 }
             </div>
             {!prevision ?
@@ -150,25 +176,9 @@ const Prevision = () => {
                     <Grid container columns={12} columnSpacing={6} mb='2rem'>
                         <Grid item xs={12} sm={4}
                             sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', }}>
-                            <CustomSelect
-                                defaultValue=""
-                                value={currentIdProjet}
-                                renderValue={e => e.demande.denominationCommerciale}
-                                size='small'
-                                open={openSelect}
-                                onClose={handleCloseSelect}
-                                onOpen={handleOpenSelect}
-                                onChange={handleChangeSelect}>
-                                {projetsState.status === 'fetching' ?
-                                    <MenuItem style={{ opacity: 1 }} disabled>
-                                        <CircularProgress size='2rem' style={{ display: 'block', margin: 'auto' }} />
-                                    </MenuItem>
-                                    :
-                                    projetsState.projets.map((e) => e.previsions.length > 0 ? <MenuItem
-                                        key={e.idProjet} value={e}>
-                                        {e.demande.denominationCommerciale}</MenuItem> : null)
-                                }
-                            </CustomSelect>
+                            <Typography variant='subtitle2'>
+                                {prevision.projet.demande.denominationCommerciale}
+                            </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}
                             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'column' }}>
@@ -180,22 +190,32 @@ const Prevision = () => {
                                     active={prevision.numeroTranche}
                                     steps={prevision.projet.tranche.nbTranches}
                                     activeSteps={prevision.maxTranche}
-                                    onClick={Array(prevision.maxTranche).fill(0).map((e,i) =>
+                                    onClick={Array(prevision.maxTranche).fill(0).map((e, i) =>
                                         `/projets/${idProjet}/prevision/${i + 1}`)}
                                 /> :
                                 <i style={{ display: 'block' }}>Pas encore soumis</i>
                             }
                         </Grid>
                         <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                            <Box sx={{
-                                color: theme.palette.text.main,
-                                typography: 'subtitle2',
-                            }} >
-                                {prevision && prevision.valeurPrevision}
-                                {' '}/ {prevision &&
+                            <Typography
+                                color={prevision.valeurPrevision >
+                                        (prevision.projet.tranche.pourcentage[prevision.numeroTranche - 1]
+                                        * prevision.projet.montant) ?
+                                            theme.palette.error.main :
+                                        theme.palette.text.main}
+                                variant= 'subtitle2'
+                                display= 'inline' >
+                                {prevision.valeurPrevision}
+                            </Typography>
+                            <Typography
+                                color= {theme.palette.text.main}
+                                variant= 'subtitle2'
+                                display= 'inline'
+                            >
+                                / {
                                     prevision.projet.tranche.pourcentage[prevision.numeroTranche - 1]
                                     * prevision.projet.montant} DZD
-                            </Box>
+                            </Typography>
                         </Grid>
                     </Grid>
                     <Dialog open={openDialog} onClose={handleDialogClose} fullWidth>
@@ -209,48 +229,35 @@ const Prevision = () => {
                                 onClose={handleDialogClose} />
                         </Box>
                     </Dialog>
-                {/* </>
-            } */}
-            <Tabs value={tabValue} onChange={handleTabChange}>
-                <CustomTab label="Investissements" />
-                <CustomTab label="Salaires" />
-                <CustomTab label="Charges externes" />
-            </Tabs>
-            <Divider />
-            <TabPanel value={tabValue} index={0} >
-                <InvestissementsTab setTotal={setTotal}
-                    cannotEdit={cannotEdit} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={1} >
-                <SalairesTab setTotal={setTotal}
-                    cannotEdit={cannotEdit} />
-            </TabPanel>
-            <TabPanel value={tabValue} index={2} >
-                <ChargesTab setTotal={setTotal}
-                    cannotEdit={cannotEdit} />
-            </TabPanel>
-            <div className={classes.footer}>
-                <div>
-                    <span>Total:</span>
-                    <Box component='span'
-                        sx={{ marginLeft: '0.5rem', color: primaryColor }}>{total} DZD</Box>
-                </div>
-                <Box>
-                    <Button variant='text' onClick={handleClick}>
-                        Aller a
-                    </Button>
-                    <Popper open={open} anchorEl={anchorEl} placement={'top-end'} transition>
-                        {({ TransitionProps }) => (
-                            <Grow {...TransitionProps} timeout={350}>
-                                <Paper>
-                                    The content of the Popper.
-                                </Paper>
-                            </Grow>
-                        )}
-                    </Popper>
-                </Box>
-            </div>
-            </>
+                    <Tabs value={tabValue} onChange={handleTabChange}>
+                        <CustomTab label="Investissements" />
+                        <CustomTab label="Salaires" />
+                        <CustomTab label="Charges externes" />
+                    </Tabs>
+                    <Divider />
+                    <TabPanel value={tabValue} index={0} >
+                        <InvestissementsTab setTotal={setTotal}
+                            updatePrevision={fetchPrevisionDetails}
+                            cannotEdit={cannotEdit} />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={1} >
+                        <SalairesTab setTotal={setTotal}
+                            updatePrevision={fetchPrevisionDetails}
+                            cannotEdit={cannotEdit} />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={2} >
+                        <ChargesTab setTotal={setTotal}
+                            updatePrevision={fetchPrevisionDetails}
+                            cannotEdit={cannotEdit} />
+                    </TabPanel>
+                    <div className={classes.footer}>
+                        <div>
+                            <span>Total:</span>
+                            <Box component='span'
+                                sx={{ marginLeft: '0.5rem', color: primaryColor }}>{total} DZD</Box>
+                        </div>
+                    </div>
+                </>
             }
         </>
     );

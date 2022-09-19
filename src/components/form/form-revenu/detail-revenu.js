@@ -85,8 +85,7 @@ const DetailRevenu = props => {
 
         setIsLoading(true)
         try {
-            const response = await axios.patch(`/revenus/${props.selectedItem.projetId}/
-            ${props.selectedItem.idRevenu}`,requestObject)
+            const response = await axios.patch(`/revenus/${props.selectedItem.projetId}/${props.selectedItem.idArticleRevenu}`,requestObject)
             setIsLoading(false)
             toast.success(response.data.message)
             props.afterSubmit()
@@ -106,7 +105,7 @@ const DetailRevenu = props => {
                 step === 'accepter' &&
                 <>
                     <Typography variant='subtitle2' fontWeight={700} mb='1.5rem'
-                    >Accepter ce justificatif ?</Typography>
+                    >Accepter ce revenu ?</Typography>
                     <Typography><i>Cette action est irréversible.</i></Typography>
                 </>
             }
@@ -115,7 +114,7 @@ const DetailRevenu = props => {
                 step === 'refuser' &&
                 <>
                     <Typography variant='subtitle2' fontWeight={700} mb='1.5rem'
-                    >Refuser ce justificatif ?</Typography>
+                    >Refuser ce revenu ?</Typography>
                     <Typography variant='body2'>Veuillez indiquer le motif de refus:</Typography>
                     <CustomTextField
                         fullWidth

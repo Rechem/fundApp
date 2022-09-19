@@ -25,54 +25,54 @@ const Status = ({ status }) => {
 
     switch (status) {
         case STATUS.accepted:
-        case statusUser.confirmed:
+        case statusUser.completed:
             message = status
             messageColor = theme.palette.success.main
-            containerColor = tinycolor(theme.palette.success.main).setAlpha(.1)
+            containerColor = tinycolor(theme.palette.success.main).setAlpha(.15)
             break;
         case STATUS.refused:
         case statusUser.banned:
             message = status
             messageColor = theme.palette.error.main
-            containerColor = tinycolor(theme.palette.error.main).setAlpha(.1)
+            containerColor = tinycolor(theme.palette.error.main).setAlpha(.15)
             break;
         case STATUS.pending:
         case STATUS.pendingEvaluation:
-        case statusUser.notConfirmed:
+        case statusUser.notCompleted:
             message = status
             messageColor = theme.palette.warning.main
-            containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
+            containerColor = tinycolor(theme.palette.warning.main).setAlpha(.15)
             break;
         case STATUS.preselectionnee:
-            message = status
+            message = 'Pré-\nselectionnée'
             messageColor = theme.palette.warning.main
-            containerColor = tinycolor(theme.palette.warning.main).setAlpha(.1)
+            containerColor = tinycolor(theme.palette.warning.main).setAlpha(.15)
             break;
         case STATUS.programmee:
             message = status
             messageColor = '#706fd3'
-            containerColor = tinycolor('#706fd3').setAlpha(.1)
+            containerColor = tinycolor('#706fd3').setAlpha(.15)
             break;
         case STATUS.complement:
         case STATUS.waiting:
             message = status
             messageColor = theme.palette.info.main
-            containerColor = tinycolor(theme.palette.info.main).setAlpha(.1)
+            containerColor = tinycolor(theme.palette.info.main).setAlpha(.15)
             break;
         case STATUS.terminee:
             message = status
             messageColor = theme.palette.success.main
-            containerColor = tinycolor(theme.palette.success.main).setAlpha(.2)
+            containerColor = tinycolor(theme.palette.success.main).setAlpha(.15)
             break;
         case STATUS.brouillon:
             message = status
             messageColor = '#424242'
-            containerColor = tinycolor('#424242').setAlpha(.2)
+            containerColor = tinycolor('#424242').setAlpha(.15)
             break;
         default:
             message = 'Inconnu'
             messageColor = '#424242'
-            containerColor = tinycolor('#424242').setAlpha(.2)
+            containerColor = tinycolor('#424242').setAlpha(.15)
             break;
     }
 

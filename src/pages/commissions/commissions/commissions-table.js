@@ -2,8 +2,9 @@ import MaterialTable from "@material-table/core";
 import React, { useEffect, useState } from 'react';
 import Status from "../../../components/status/status";
 import { Paper, Typography, useTheme, Modal, Box } from "@mui/material";
-import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { fetchAllCommissions } from "../../../api/api-calls";
+import dayjs from "dayjs";
 
 const cellStyle = { textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: 100 }
 
@@ -16,7 +17,6 @@ const CommissionsTable = props => {
     const columns = [
         {
             title: "Date",
-            width: '10%',
             field: 'dateCommission',
             align: 'center',
             render: (rowData) =>
@@ -34,10 +34,11 @@ const CommissionsTable = props => {
 
         {
             title: "Président",
+            field: 'nomPrenomPresident',
             align: 'center',
             render: (rowData) =>
                 <Typography align="left" marginX='2rem'
-                >{rowData.president.nomMembre} {rowData.president.prenomMembre}
+                >{rowData.nomPrenomPresident}
                 </Typography>
         },
         {
@@ -63,16 +64,19 @@ const CommissionsTable = props => {
 
     return <React.Fragment>
         <MaterialTable
-            localization={{
-                body:
-                {
-                    emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                        "Aucun résultat" : "Rien à afficher"
-                }
-            }}
+            tableRef={props.tableRef}
+            // localization={{
+            //     body:
+            //     {
+            //         emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
+            //             "Aucun résultat" : "Rien à afficher"
+            //     }
+            // }}
             columns={columns}
-            data={props.commissions}
-            isLoading={props.isLoading}
+            data={query => fetchAllCommissions({ search: props.searchValue, })(query)
+                // props.commissions
+            }
+            // isLoading={props.isLoading}
             options={{
                 toolbar: false, draggable: false, search: true, padding: 'dense',
                 pageSize: 10, paginationType: 'stepped', pageSizeOptions: [],

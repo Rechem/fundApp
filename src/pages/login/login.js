@@ -5,7 +5,8 @@ import React, { useEffect, useState } from 'react';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useSelector, useDispatch } from 'react-redux'
 import { signIn } from '../../store/loginSlice/reducer';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const initialValues = {
     email: '',
@@ -14,6 +15,8 @@ const initialValues = {
 }
 
 const Login = () => {
+
+    const { state } = useLocation();
 
     const dispatch = useDispatch()
     const authenticationState = useSelector(state => state.login)
@@ -50,19 +53,15 @@ const Login = () => {
         }
     }
 
-    let redirect = null
+    useEffect(() => {
+        if (state === 'succes')
+            toast.success('Succès')
+        else if (state === 'fail')
+            toast.error('Une erreur est survenu')
+    }, [state])
 
-    if(authenticationState.status === 'connected'){
-        if(authenticationState.user.completedSignup){
-            redirect = <Navigate to="/demandes"/>
-        }else{
-            redirect = <Navigate to="/complete-signup"/>
-        }
-    }
-    
     return (
         <React.Fragment>
-            {/* {redirect} */}
             <div className={classes.container}>
                 <form onSubmit={submitSignInForm}>
                     <Typography variant='h3' fontWeight={700}
@@ -103,19 +102,10 @@ const Login = () => {
                         value={values.password}
                         {...(errors.password && errors.password !== '' && { error: true, helperText: errors.password })}>
                     </CustomTextField>
-
-                    {/* <span className={classes.chckbxcontainer}
-                        onClick={() => onChangeHandler({ target: { name: 'stayLoggedIn', value: !values.stayLoggedIn } })}>
-                        <CustomCheckBox className={classes.chckbx} size='small'
-                            checked={values.stayLoggedIn}></CustomCheckBox>
-                        <Typography display='inline' marginLeft='0.5rem' variant='body2'>
-                            Rester connecté
-                        </Typography>
-                    </span> */}
                     <Button variant='contained' className={classes.btn} onClick={submitSignInForm}
-                    disabled={authenticationState.status==='loading'}
-                    startIcon={authenticationState.status==='loading' ? <CircularProgress size="1rem"
-                    color='background'/> : null}>
+                        disabled={authenticationState.status === 'loading'}
+                        startIcon={authenticationState.status === 'loading' ? <CircularProgress size="1rem"
+                            color='background' /> : null}>
                         <Typography color='white' fontWeight={600} >Se connecter</Typography>
                     </Button>
                 </form>

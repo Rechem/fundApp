@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import classes from './realisation.module.css'
 import {
-    Box, Tabs, useTheme, Divider, Grid, MenuItem, Dialog,
+    Box, Tabs, useTheme, Divider, Grid, Typography, Dialog,
     CircularProgress, Popper, Grow, Button, Paper
 } from '@mui/material';
 import TabPanel from '../../components/tab-panel/tab-panel';
@@ -14,7 +14,6 @@ import CustomStepper from '../../components/custom-stepper/custom-stepper';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllProjets } from '../../store/projetsSlice/reducer';
 import { isSimpleUser, statusRealisation } from '../../utils'
 import Status from '../../components/status/status';
 import { isAdmin } from '../../utils';
@@ -24,8 +23,6 @@ const Prevision = () => {
 
     const navigate = useNavigate()
 
-    const dispatch = useDispatch()
-    const projetsState = useSelector(state => state.projets)
     const authenticationState = useSelector(state => state.login)
 
     const { idProjet, tranche } = useParams()
@@ -34,24 +31,6 @@ const Prevision = () => {
 
     const textColor = theme.palette.text.main
     const primaryColor = theme.palette.primary.main
-
-    const [currentIdProjet, setCurrentIdProjet] = useState(null)
-
-    const handleChangeSelect = async (event) => {
-        if (event.target.value.idProjet != idProjet) {
-            setRealisation(null)
-            navigate(`/projets/${event.target.value.idProjet}/prevision/1`)
-        }
-    };
-
-    const handleCloseSelect = () => {
-        setOpenSelect(false);
-    };
-
-    const handleOpenSelect = () => {
-        setOpenSelect(true);
-        dispatch(fetchAllProjets())
-    };
 
     const [tabValue, setTabValue] = React.useState(0);
 
@@ -69,8 +48,6 @@ const Prevision = () => {
         setOpenDialog(false);
     };
 
-    const [openSelect, setOpenSelect] = useState(false);
-
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
     const [total, setTotal] = useState(0)
@@ -85,16 +62,34 @@ const Prevision = () => {
     const fetchRealisationDetails = async () => {
         try {
             const response = await axios.get(`/realisations/${idProjet}/${tranche}`)
-            setCurrentIdProjet(response.data.data.realisation.projet)
             setRealisation(response.data.data.realisation)
         } catch (e) {
-            toast.error(e.response.data.message)
+            if (e.response.status === 404)
+                    navigate('/notfound')
+                else
+                    toast.error(e.response.data.message)
+        }
+    }
+
+    const dispatchSeenRealisations = async () => {
+        if (isSimpleUser(authenticationState) && realisation && !realisation.seenByUser) {
+            try {
+                await axios.patch(`/realisations/seenByUser/${realisation.projet.idProjet}/${realisation.numeroTranche}`)
+            } catch (e) {
+            }
         }
     }
 
     useEffect(() => {
-        fetchRealisationDetails()
-    }, [idProjet, tranche])
+        if (authenticationState.user.idUser)
+            fetchRealisationDetails()
+    }, [idProjet, tranche, authenticationState.user.idUser])
+
+
+    useEffect(() => {
+        if (authenticationState.user.idUser)
+            dispatchSeenRealisations()
+    }, [realisation, authenticationState.user.idUser])
 
     return (
         <>
@@ -117,25 +112,9 @@ const Prevision = () => {
                     <Grid container columns={12} columnSpacing={6} mb='2rem'>
                         <Grid item xs={12} sm={4}
                             sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', }}>
-                            <CustomSelect
-                                defaultValue=""
-                                value={currentIdProjet}
-                                renderValue={e => e.demande.denominationCommerciale}
-                                size='small'
-                                open={openSelect}
-                                onClose={handleCloseSelect}
-                                onOpen={handleOpenSelect}
-                                onChange={handleChangeSelect}>
-                                {projetsState.status === 'fetching' ?
-                                    <MenuItem style={{ opacity: 1 }} disabled>
-                                        <CircularProgress size='2rem' style={{ display: 'block', margin: 'auto' }} />
-                                    </MenuItem>
-                                    :
-                                    projetsState.projets.map((e) => e.previsions.length > 0 ? <MenuItem
-                                        key={e.idProjet} value={e}>
-                                        {e.demande.denominationCommerciale}</MenuItem> : null)
-                                }
-                            </CustomSelect>
+                            <Typography variant='subtitle2'>
+                                {realisation.projet.demande.denominationCommerciale}
+                            </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}
                             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'column' }}>
@@ -176,16 +155,19 @@ const Prevision = () => {
             <Divider />
             <TabPanel value={tabValue} index={0} >
                 <InvestissementsTab setTotal={setTotal}
+                    updateRealisation={fetchRealisationDetails}
                     isRealisation={true}
                     cannotEdit={true} />
             </TabPanel>
             <TabPanel value={tabValue} index={1} >
                 <SalairesTab setTotal={setTotal}
+                    updateRealisation={fetchRealisationDetails}
                     isRealisation={true}
                     cannotEdit={true} />
             </TabPanel>
             <TabPanel value={tabValue} index={2} >
                 <ChargesTab setTotal={setTotal}
+                    updateRealisation={fetchRealisationDetails}
                     isRealisation={true}
                     cannotEdit={true} />
             </TabPanel>

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import { Typography, Button, FormHelperText, FormControl, CircularProgress, Box } from '@mui/material';
 import classes from './form-accepter.module.css'
 import SelectCommissionTable from './select-commission-table';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllCommissions } from '../../../store/commissionsSlice/reducer';
 import useDebounce from '../../../custom-hooks/use-debounce';
 import axios from 'axios';
 import Toolbar from '../../toolbar/toolbar';
@@ -11,6 +10,8 @@ import { toast } from 'react-toastify';
 import { statusCommission, statusDemande } from '../../../utils';
 
 const FormAccepter = props => {
+
+    const tableRef = createRef()
 
     const [searchInput, setSearchInput] = useState('')
     const debouncedSearchTerm = useDebounce(searchInput, 500);
@@ -33,11 +34,6 @@ const FormAccepter = props => {
         setSearchInput(value)
     }
 
-    useEffect(() => {
-        if (authenticationState.user.idUser)
-            dispatch(fetchAllCommissions(debouncedSearchTerm));
-    }, [authenticationState.user.idUser, debouncedSearchTerm])
-
     const onAddToCommissionClick = () => {
         if (!selectedCommission) {
             setError('Pour celà, vous devez choisir une commission.')
@@ -52,44 +48,51 @@ const FormAccepter = props => {
         let requestObject = { idDemande: props.idDemande, etat: statusDemande.preselectionnee }
 
         if (idCommission) {
-            requestObject.etat = statusCommission.programmee
+            requestObject.etat = statusDemande.programmee
             requestObject.idCommission = idCommission
         }
+
 
         try {
             await axios.patch(
                 `/demandes`,
                 requestObject)
             setIsLoading(false)
-            props.onClose()
             props.afterSubmit()
+            props.onClose()
         } catch (e) {
             toast.error(e.response.data.message)
             setIsLoading(false)
         }
     }
 
+    const refreshTable = () => {
+        tableRef.current.onQueryChange();
+    }
+
+    useEffect(refreshTable, [debouncedSearchTerm])
+
     return (
         <div className={classes.container}>
-            <div>
-                <Typography variant='body1' fontWeight={700} display='inline'
+                <Typography variant='body1' fontWeight={700}
                     marginBottom='0.5rem' marginRight='1rem'>
                     Ajouter à une commission
                 </Typography>
-                {isLoading && <CircularProgress size='1rem' />}
-            </div>
             <div className={classes.table}>
                 <Toolbar hideButton
-                onSearchChangeHandler={onSearchChangeHandler}
-                searchValue={searchInput}/>
+                    onSearchChangeHandler={onSearchChangeHandler}
+                    searchValue={searchInput}
+                    onRefresh={refreshTable} />
                 <SelectCommissionTable
                     selectedCommission={selectedCommission}
                     onChangeHandler={onChangeHandler}
-                    commissions={commissionsState.commissions}
-                    isLoading={commissionsState.status === 'searching'}
-                    isEmptyFilterResults={commissionsState.commissions.length === 0
-                        && debouncedSearchTerm !== ''
-                    } />
+                    searchValue={debouncedSearchTerm}
+                    tableRef={tableRef}
+                // commissions={commissionsState.commissions}
+                // isLoading={commissionsState.status === 'searching'}
+                // isEmptyFilterResults={commissionsState.commissions.length === 0
+                //     && debouncedSearchTerm !== ''}
+                />
                 <FormControl fullWidth
                     error={error !== ''}>
                     {error !== '' &&
@@ -120,6 +123,10 @@ const FormAccepter = props => {
                     <Button
                         variant='contained'
                         onClick={onAddToCommissionClick}
+                        disabled={isLoading}
+                        startIcon={isLoading ?
+                            <CircularProgress size='1rem' color='background' />
+                            : null}
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body1'>

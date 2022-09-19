@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createRef } from 'react';
 import classes from './commission.module.css'
 import {
     useTheme, Typography, MenuItem, CircularProgress,
@@ -19,7 +19,8 @@ import CreationProjetsInfo from '../../../components/creation-projets-info/creat
 import { useNavigate } from 'react-router-dom'
 import FormAjouterDemande from '../../../components/form/form-ajouter-demande/form-ajouter-demande';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useDebounce from '../../../custom-hooks/use-debounce';
+import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
 
 const Commission = () => {
 
@@ -27,13 +28,16 @@ const Commission = () => {
 
     const theme = useTheme()
 
+    const [searchInput, setSearchInput] = useState('')
+
+    const debouncedSearchTerm = useDebounce(searchInput, 500);
+
     const [etatCommission, setEtatCommission] = useState(statusCommission.pending)
     const [etatDemandes, setEtatDemandes] = useState({})
     const authenticationState = useSelector(state => state.login)
 
     const [commission, setCommission] = useState('')
     const [projets, setProjets] = useState([])
-    // const [isLoading, setIsloading] = useState(true)
     const [errors, setErrors] = useState({})
 
     const updateEtatDemandes = (id, etat) => {
@@ -62,6 +66,22 @@ const Commission = () => {
     const handleDialogClose = () => {
         setOpen(false);
     };
+
+    const [selectedDemande, setSelectedDemande] = useState(null)
+
+    const [openAlert, setOpenAlert] = useState(false)
+
+    const deprogrammerDemande = async () => {
+        await axios.patch(`/demandes`, {
+            idDemande: selectedDemande.idDemande,
+            etat: statusDemande.pending,
+        })
+    }
+
+    const openDeleteConfirmation = demande => {
+        setSelectedDemande(demande)
+        setOpenAlert(true)
+    }
 
     const navigate = useNavigate();
     const inputFile = useRef(null)
@@ -94,7 +114,7 @@ const Commission = () => {
 
         temp.demandes = commission.demandes.length > 0 ? !demandesAreValid ? "L'état d'une ou plusieurs demande n'as pas été modifié" : ''
             : "Vous n'avez pas de demandes pour cette commission"
-        temp.rapport = !selectedFile ? "Vous devez ajouter le rapport de commission" : ''   
+        temp.rapport = !selectedFile ? "Vous devez ajouter le rapport de commission" : ''
 
         setErrors({ ...temp })
         return Object.values(temp).every(x => x === '')
@@ -121,21 +141,6 @@ const Commission = () => {
         }
     }
 
-    // const updateCommission = async ({ president, membres, dateCommission }) => {
-    //     try {
-    //         await axios.patch('/commissions', {
-    //             idCommission: commission.idCommission,
-    //             president: president.idMembre,
-    //             membres: membres.map((m, i) => m.idMembre),
-    //             dateCommission
-    //         })
-    //         setCommission({ ...commission, president, membres, dateCommission: dayjs(dateCommission).format("DD/MM/YYYY") })
-    //     } catch (e) {
-    //         throw e;
-    //         //TOAST IT in the modal
-    //     }
-    // }
-
     const showProjects = () => {
         navigate('/projets');
     }
@@ -146,7 +151,7 @@ const Commission = () => {
                 const response = await axios.get(`/commissions/${idCommission}`)
                 setCommission(response.data.data.commission);
                 setEtatCommission(response.data.data.commission.etat)
-                if (etatCommission === statusCommission.pending) {
+                if (response.data.data.commission.etat === statusCommission.pending) {
                     let etatDemandesDraft = {}
                     response.data.data.commission.demandes.forEach(d => {
                         etatDemandesDraft = { ...etatDemandesDraft, [d.idDemande]: d.etat }
@@ -154,7 +159,10 @@ const Commission = () => {
                     setEtatDemandes(etatDemandesDraft)
                 }
             } catch (e) {
-                toast.error(e.response.data.message)
+                if (e.response.status === 404)
+                    navigate('/notfound')
+                else
+                    toast.error(e.response.data.message)
             }
         }
     }
@@ -191,7 +199,8 @@ const Commission = () => {
     }
 
     useEffect(() => {
-        fetchCommission()
+        if (authenticationState.user.idUser)
+            fetchCommission()
     }, [authenticationState.user.idUser])
 
     return (
@@ -201,7 +210,7 @@ const Commission = () => {
                     variant='h3'>
                     Commission
                 </Typography>
-                {commission &&
+                {commission && commission.etat === statusCommission.pending &&
                     <Button variant='contained' className={classes.btn}
                         disabled={etatCommission === statusCommission.pending}
                         onClick={acceptCommission}>
@@ -248,7 +257,7 @@ const Commission = () => {
                             </div>
                             <div className={classes.txt}>
                                 <Typography color={theme.palette.text.main}
-                                marginRight='0.5rem'
+                                    marginRight='0.5rem'
                                     display='inline'>
                                     Président
                                 </Typography>
@@ -294,7 +303,7 @@ const Commission = () => {
                     {etatCommission === statusCommission.terminee &&
                         <div className={classes.txt}>
                             <Typography color={theme.palette.text.main}
-                                display='inline'marginRight='0.5rem'
+                                display='inline' marginRight='0.5rem'
                             >Rapport de commission
                             </Typography>
                             {commission.rapportCommission ?
@@ -348,14 +357,26 @@ const Commission = () => {
                             </Box>
                         </FormControl>
                         <Toolbar className={classes.toolbar}
+                            onRefresh={fetchCommission}
                             hideButton={commission.etat === statusCommission.terminee}
                             onClick={openAjouterDemandeDialog} />
                         <DemandesTable
+                            canDeprogram={commission.etat !== statusCommission.terminee}
                             etatDemandes={etatDemandes}
                             updateEtatDemandes={updateEtatDemandes}
+                            openDeleteConfirmation={openDeleteConfirmation}
                             demandes={commission.demandes}
                             isBeingEdited={etatCommission === statusCommission.terminee
                                 && commission.etat === statusCommission.pending} />
+                        {selectedDemande &&
+                            <ConfirmationDialog
+                                open={openAlert}
+                                afterSubmit={fetchCommission}
+                                onClose={() => setOpenAlert(false)}
+                                onConfirm={deprogrammerDemande}>
+                                Voulez-vous vraiment déprogrammer ({selectedDemande.formeJuridique}) {selectedDemande.denominationCommerciale}?
+                            </ConfirmationDialog>
+                        }
                     </div>
                 </React.Fragment>
             }

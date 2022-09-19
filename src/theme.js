@@ -31,7 +31,8 @@ let theme = createTheme({
             color: "#424141"
         },
         subtitle1: {
-            fontSize: "1.75rem",
+            //i had to keep it 1rem bc daypicker
+            fontSize: "1rem",
             color: "#424141"
         },
         subtitle2: {
@@ -60,24 +61,6 @@ theme = createTheme(theme, {
                     textTransform: "none",
                     fontSize : '1rem'
                 },
-                // outlined: {
-                //     '&:hover': {
-                //         backgroundColor: 'transparent',
-                //         boxShadow: 'none',
-                //         '@media (hover: none)': {
-                //             boxShadow: 'none',
-                //         },
-                //     },
-                //   },
-                //   outlinedPrimary: {
-                //     '&:hover': {
-                //         backgroundColor: 'transparent',
-                //         boxShadow: 'none',
-                //         '@media (hover: none)': {
-                //             boxShadow: 'none',
-                //         },
-                //     },
-                //   },
                 contained: {
                     textTransform: "none",
                     boxShadow: 'none',
@@ -106,7 +89,7 @@ theme = createTheme(theme, {
                     marginLeft: 0
                 }
             }
-        }
+        },
     },
 });
 

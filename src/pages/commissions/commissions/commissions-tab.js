@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import Toolbar from '../../../components/toolbar/toolbar';
 import CommissionsTable from './commissions-table';
 import useDebounce from '../../../custom-hooks/use-debounce';
 import { useDispatch, useSelector } from 'react-redux';
 import FormCommission from '../../../components/form/form-commission/form-commission';
 import { Dialog, Box } from '@mui/material';
-import { fetchAllCommissions } from '../../../store/commissionsSlice/reducer';
 import classes from './commissions-tab.module.css'
 import axios from 'axios';
 
@@ -34,37 +33,35 @@ const CommissionTab = () => {
         setOpen(false);
     };
 
-    useEffect(() => {
-        if (authenticationState.user.idUser)
-            dispatch(fetchAllCommissions(debouncedSearchTerm));
-    }, [authenticationState.user.idUser, debouncedSearchTerm])
+    const tableRef = createRef()
 
-    const addCommissionHandler = async (president, membres, dateCommission) => {
-        try {
-            await axios.post('/commissions', { president, membres, dateCommission })
-            handleDialogClose()
-        } catch (e) {
-            //TOAST IT
-        }
+    const refreshTable = () => {
+        tableRef.current.onQueryChange();
     }
+
+    useEffect(refreshTable,[debouncedSearchTerm])
 
     return (
         <div>
             <Toolbar className={classes.toolbar}
                 onClick={handleDialogClickOpen}
                 onSearchChangeHandler={onChangeHandler}
+                onRefresh={refreshTable}
                 searchValue={searchInput} buttonLabel='Ajourer une commission' />
             <Dialog open={open} onClose={handleDialogClose} maxWidth='100%'>
                 <Box className={classes.modelContainer}>
                     <FormCommission
-                        afterSubmit={()=>dispatch(fetchAllCommissions(debouncedSearchTerm))}
+                        afterSubmit={refreshTable}
                         onClose={handleDialogClose} />
                 </Box>
             </Dialog>
             <CommissionsTable
-                commissions={commissionsState.commissions}
-                isLoading={commissionsState.status === 'searching'}
-                isEmptyFilterResults={commissionsState.commissions.length === 0 && debouncedSearchTerm !== ''} />
+            tableRef={tableRef}
+            searchValue={debouncedSearchTerm}
+                // commissions={commissionsState.commissions}
+                // isLoading={commissionsState.status === 'searching'}
+                // isEmptyFilterResults={commissionsState.commissions.length === 0 && debouncedSearchTerm !== ''}
+                />
         </div>
     );
 };

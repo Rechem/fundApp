@@ -14,6 +14,7 @@ import InfoDetailInvestissement from './info-detail-investissement';
 import { ArrowRight2 } from 'iconsax-react';
 import { toast } from 'react-toastify';
 import InfoDetailSalaire from './info-detail-salaire';
+import Motif from '../motif/motif';
 
 const DetailArticle = props => {
 
@@ -171,6 +172,25 @@ const DetailArticle = props => {
         }
     }
 
+    const getMotifs = async () => {
+        try {
+            const response = await axios.get(
+                `/motifs/realisation/${item.projetId}/${item.numeroTranche}/${props.selectedItem.type}/${props.selectedItem.idArticle}`)
+            return response.data.data.motifsRealisation
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const setSeenMotifs = async () => {
+        try {
+            await axios.patch(
+                `/motifs/realisation/${item.projetId}/${item.numeroTranche}/${props.selectedItem.type}/${props.selectedItem.idArticle}`)
+        } catch (e) {
+            throw e
+        }
+    }
+
     return (
         <div className={classes.container}>
             {
@@ -288,8 +308,15 @@ const DetailArticle = props => {
                                     </Grid>
                                     <Grid item xs={1}
                                         sx={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}>
-                                        <div>
-                                            <Status status={props.selectedItem.etat} /></div>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}>
+                                            < Motif getMotifs={getMotifs}
+                                                setSeenMotifs={setSeenMotifs}
+                                                style={{ marginRight: '0.5rem' }} />
+                                            <Status status={props.selectedItem.etat} />
+                                        </div>
                                     </Grid>
                                 </Grid>
                             </>
@@ -356,7 +383,7 @@ const DetailArticle = props => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <div className={classes.btnContainer}>
 
-                        <Button sx={{marginLeft : 'auto'}}
+                        <Button sx={{ marginLeft: 'auto' }}
                             onClick={props.onClose}
                         >
                             <Typography fontWeight={500} color='primary'
@@ -366,13 +393,13 @@ const DetailArticle = props => {
                         <div className={classes.subBtnContainer}>
 
                             {step !== 'initial' &&
-                                    <Button
-                                        onClick={setIntialStep}
-                                    >
-                                        <Typography fontWeight={400} color='primary'
-                                            variant='body2'>
-                                            Retour</Typography>
-                                    </Button>
+                                <Button
+                                    onClick={setIntialStep}
+                                >
+                                    <Typography fontWeight={400} color='primary'
+                                        variant='body2'>
+                                        Retour</Typography>
+                                </Button>
                             }
                             {step === 'initial' &&
                                 props.selectedItem.etat === statusArticleRealisation.pending

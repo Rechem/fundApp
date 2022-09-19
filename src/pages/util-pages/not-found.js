@@ -2,9 +2,9 @@ import React from 'react';
 
 const NotFound = () => {
     return (
-        <div>
-            404 NOT FOUND
-        </div>
+        <h3>
+            Cette page n'existe pas
+        </h3>
     );
 };
 

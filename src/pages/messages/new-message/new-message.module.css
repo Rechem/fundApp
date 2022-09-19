@@ -1,5 +1,5 @@
 .hdr {
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .btnContainer {
@@ -10,17 +10,18 @@
 }
 
 .btn {
-    width: 14rem;
+    width: 10rem;
     height: 2.5rem;
     margin-right: 0;
     margin-bottom: 2rem;
 }
 
-.btn:hover {
-    background-color: transparent;
-}
-
 .field {
     width: 100%;
     margin-bottom: 1rem;
+}
+
+.container{
+    width: min(90%, 40rem);
+    margin: auto;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import { Typography, Dialog } from '@mui/material';
 import { useTheme } from '@mui/system';
 import classes from './demandes.module.css'
@@ -8,16 +8,19 @@ import DemandesTable from './demandes-table';
 import { CustomTextField } from '../../theme';
 import { SearchNormal1 } from 'iconsax-react';
 import useDebounce from '../../custom-hooks/use-debounce';
-import { fetchAllDemandes, fetchUserDemandes } from '../../store/demandesSlice/reducer';
 import { isAdmin, isModo, isSimpleUser } from '../../utils';
 import FormDemande from '../../components/form/form-demande/form-demande';
 import Toolbar from '../../components/toolbar/toolbar';
+import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
 const Demandes = () => {
+
+    const navigate = useNavigate()
 
     const [open, setOpen] = React.useState(false);
 
@@ -34,21 +37,19 @@ const Demandes = () => {
         setSearchInput(value)
     }
 
-    const dispatch = useDispatch()
     const authenticationState = useSelector(state => state.login)
-    const demandesState = useSelector(state => state.demandes)
 
     const [searchInput, setSearchInput] = useState('')
 
     const debouncedSearchTerm = useDebounce(searchInput, 500);
 
-    useEffect(
-        () => {
-            if (authenticationState.user.idUser)
-                dispatch(fetchAllDemandes(searchInput))
-        },
-        [debouncedSearchTerm, authenticationState.user.idUser] // Only call effect if debounced search term changes
-    );
+    const tableRef = createRef()
+
+    const refreshTable = () => {
+        tableRef.current.onQueryChange();
+    }
+
+    useEffect(refreshTable,[debouncedSearchTerm])
 
     const theme = useTheme()
 
@@ -57,6 +58,9 @@ const Demandes = () => {
         <React.Fragment>
             <Typography color={theme.palette.text.main}
                 variant='h3' className={classes.hdr}>
+                    {
+                        
+                    }
                 {isAdmin(authenticationState) ? 'Demandes' : 'Mes demandes'}
             </Typography>
             <Dialog
@@ -64,18 +68,19 @@ const Demandes = () => {
                 open={open}
                 onClose={handleCloseDialog}
                 TransitionComponent={Transition}
-            ><FormDemande onClose={handleCloseDialog} /></Dialog>
+            ><FormDemande onClose={handleCloseDialog} afterSubmit={refreshTable}/></Dialog>
             <Toolbar
                 buttonLabel='Ajouter une demande'
                 className={classes.toolbar}
                 searchValue={searchInput}
                 onSearchChangeHandler={onChangeHandler}
+                onRefresh={refreshTable}
                 onClick={handleOpenDialog}
                 hideButton={!isSimpleUser(authenticationState)} />
             <DemandesTable
-                isEmptyFilterResults={demandesState.demandes.length === 0 && debouncedSearchTerm !== ''}
-                demandes={demandesState.demandes}
-                isLoading={demandesState.status === 'searching'} />
+                // isEmptyFilterResults={demandesState.demandes.length === 0 && debouncedSearchTerm !== ''}
+                tableRef={tableRef}
+                searchValue={debouncedSearchTerm}/>
         </React.Fragment>
     );
 };

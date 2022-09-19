@@ -10,7 +10,7 @@ const CreationProjetsInfo = props => {
             <Typography>Les projets suivants ont été créés:</Typography>
             <ul>
             {props.projets.map((p, i) => (
-                <Typography key={i}> - {p}</Typography>
+                <Typography key={i}> - {p.denominationCommerciale}</Typography>
             ))}
             </ul>
 
@@ -25,7 +25,7 @@ const CreationProjetsInfo = props => {
                     variant='contained' onClick={props.afterSubmit}
                 >
                     <Typography color='white' fontWeight={400}
-                        variant='body2'>Montrez-moi</Typography>
+                        variant='body2'>Aller à projets</Typography>
                 </Button>
             </div>
         </div>

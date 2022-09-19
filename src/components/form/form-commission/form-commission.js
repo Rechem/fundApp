@@ -3,13 +3,11 @@ import { CustomTextField } from '../../../theme';
 import classes from './form-commission.module.css'
 import { Button, Typography, Autocomplete, CircularProgress, Box, TextField } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllMembres } from '../../../store/membresSlice/reducer';
 import { CustomCheckBox } from '../../../theme';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Calendar1 } from 'iconsax-react';
-import { addCommission, fetchAllCommissions } from '../../../store/commissionsSlice/reducer';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -57,10 +55,6 @@ const FormCommission = props => {
         optionPresident = optionPresident.filter(e => membres.every(m => m.idMembre != e.idMembre))
     }
 
-    useEffect(() => {
-        dispatch(fetchAllMembres())
-    }, [])
-
     const validate = () => {
         let temp = {}
 
@@ -91,8 +85,9 @@ const FormCommission = props => {
                         membres: membres.map((m, i) => m.idMembre),
                         dateCommission
                     })
-                props.onClose()
+                toast.success('Succès')
                 props.afterSubmit()
+                props.onClose()
             } catch (e) {
                 toast.error(e.response.data.message)
             }
@@ -104,14 +99,13 @@ const FormCommission = props => {
         <div className={classes.container}>
             <form onSubmit={submit}>
                 <div className={classes.hdr}>
-                    <Typography fontWeight={700} display='inline' marginRight='0.5rem'
+                    <Typography fontWeight={700} marginRight='0.5rem'
                         variant='subtitle2'>
                         {props.values ?
                             'Modifer cette commission'
                             : 'Ajouter une commission'}
 
                     </Typography>
-                    {isLoadingSubmit && <CircularProgress size='1rem' />}
                 </div>
                 <Typography fontWeight={400}
                     variant='body2'>Président</Typography>
@@ -246,6 +240,10 @@ const FormCommission = props => {
                     </Button>
                     <Button className={classes.btn}
                         type='submit' variant='contained'
+                        disabled={isLoadingSubmit}
+                        startIcon={isLoadingSubmit ?
+                            <CircularProgress size='1rem' color='background' />
+                            : null}
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body2'>{props.values ? 'Sauvgarder' : 'Ajouter'}</Typography>

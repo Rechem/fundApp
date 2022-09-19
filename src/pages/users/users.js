@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState, createRef, useEffect } from 'react';
 import classes from './users.module.css'
 import { Typography } from '@mui/material';
 import UsersTable from './users-table';
@@ -7,10 +7,13 @@ import Toolbar from '../../components/toolbar/toolbar';
 import { useSelector } from 'react-redux';
 import useDebounce from '../../custom-hooks/use-debounce';
 import CustomModal from '../../components/custom-modal/custom-modal';
+import FormAddUser from '../../components/form/form-add-user/form-add-user';
 
 const Users = () => {
 
-    const authenticationState = useSelector(state=>state.login)
+    const tableRef = createRef()
+
+    const authenticationState = useSelector(state => state.login)
 
     const theme = useTheme()
 
@@ -23,6 +26,25 @@ const Users = () => {
 
     const debouncedSearchTerm = useDebounce(searchInput, 500);
 
+    const [open, setOpen] = useState(false)
+
+    const handleDialogClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleDialogClose = () => {
+        setOpen(false);
+    };
+
+    const refreshTable = () => {
+        tableRef.current.onQueryChange();
+    }
+
+    useEffect(() => {
+        if (authenticationState.user.idUser)
+            refreshTable()
+    }, [debouncedSearchTerm, authenticationState.user.idUser])
+
     return (
         <>
             <Typography color={theme.palette.text.main}
@@ -33,9 +55,18 @@ const Users = () => {
                 className={classes.toolbar}
                 searchValue={searchInput}
                 onSearchChangeHandler={onChangeHandler}
-                // onClick={handleOpenDialog}
+                onClick={handleDialogClickOpen}
+                onRefresh={refreshTable}
+            />
+            <CustomModal open={open} onClose={handleDialogClose}>
+                <FormAddUser
+                    onClose={handleDialogClose}
+                    afterSubmit={refreshTable}
                 />
-            <UsersTable />
+            </CustomModal>
+            <UsersTable
+                tableRef={tableRef}
+                searchValue={debouncedSearchTerm}/>
         </>
     );
 };

@@ -5,7 +5,13 @@
 .etatContainer {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 1.5rem;
+}
+
+.etatSubContainer{
+    display: flex;
+    align-items: center;
 }
 
 .img {
@@ -35,17 +41,13 @@
 }
 
 .btnSecondary {
-    width: 13rem;
+    width: 14rem;
 }
 
 .filebtn {
     border-radius: 100px;
     max-width: 5rem;
     height: 2rem;
-}
-
-.filebtn:hover {
-    background-color: transparent;
 }
 
 .fileBtnContainer{
@@ -62,7 +64,7 @@
 }
 
 .btn {
-    width: 13rem;
+    width: 14rem;
 }
 
 .modelContainer {

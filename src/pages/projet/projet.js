@@ -3,7 +3,7 @@ import classes from './projet.module.css'
 import {
     Grid, Divider, useTheme, Box, CircularProgress,
     Dialog, Button, ButtonGroup, MenuItem, MenuList,
-    ClickAwayListener, Paper, Grow, Popper
+    ClickAwayListener, Paper, Grow, Popper, Typography
 } from '@mui/material';
 import InfoDemande from '../../components/details-demande/info-demande';
 import CustomStepper from '../../components/custom-stepper/custom-stepper';
@@ -17,7 +17,8 @@ import { Link } from 'react-router-dom';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { isAdmin, isSimpleUser, statusPrevision, statusRealisation } from '../../utils';
+import { isAdmin, isSimpleUser, statusPrevision, statusRealisation, statusRevenu } from '../../utils';
+import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog'
 
 const Projet = props => {
 
@@ -31,9 +32,10 @@ const Projet = props => {
 
     const authenticationState = useSelector(state => state.login)
 
-    const [projet, setProjet] = useState('')
+    const [projet, setProjet] = useState(null)
 
     const [open, setOpen] = useState(false);
+
 
 
     const handleDialogOpen = () => {
@@ -43,9 +45,12 @@ const Projet = props => {
     const handleDialogClose = () => {
         setOpen(false);
     };
+    const [openButtonGroup2, setOpenButtonGroup2] = useState(false);
 
     const [openButtonGroup, setOpenButtonGroup] = useState(false);
+
     const anchorRef = React.useRef(null);
+    const anchorRef2 = React.useRef(null);
 
     const handleToggleButtonGroup = () => {
         setOpenButtonGroup((prevOpen) => !prevOpen);
@@ -56,6 +61,17 @@ const Projet = props => {
             return;
         }
         setOpenButtonGroup(false);
+    };
+
+    const handleToggleButtonGroup2 = () => {
+        setOpenButtonGroup2((prevOpen) => !prevOpen);
+    };
+
+    const handleCloseButtonGroup2 = (event) => {
+        if (anchorRef2.current && anchorRef2.current.contains(event.target)) {
+            return;
+        }
+        setOpenButtonGroup2(false);
     };
 
     const inputFile = useRef(null)
@@ -93,42 +109,76 @@ const Projet = props => {
                 const response = await axios.get(`/projets/${idProjet}`)
                 setProjet(response.data.data.projet);
             } catch (e) {
-                toast.error(e.response.data.message)
+                if (e.response.status === 404)
+                    navigate('/notfound')
+                else
+                    toast.error(e.response.data.message)
             }
         }
     }
 
-    const getMaxTranchePrevisions = () => {
-        return projet.previsions.length === 0 ? 0 : Math.max(...projet.previsions.map(p => p.numeroTranche))
-    }
+    useEffect(() => {
+        if (projet) {
 
-    const getMaxTrancheRealisations = () => {
-        return projet.realisations.length === 0 ? 0 : Math.max(...projet.realisations.map(p => p.numeroTranche))
-    }
+            if (!projet.tranche && projet.montant && isSimpleUser(authenticationState)) {
+                setForm('tranche')
+                handleDialogOpen()
+            } else if (!projet.montant && isAdmin(authenticationState)) {
+                setForm('montant')
+                handleDialogOpen()
+            }
+        }
+    }, [projet])
 
     useEffect(() => {
         fetchProjet()
     }, [authenticationState.user.idUser])
 
-    // const checkMontantTranche = () => {
-    //     if (isAdmin(authenticationState)) {
-    //         if (!projet.montant) {
-    //             handleDialogOpen()
-    //             return false
-    //         } else if (!projet.tranche)
-    //             toast.error('L\'utilisateur n\'as pas encore choisit le nombre de tranche')
-    //         else
-    //             return true
-    //     }
-    // }
+    const dispatchSeenPrevisions = async () => {
+        if (isSimpleUser(authenticationState) && projet && projet.previsions.length > 0
+            && !projet.previsions[projet.previsions.length - 1].seenByUser
+            && [statusPrevision.brouillon, statusPrevision.accepted]
+                .includes(projet.previsions[projet.previsions.length - 1].etat)) {
+            try {
+                await axios.patch(`/previsions/seenByUser/${projet.idProjet}/${projet.previsions[projet.previsions.length - 1].numeroTranche}`)
+            } catch (e) {
+            }
+        }
+    }
 
-    const viewPrevisions = async () => {
-        if (!checkMontantTranche())
-            return
-        if (getMaxTranchePrevisions() === 0
-            || (projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat === statusPrevision.accepted
-                && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
-                && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === statusRealisation.terminee)) {
+    const dispatchSeenRealisations = async () => {
+        if (isSimpleUser(authenticationState) && projet && projet.realisations.length > 0
+            && !projet.realisations[projet.realisations.length - 1].seenByUser
+            && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee) {
+            try {
+                await axios.patch(`/realisations/seenByUser/${projet.idProjet}/${projet.realisations[projet.realisations.length - 1].numeroTranche}`)
+            } catch (e) {
+            }
+        }
+    }
+
+    const dispatchSeenRevenu = async () => {
+        if (isSimpleUser(authenticationState) && projet && projet.revenu
+            && !projet.revenu.seenByUser
+            && projet.revenu.etat === statusRevenu.waiting) {
+            try {
+                await axios.patch(`/revenus/seenByUser/${projet.idProjet}`)
+            } catch (e) {
+            }
+        }
+    }
+
+    useEffect(() => {
+        dispatchSeenPrevisions()
+        dispatchSeenRealisations()
+        dispatchSeenRevenu()
+    }, [projet, authenticationState.user.idUser])
+
+    const debloquerPrevisions = async () => {
+        if (isAdmin(authenticationState) && (projet.previsions.length === 0
+            || (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.accepted
+                && projet.realisations.length > 0 && projet.previsions.length === projet.realisations.length
+                && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee))) {
             try {
                 await axios.post('/previsions', {
                     projetId: projet.idProjet,
@@ -138,27 +188,17 @@ const Projet = props => {
             } catch (e) {
                 toast.error(e.response.data.message)
             }
-        } else {
-            navigate(`prevision/${getMaxTranchePrevisions()}`)
         }
-
-        // : projet.realisations.length > 0 ?
-        //     projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations).etat !== 'Terminée' ?
-        //         'Réalisations' : `Débloquer prévisions (${getMaxTranchePrevisions}ème tranche)` : 'Réalisations'}
     }
 
-    const viewRealisations = async () => {
-        if (!checkMontantTranche())
-            return
+    const viewPrevisions = async () => {
+        navigate(`prevision/${projet.previsions.length}`)
+    }
 
-        if (projet.previsions.length > 0 &&
+    const debloquerRealisation = async () => {
+        if (isAdmin(authenticationState) && projet.previsions.length > 0 &&
             projet.previsions.every(p => p.etat === statusPrevision.accepted)
-            && getMaxTranchePrevisions() > getMaxTrancheRealisations()) {
-
-            //should never happen
-            if (projet.realisations.length !== 0
-                && !projet.realisations.every(p => p.etat === statusRealisation.terminee))
-                return toast.error('Il existe des réalisation non complètes')
+            && projet.previsions.length === projet.realisations.length + 1) {
             try {
                 await axios.post('/realisations', {
                     projetId: projet.idProjet,
@@ -168,57 +208,43 @@ const Projet = props => {
             } catch (e) {
                 toast.error(e.response.data.message)
             }
-        } else {
-            navigate(`realisation/${getMaxTrancheRealisations()}`)
         }
+    }
+
+    const viewRealisations = async () => {
+        navigate(`realisation/${projet.realisations.length}`)
     }
 
     const viewRevenu = () => {
-        if (checkMontantTranche()) {
-
-        }
+        navigate(`revenu`)
     }
 
-    const isDebloquerPrevision = () => getMaxTranchePrevisions() === 0
-        || (projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat !== statusPrevision.accepted
-            && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
-            && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée');
+    const isDebloquerPrevision = () =>
+        projet.tranche && isAdmin(authenticationState) && (
+            projet.previsions.length === 0
+            || (projet.previsions.find(r => r.numeroTranche === projet.previsions.length).etat === statusPrevision.accepted
+                && projet.realisations.length > 0 && projet.previsions.length === projet.realisations.length
+                && projet.realisations.find(r => r.numeroTranche === projet.realisations.length).etat === statusRealisation.terminee
+                && projet.previsions.length < projet.tranche.nbTranches));
 
     const isPrevision = () =>
-        projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat !== statusPrevision.accepted
+        projet.previsions.length > 0 &&
+        projet.previsions.find(r => r.numeroTranche === projet.previsions.length).etat !== statusPrevision.accepted
 
-    const isDebloquerRealisation = () => projet.previsions.length > 0 &&
+    const isDebloquerRealisation = () =>
+        isAdmin(authenticationState) && projet.previsions.length > 0 &&
         projet.previsions.every(p => p.etat === statusPrevision.accepted)
-        && getMaxTranchePrevisions() > getMaxTrancheRealisations()
+        && projet.previsions.length === projet.realisations.length + 1
 
-    const isRealisation = () => projet.realisation.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat !== 'Terminée'
+    const isRealisation = () => projet.realisations.length > 0
+        && projet.previsions.length === projet.realisations.length
+        && (projet.realisations[projet.realisations.length - 1].etat !== statusRealisation.terminee
+            || projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+            && projet.realisations.length === projet.tranche.nbTranches)
 
     let formUI;
 
     const [form, setForm] = useState('')
-
-    const checkMontantTranche = () => {
-        if (!projet.montant) {
-            if (isAdmin(authenticationState)) {
-                setForm('montant')
-                handleDialogOpen()
-            } else {
-                toast.error('L\'administrateur n\'a pas encore défini le montant accordé')
-            }
-            return false
-        } else {
-            if (!projet.tranche) {
-                if (isSimpleUser(authenticationState)) {
-                    setForm('tranche')
-                    handleDialogOpen()
-                } else {
-                    toast.error('L\'utilisateur n\'a pas encore choisit le nombre de tranches')
-                }
-                return false
-            } else
-                return true
-        }
-    }
 
     switch (form) {
         case 'montant':
@@ -247,7 +273,7 @@ const Projet = props => {
                 color: theme.palette.text.main,
                 typography: 'h3'
             }} className={classes.hdr}>
-                TalabaStore
+                Projet
             </Box>
             <div className={classes.dashboard}>
                 <Grid container columns={12} columnSpacing={6} rowSpacing={2}>
@@ -275,11 +301,18 @@ const Projet = props => {
                         <Box sx={{ typography: 'body2', color: textColor }} mb={1}>
                             Tranches
                         </Box>
-                        {projet.tranche && getMaxTranchePrevisions() ?
+                        {projet.tranche ?
                             <CustomStepper steps={projet.tranche.nbTranches}
-                                activeSteps={getMaxTranchePrevisions()}
+                                activeSteps={projet.previsions.length || 0}
                             />
-                            : <i style={{ display: 'block' }}>Pas encore créées</i>}
+                            : isSimpleUser(authenticationState) && projet.montant ?
+                                <Button variant='contained'
+                                    sx={{ padding: 0 }}
+                                    onClick={handleDialogOpen}>
+                                    <Box sx={{ color: 'white' }} >
+                                        Choisir
+                                    </Box>
+                                </Button> : <i style={{ display: 'block' }}>-</i>}
                     </Grid>
                     <Grid container item xs={12} sm={4}
                         columnSpacing={1}
@@ -291,18 +324,26 @@ const Projet = props => {
                         </Grid>
 
                         <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                            <Box sx={{ fontWeight: 600, color: projet.montant ? primaryColor : theme.palette.warning.main }}    >
-                                {projet.montant ?
-                                    `${projet.montant}DZD` :
+                            {projet.montant ?
+                                <Box sx={{ fontWeight: 600, color: projet.montant ? primaryColor : theme.palette.warning.main }}    >
+                                    {projet.montant} DZD
+                                </Box> :
+                                isSimpleUser(authenticationState) ?
+                                    <>
+                                        <i>-</i>
+                                    </> :
                                     <Button variant='contained'
                                         sx={{ padding: 0 }}
-                                        onClick={handleDialogOpen}>
+                                        onClick={() => {
+                                            setForm('tranche')
+                                            handleDialogOpen()
+                                        }}>
                                         <Box sx={{ color: 'white' }} >
                                             Définir
                                         </Box>
                                     </Button>
-                                }
-                            </Box>
+                            }
+
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <Box sx={{ color: textColor }} >
@@ -327,7 +368,7 @@ const Projet = props => {
                 mb={0.5} mt={2}>
                 Document d'accord de financement
             </Box>
-            {projet.documentAccordFinancement &&
+            {projet.documentAccordFinancement ?
                 <Box
                     component="a"
                     href={`${process.env.REACT_APP_BASE_URL}${projet.documentAccordFinancement}`}
@@ -338,56 +379,59 @@ const Projet = props => {
                         marginRight: '1rem'
                     }}>
                     Télécharger
-                </Box>}
-            <div className={classes.fileBtnContainer}>
-                <ButtonGroup variant='outlined' ref={anchorRef}>
-                    <Button
-                        onClick={onClickUpload}
-                        className={classes.filebtn} >
-                        <input type='file'
-                            onChange={fileUploadHandler}
-                            style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-                            id='file' ref={inputFile} />
-                        {projet.documentAccordFinancement ? 'Remplacer' : 'Ajouter'}
-                    </Button>
-                    {projet.documentAccordFinancement &&
+                </Box> :
+                isSimpleUser(authenticationState) && <>-</>}
+            {isAdmin(authenticationState) &&
+                <div className={classes.fileBtnContainer}>
+                    <ButtonGroup variant='outlined' ref={anchorRef}>
                         <Button
-                            size="small" className={classes.filebtn}
-                            onClick={handleToggleButtonGroup}
-                        ><ArrowDropDownIcon /></Button>}
-                </ButtonGroup>
-                <Popper
-                    sx={{
-                        zIndex: 1,
-                    }}
-                    open={openButtonGroup}
-                    anchorEl={anchorRef.current}
-                    role={undefined}
-                    transition
-                    disablePortal
-                >
-                    {({ TransitionProps, placement }) => (
-                        <Grow
-                            {...TransitionProps}
-                            style={{
-                                transformOrigin:
-                                    placement === 'bottom' ? 'top right' : 'bottom right',
-                            }}
-                        >
-                            <Paper>
-                                <ClickAwayListener onClickAway={handleCloseButtonGroup}>
-                                    <MenuList id="split-button-menu">
-                                        <MenuItem onClick={deleteDocument}>
-                                            <Box sx={{ typography: 'body2', color: 'red', width: '5.5rem' }}>
-                                                Supprimer</Box>
-                                        </MenuItem>
-                                    </MenuList>
-                                </ClickAwayListener>
-                            </Paper>
-                        </Grow>
-                    )}
-                </Popper>
-            </div>
+                            onClick={onClickUpload}
+                            className={classes.filebtn} >
+                            <input type='file'
+                                onChange={fileUploadHandler}
+                                style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                                id='file' ref={inputFile} />
+                            {projet.documentAccordFinancement ? 'Remplacer' : 'Ajouter'}
+                        </Button>
+                        {projet.documentAccordFinancement &&
+                            <Button
+                                size="small" className={classes.filebtn}
+                                onClick={handleToggleButtonGroup}
+                            ><ArrowDropDownIcon /></Button>}
+                    </ButtonGroup>
+                    <Popper
+                        sx={{
+                            zIndex: 1,
+                        }}
+                        open={openButtonGroup}
+                        anchorEl={anchorRef.current}
+                        role={undefined}
+                        transition
+                        disablePortal
+                    >
+                        {({ TransitionProps, placement }) => (
+                            <Grow
+                                {...TransitionProps}
+                                style={{
+                                    transformOrigin:
+                                        placement === 'bottom' ? 'top right' : 'bottom right',
+                                }}
+                            >
+                                <Paper>
+                                    <ClickAwayListener onClickAway={handleCloseButtonGroup}>
+                                        <MenuList id="split-button-menu">
+                                            <MenuItem onClick={deleteDocument}>
+                                                <Box sx={{ typography: 'body2', color: 'red', width: '5.5rem' }}>
+                                                    Supprimer</Box>
+                                            </MenuItem>
+                                        </MenuList>
+                                    </ClickAwayListener>
+                                </Paper>
+                            </Grow>
+                        )}
+                    </Popper>
+                </div>
+            }
             <Box sx={{ typography: 'body1', fontWeight: 600, color: textColor, }}
                 mb={1} mt={3}>
                 Détails sur l'entreprise</Box>
@@ -451,61 +495,135 @@ const Projet = props => {
                     {formUI}
                 </Box>
             </Dialog>
+            {
+                isAdmin(authenticationState) &&
+                <ConfirmationDialog
+                    open={openAlert}
+                    afterSubmit={() => dispatch(fetchAllMembres())}
+                    onClose={() => setOpenAlert(false)}
+                    onConfirm={supprimerMembre}>
+                    Voulez-vous vraiment supprimer {selectedMembre.nomMembre} {selectedMembre.prenomMembre} ?
+                </ConfirmationDialog>
+            }
             <div className={classes.outerBtnContainer}>
-                <div className={classes.btnContainer}>
-                    <ButtonGroup>
-                        <Button variant='outlined' className={classes.btn}
-                            onClick={viewPrevisions}>
-                            <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
-                                {getMaxTranchePrevisions() === 0 ? 'Débloquer prévisions (1ère tranche)'
-                                    : projet.previsions.find(r => r.numeroTranche === getMaxTranchePrevisions()).etat === statusPrevision.accepted
-                                        && projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
-                                        && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === statusRealisation.terminee ?
-                                        `Débloquer prévisions (${getMaxTranchePrevisions()+1}ème tranche)` : 'Prévisions'}
-
-                            </Box>
-                        </Button>
-                        {getMaxTranchePrevisions() > 0 &&
-                            projet.realisations.length > 0 && getMaxTranchePrevisions() === getMaxTrancheRealisations()
-                            && projet.realisations.find(r => r.numeroTranche === getMaxTrancheRealisations()).etat === 'Terminée'
+                {(isSimpleUser(authenticationState) || isAdmin(authenticationState)) &&
+                    <div className={classes.btnContainer}>
+                        {(isSimpleUser(authenticationState) && projet.previsions.length > 0
+                            || isAdmin(authenticationState) && projet.montant && projet.tranche)
                             &&
-                            <Button
-                                size="small"
-                            // onClick={handleToggleButtonGroup}
-                            ><ArrowDropDownIcon /></Button>}
-                    </ButtonGroup>
-                    {projet.previsions.length > 0 &&
-                        projet.previsions.find(r => r.numeroTranche === 1).etat === statusPrevision.accepted
-                        &&
-                        <ButtonGroup>
-                            <Button variant='outlined' className={classes.btn}
-                                onClick={viewRealisations}>
-                                <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
-                                    {getMaxTrancheRealisations() === 0 ? 'Débloquer réalisations (1ère tranche)'
-                                        : projet.previsions.every(p => p.etat === statusPrevision.accepted)
-                                            && getMaxTranchePrevisions() > getMaxTrancheRealisations()
-                                            && projet.realisations.every(p => p.etat === statusRealisation.terminee)
-                                            ? `Débloquer réalisations (${getMaxTrancheRealisations() + 1}ème tranche)` : 'Réalisations'}
-                                </Box>
-                            </Button>
-                            {getMaxTrancheRealisations() > 0 &&
-                                projet.previsions.every(p => p.etat === statusPrevision.accepted)
-                                && getMaxTranchePrevisions() > getMaxTrancheRealisations()
-                                && projet.realisations.every(p => p.etat === statusRealisation.terminee)
-                                &&
-                                <Button
-                                    size="small"
-                                // onClick={handleToggleButtonGroup}
-                                ><ArrowDropDownIcon /></Button>}
-                        </ButtonGroup>}
-                    {/* TODO  */}
-                    <Button variant='outlined' className={classes.btn}
-                        onClick={viewRevenu}>
-                        <Box sx={{ typography: 'body1', color: theme.palette.primary.main }}>
-                            Débloquer revenus
-                        </Box>
-                    </Button>
-                </div>
+                            <div style={{ width: '15rem' }}>
+                                <ButtonGroup ref={anchorRef2} fullWidth>
+                                    {isAdmin(authenticationState) ?
+                                        (isDebloquerRealisation() ?
+                                            <Button onClick={debloquerRealisation}
+                                                fullWidth>{`Débloquer réalisations ${projet.realisations.length > 0
+                                                    ? projet.realisations.length + 1 + 'ème' : '1ère'} tranche`}</Button> :
+                                            (isDebloquerPrevision() ?
+                                                <Button onClick={debloquerPrevisions}
+                                                    fullWidth>{`Débloquer prévisions ${projet.previsions.length > 0
+                                                        ? projet.previsions.length + 1 + 'ème' : '1ère'} tranche`}</Button> :
+                                                (isRealisation() ?
+                                                    <Button onClick={viewRealisations}
+                                                        fullWidth>Réalisations</Button> :
+                                                    (isPrevision() ?
+                                                        <Button onClick={viewPrevisions}
+                                                            fullWidth>Prévisions</Button> : null))))
+                                        : projet.previsions.length === 0 ? null :
+                                            projet.previsions.length > projet.realisations.length ?
+                                                <Button onClick={viewPrevisions}
+                                                    fullWidth>Prévisions</Button> :
+                                                <Button onClick={viewRealisations}
+                                                    fullWidth>Réalisations</Button>
+                                    }
+
+                                    {(isSimpleUser(authenticationState) && projet.realisations.length > 0
+                                        || isAdmin(authenticationState) && projet.previsions.length > 0 &&
+                                        projet.previsions[0].etat === statusPrevision.accepted) &&
+                                        <Button
+                                            size="small"
+                                            sx={{ maxWidth: '3rem' }}
+                                            onClick={handleToggleButtonGroup2}
+                                        ><ArrowDropDownIcon /></Button>
+                                    }
+                                </ButtonGroup>
+                            </div>}
+                        {(isSimpleUser(authenticationState) && projet.realisations.length > 0
+                            || isAdmin(authenticationState) && projet.previsions.length > 0) &&
+                            projet.previsions[0].etat === statusPrevision.accepted
+                            &&
+                            <Popper
+                                sx={{
+                                    zIndex: 1,
+                                }}
+                                open={openButtonGroup2}
+                                anchorEl={anchorRef2.current}
+                                role={undefined}
+                                transition
+                                disablePortal
+                            >
+                                {({ TransitionProps, placement }) => (
+                                    <Grow
+                                        {...TransitionProps}
+                                        style={{
+                                            transformOrigin:
+                                                placement === 'bottom' ? 'center top' : 'center bottom',
+                                        }}
+                                    >
+                                        <Paper>
+                                            <ClickAwayListener onClickAway={handleCloseButtonGroup2}>
+                                                <MenuList id="split-button-menu" className={classes.btn}>
+                                                    {isAdmin(authenticationState) &&
+                                                        (isDebloquerPrevision() && projet.previsions.length > 0 ?
+                                                            <MenuItem onClick={viewPrevisions}>
+                                                                Prévisions
+                                                            </MenuItem> :
+                                                            isDebloquerRealisation() && projet.realisations.length > 0 ?
+                                                                <MenuItem onClick={viewRealisations}>
+                                                                    Réalisations
+                                                                </MenuItem> : null)
+                                                    }
+
+                                                    {isSimpleUser(authenticationState) ?
+                                                        (projet.previsions.length > 0 &&
+                                                            projet.previsions.length === projet.realisations.length ?
+                                                            <MenuItem onClick={viewPrevisions}>
+                                                                Prévisions
+                                                            </MenuItem> :
+                                                            projet.realisations.length > 0 &&
+                                                                projet.realisations.length === projet.previsions.length - 1 ?
+                                                                <MenuItem onClick={viewRealisations}>
+                                                                    Réalisations
+                                                                </MenuItem> : null) :
+                                                        //admin
+                                                        (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.accepted
+                                                            && (projet.realisations.length === projet.previsions.length - 1
+                                                                || projet.realisations[projet.realisations.length - 1].etat !== statusRealisation.terminee
+                                                                || (projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+                                                                    && projet.realisations.length === projet.tranche.nbTranches))) ?
+                                                            <MenuItem onClick={viewPrevisions}>
+                                                                Prévisions
+                                                            </MenuItem> :
+                                                            ((projet.realisations.length === projet.previsions.length
+                                                                && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+                                                                && projet.realisations.length < projet.tranche.nbTranches) ||
+                                                                (projet.previsions[projet.previsions.length - 1].etat !== statusPrevision.accepted
+                                                                    && projet.realisations.length === projet.previsions.length - 1)) ?
+                                                                <MenuItem onClick={viewRealisations}>
+                                                                    Réalisations
+                                                                </MenuItem> : null}
+
+                                                </MenuList>
+                                            </ClickAwayListener>
+                                        </Paper>
+                                    </Grow>
+                                )}
+                            </Popper>
+                        }
+                        <Button variant='outlined' className={classes.btn} fullWidth
+                            onClick={viewRevenu}>
+                            Revenus
+                        </Button>
+                    </div>}
             </div>
         </>
 };

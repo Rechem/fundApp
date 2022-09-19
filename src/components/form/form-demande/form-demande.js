@@ -9,14 +9,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Calendar1 } from 'iconsax-react';
 import theme, { CustomTextField, CustomSelect } from '../../../theme';
 import { useTheme } from '@mui/system';
-import ErrorDisplay from '../../error-display/error-display';
+import { toast } from 'react-toastify';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import { Divider } from '@mui/material';
 import axios from 'axios';
-import { useSelector, useDispatch } from 'react-redux'
-import { fetchUserDemandes } from '../../../store/demandesSlice/reducer';
 
 const steps = [
     'Information sur la société',
@@ -111,9 +109,6 @@ const FormDemande = props => {
 
     const theme = useTheme()
 
-    const dispatch = useDispatch()
-    const authenticationState = useSelector(state => state.login)
-
     const inputFile = useRef(null)
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedFileName, setSelectedFileName] = useState(null);
@@ -130,7 +125,6 @@ const FormDemande = props => {
 
     const [values, setValues] = useState(initialValues)
     const [errors, setErrors] = useState({})
-    const [responseError, setResponseError] = useState('')
 
     const onChangeDateHander = newValue => {
         setValues({
@@ -195,12 +189,11 @@ const FormDemande = props => {
                 '/demandes',
                 formData
             )
-            dispatch(fetchUserDemandes({ idUser: authenticationState.user.idUser }))
             setLoading(false)
+            props.afterSubmit()
             props.onClose()
         } catch (e) {
-            //handle error
-            setResponseError(e.response.data.message)
+            toast.error(e.response.data.message)
             setLoading(false)
         }
     }
@@ -218,10 +211,6 @@ const FormDemande = props => {
                     className={classes.hdr}>
                     Demande de financement
                 </Typography>
-                {responseError != '' &&
-                    <ErrorDisplay>
-                        {responseError}
-                    </ErrorDisplay>}
                 <Divider className={classes.dvdr} />
                 <FromSteperHandler
                     isLoading={isLoading}

@@ -5,6 +5,9 @@ import { Box, Paper, useTheme } from '@mui/material';
 import axios from 'axios';
 import { getRoleName, statusUser } from '../../utils';
 import dayjs from 'dayjs';
+import { Link } from 'react-router-dom';
+import classes from './users.module.css'
+import { fetchAllUsers } from '../../api/api-calls';
 
 const UsersTable = props => {
 
@@ -12,39 +15,48 @@ const UsersTable = props => {
 
     const columns = [
         {
-            title: "Utilisateur",
+            title: "Nom complet",
+            field: 'nom-complet',
             align: 'left',
-            render: (rowData) => rowData.prenomNom !== null ? rowData.prenomNom : <i>(vide)</i>
+            render: (rowData) => {
+                return <div className={classes.userContainer}>
+                    <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'} alt='Avatar'
+                        className={classes.img} />
+                    {rowData.prenomNom !== null ? rowData.prenomNom : <i>(vide)</i>}
+                </div>
+            }
         },
         {
             title: "Rôle",
+            field : 'roleId',
             align: 'left',
             render: (rowData) => getRoleName(rowData.role.nomRole)
         },
         {
             title: "Date inscription",
             align: 'right',
+            field : 'createdAt',
             render: (rowData) => dayjs(rowData.createdAt).format("DD/MM/YYYY")
         },
         {
             title: "Etat inscription",
+            sorting : false,
             align: 'center',
             render: (rowData) => <Status status={
                 rowData.isBanned ? statusUser.banned :
-                    rowData.completedSignUp ? statusUser.confirmed
-                        : statusUser.notConfirmed
+                    rowData.completedSignUp ? statusUser.completed
+                        : statusUser.notCompleted
             } />
         },
         {
             title: "Profil",
             align: 'center',
-            width: '15%',
+            width: '10%',
             sorting: false,
             render: (rowData) => (
                 <Box
-                    component="a"
-                    href={`/users/${rowData.idUser}`}
-                    target='_blank'
+                    component={Link}
+                    to={`${rowData.idUser}`}
                     sx={{ color: theme.palette.primary.main }}>
                     Voir</Box>),
         },
@@ -52,13 +64,7 @@ const UsersTable = props => {
 
     return (
         <MaterialTable
-            localization={{
-                body:
-                {
-                    emptyDataSourceMessage: props.isEmptyFilterResults && !props.isLoading ?
-                        "Aucun résultat" : "Rien à afficher"
-                }
-            }}
+            tableRef={props.tableRef}
             columns={columns}
             options={{
                 toolbar: false, draggable: false, padding: 'dense',
@@ -69,28 +75,7 @@ const UsersTable = props => {
                 }),
             }}
             components={{ Container: props => <Paper {...props} elevation={0} /> }}
-            data={query =>
-                new Promise(async (resolve, reject) => {
-                    let url = '/users?'
-
-                    if (query.search) {
-                        url += `search=${query.search}`
-                    }
-                    //sorting 
-                    if (query.orderBy) {
-                        url += `&sortBy=${query.orderBy.field}&orderBy=${query.orderDirection}`
-                    }
-                    //pagination
-                    url += `&page=${query.page}`
-                    url += `&size=${query.pageSize}`
-
-                    axios.get(url).then(resp => {
-                        resolve({ ...resp.data.data })
-                    }
-                    )
-
-                })
-            }
+            data={query => fetchAllUsers({ search: props.searchValue, })(query)}
         />
     );
 };

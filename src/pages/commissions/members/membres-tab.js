@@ -3,7 +3,7 @@ import Toolbar from '../../../components/toolbar/toolbar';
 import MembresTable from './membres-table';
 import useDebounce from '../../../custom-hooks/use-debounce';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllMembres, addMembre } from '../../../store/membresSlice/reducer';
+import { fetchAllMembres } from '../../../store/membresSlice/reducer';
 import { Dialog, Box } from '@mui/material';
 import FormMembre from '../../../components/form/form-membre/form-membre';
 import classes from './membres-tab.module.css'
@@ -40,11 +40,6 @@ const MembresTab = () => {
         setOpen(false);
     };
 
-    useEffect(() => {
-        if (authenticationState.user.idUser)
-            dispatch(fetchAllMembres(debouncedSearchTerm));
-    }, [authenticationState.user.idUser, debouncedSearchTerm])
-
     const [selectedMembre, setSelectedMembre] = useState(null)
 
     const openEditForm = membre => {
@@ -58,23 +53,23 @@ const MembresTab = () => {
     }
 
     const supprimerMembre = async () => {
-        try {
             await axios.delete(`/membres/${selectedMembre.idMembre}`)
-            toast.success("Succès")
-            setOpenAlert(false)
-        } catch (e) {
-            toast.error(e.response.data.message)
-        }
     }
 
     const [openAlert, setOpenAlert] = useState(false)
+
+    useEffect(() => {
+        if (authenticationState.user.idUser)
+            dispatch(fetchAllMembres(debouncedSearchTerm));
+    }, [authenticationState.user.idUser, debouncedSearchTerm])
 
     return (
         <div>
             <Toolbar className={classes.toolbar}
                 onSearchChangeHandler={onChangeHandler}
                 onClick={addMembreClick}
-                searchValue={searchInput} buttonLabel='Ajouter un membre' />
+                searchValue={searchInput} buttonLabel='Ajouter un membre'
+                onRefresh={()=> dispatch(fetchAllMembres(debouncedSearchTerm))}/>
 
             <Dialog open={open} onClose={handleDialogClose}>
                 <Box>
@@ -97,7 +92,7 @@ const MembresTab = () => {
                 openDeleteConfirmation={openDeleteConfirmation}
                 openEditForm={openEditForm}
                 membres={membresState.membres}
-                isLoading={membresState.status === 'searching'}
+                isLoading={membresState.status === 'fetching'}
                 isEmptyFilterResults={debouncedSearchTerm !== '' && membresState.membres.length === 0}
             />
         </div>

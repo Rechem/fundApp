@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CustomTextField } from '../../../theme';
 import classes from './form-membre.module.css'
-import { Button, Typography } from '@mui/material';
+import { Button, Typography, CircularProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -15,6 +15,7 @@ const FormMembre = props => {
 
     const [values, setValues] = useState(props.membre ? props.membre : initialValues)
     const [errors, setErrors] = useState({})
+    const [isLoading, setIsLoading] = useState(false)
 
     const onChangeHandler = e => {
         const { name, value } = e.target
@@ -40,17 +41,20 @@ const FormMembre = props => {
     const submit = async e => {
         e.preventDefault()
         if (validate()) {
+            setIsLoading(true)
             try {
                 if (props.membre) {
-                    await axios.patch('/membres', {...values, idMembre: props.membre.idMembre})
+                    await axios.patch('/membres', { ...values, idMembre: props.membre.idMembre })
                 } else {
                     await axios.post('/membres', { ...values })
                 }
                 toast.success('Succès')
+                setIsLoading(false)
                 props.onClose()
                 props.afterSubmit()
             } catch (e) {
                 toast.error(e.response.data.message)
+                setIsLoading(false)
             }
         }
     }
@@ -59,7 +63,8 @@ const FormMembre = props => {
         <div className={classes.container}>
             <form onSubmit={submit}>
                 <Typography fontWeight={700} className={classes.hdr}
-                    variant='subtitle2'>Ajouter un membre</Typography>
+                    variant='subtitle2'>
+                    {props.membre ? 'Modifier un membre' : 'Ajouter un membre'}</Typography>
                 <Typography fontWeight={400}
                     variant='body2'>Nom</Typography>
                 <CustomTextField
@@ -108,6 +113,10 @@ const FormMembre = props => {
                     </Button>
                     <Button className={classes.btn}
                         type='submit' variant='contained'
+                        disabled={isLoading}
+                        startIcon={isLoading ?
+                            <CircularProgress size='1rem' color='background' />
+                            : null}
                     >
                         <Typography color='white' fontWeight={400}
                             variant='body2'>

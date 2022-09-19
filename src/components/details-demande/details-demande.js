@@ -7,36 +7,8 @@ import Status from '../status/status';
 import moment from 'moment';
 import InfoDemande from './info-demande';
 
-const getFileName = (response) => {
-    const headerLine = response.headers['content-disposition'];
-    const startFileNameIndex = headerLine.indexOf('"') + 1
-    const endFileNameIndex = headerLine.lastIndexOf('"');
-    const filename = headerLine.substring(startFileNameIndex, endFileNameIndex);
-    return filename;
-}
-
 const DetailsDemande = props => {
     const theme = useTheme()
-
-    const downloadBusinessPlan = async () => {
-        const BASE_URL = process.env.REACT_APP_BASE_URL
-        const response = await axios.post(BASE_URL + `/demandes/${props.idDemande}/business-plan`,
-            { responseType: 'blob' })
-        const fileName = getFileName(response)
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        if (typeof window.navigator.msSaveBlob === 'function') {
-            window.navigator.msSaveBlob(
-                response.data,
-                fileName
-            );
-        } else {
-            link.setAttribute('download', fileName);
-            document.body.appendChild(link);
-            link.click();
-        }
-    }
 
     return <Box className={classes.mdlContainer}>
         <IconButton className={classes.closeIcon}

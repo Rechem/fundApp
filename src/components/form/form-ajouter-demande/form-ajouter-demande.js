@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import classes from './form-ajouter-demande.module.css'
 import {
     Typography, Button, FormHelperText, FormControl,
     CircularProgress, useTheme
 } from '@mui/material';
 import SelectDemandeTable from './select-demande-table';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllDemandes } from '../../../store/demandesSlice/reducer'
 import tinycolor from 'tinycolor2';
 import axios from 'axios';
 import { toast } from 'react-toastify'
@@ -18,13 +16,8 @@ const FormAjouterDemande = props => {
 
     const theme = useTheme()
 
-    const demandesState = useSelector(state => state.demandes)
-    const authenticationState = useSelector(state => state.login)
-
     const [searchInput, setSearchInput] = useState('')
     const debouncedSearchTerm = useDebounce(searchInput, 500);
-
-    const dispatch = useDispatch()
 
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -35,10 +28,13 @@ const FormAjouterDemande = props => {
         setSearchInput(value)
     }
 
-    useEffect(() => {
-        if (authenticationState.user.idUser)
-            dispatch(fetchAllDemandes(debouncedSearchTerm));
-    }, [authenticationState.user.idUser, debouncedSearchTerm])
+    const tableRef = createRef()
+
+    const refreshTable = () => {
+        tableRef.current.onQueryChange();
+    }
+
+    useEffect(refreshTable,[debouncedSearchTerm])
 
     const onAddDemandeClick = async () => {
         if (selectedDemandes.length === 0) {
@@ -85,15 +81,13 @@ const FormAjouterDemande = props => {
 
     return (
         <div className={classes.container}>
-            <div className={classes.hdrContainer}>
-                <Typography variant='body1' fontWeight={700} display='inline'
-                    marginBottom='2rem' marginRight='1rem'>
+                <Typography variant='body1' fontWeight={700}
+                    marginBottom='1rem' marginRight='1rem'>
                     Ajouter une demande à cette commission
                 </Typography>
-                {isLoading && <CircularProgress size='1rem' />}
-            </div>
             <Toolbar hideButton className={classes.toolbar}
             onSearchChangeHandler={onSearchChangeHandler}
+            onRefresh={refreshTable}
             searchValue={searchInput}/>
             <div className={classes.table}>
                 {selectedDemandes.length > 0 &&
@@ -106,14 +100,11 @@ const FormAjouterDemande = props => {
                     </div>
                 }
                 <SelectDemandeTable
+                searchValue={debouncedSearchTerm}
+                tableRef={tableRef}
                     selectedCommission={selectedDemandes}
                     selectedDemandes={selectedDemandes}
                     handleClick={handleClick}
-                    demandes={demandesState.demandes}
-                isLoading={demandesState.status === 'searching'}
-                isEmptyFilterResults={demandesState.demandes.length === 0
-                && debouncedSearchTerm !== ''
-            }
                 />
                 <FormControl fullWidth
                     error={error !== ''}>
@@ -132,6 +123,10 @@ const FormAjouterDemande = props => {
                         variant='body1'>Annuler</Typography>
                 </Button>
                 <Button
+                disabled={isLoading}
+                startIcon={isLoading ?
+                    <CircularProgress size='1rem' color='background' />
+                    : null}
                     variant='contained'
                     onClick={onAddDemandeClick}
                 >

@@ -8,14 +8,22 @@ import { useParams } from 'react-router-dom';
 import { Modal, Box } from '@mui/material';
 import DetailArticle from '../../../components/detail-article-realisation/detail-article-realisation';
 import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
+import { useSelector } from 'react-redux';
+import useDebounce from '../../../custom-hooks/use-debounce';
+import { flattenObject } from '../../../utils';
 
 const ChargesTab = props => {
     //provide an argument to specify wheter its charge or investissement for the type.
+
+    const authenticationState = useSelector(state => state.login)
 
     const { idProjet, tranche } = useParams()
 
     const [open, setOpen] = useState(false);
     const [chargesExternes, setChargesExternes] = useState([]);
+
+    const [searchInput, setSearchInput] = useState('')
+    const debouncedSearchTerm = useDebounce(searchInput, 500);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -78,6 +86,11 @@ const ChargesTab = props => {
         handleDialogClickOpen()
     }
 
+    const onChangeHandler = e => {
+        const { name, value } = e.target
+        setSearchInput(value)
+    }
+
     let formUI = null
 
     const [form, setForm] = useState('ajouter-modifier')
@@ -89,14 +102,20 @@ const ChargesTab = props => {
                 type='charge-externe'
                 projetId={idProjet}
                 numeroTranche={tranche}
-                afterSubmit={fetchChargesExternes}
+                afterSubmit={()=>{
+                    fetchChargesExternes()
+                    props.updatePrevision()
+                }}
                 onClose={handleDialogClose} />
             break;
         case 'details':
             formUI = <DetailArticle
                 isRealisation={props.isRealisation ? true : false}
                 type='charge-externe'
-                afterSubmit={fetchChargesExternes}
+                afterSubmit={()=>{
+                    fetchChargesExternes()
+                    props.updateRealisation()
+                }}
                 selectedItem={selectedItem}
                 onClose={handleDialogClose} />
             break;
@@ -105,13 +124,17 @@ const ChargesTab = props => {
     }
 
     useEffect(() => {
+        if (authenticationState.user.idUser)
         fetchChargesExternes()
-    }, [idProjet, tranche])
+    }, [idProjet, tranche, authenticationState.user.idUser])
 
     return (
         <div>
             <Toolbar style={{ marginBlock: '1rem' }} onClick={handleOpenAdd}
-                hideButton={props.cannotEdit} />
+                hideButton={props.cannotEdit}
+                onRefresh={fetchChargesExternes}
+                searchValue={searchInput}
+                        onSearchChangeHandler={onChangeHandler}/>
             <InvestissementsTable
                 openDeleteConfirmation={handleOpenDelete}
                 openEditForm={handleOpenEdit}
@@ -119,14 +142,22 @@ const ChargesTab = props => {
                 cannotEdit={props.cannotEdit}
                 isRealisation={props.isRealisation ? true : false}
                 isLoading={isLoading}
-                data={chargesExternes} />
+                data={chargesExternes.filter(r => {
+                    const flat = flattenObject(r)
+                    const values = Object.values(flat)
+                    return values.concat(flat.montantUnitaire*flat.quantite)
+                    .some(e => e?.toString().toLowerCase()
+                    .includes(debouncedSearchTerm.toLowerCase()))
+                })} />
             <Modal open={open} onClose={handleDialogClose}>
                 <Box>
                     {formUI}
                 </Box>
             </Modal>
             {selectedItem && <ConfirmationDialog open={openAlert}
-                afterSubmit={fetchChargesExternes}
+                afterSubmit={()=>{
+                    fetchChargesExternes()
+                    props.updatePrevision()}}
                 onClose={() => setOpenAlert(false)}
                 onConfirm={deleteInvestissement}>
                 Voulez vous vraiment supprimer cet article ?

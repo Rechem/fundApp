@@ -15,3 +15,18 @@
 .toolbar {
     margin-block: 1.5rem;
 }
+
+.userContainer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* column-gap: 0.5rem; */
+}
+
+.img {
+    height: 2rem;
+    width: 2rem;
+    background-color: grey;
+    object-fit: cover;
+    border-radius: 50%;
+}

@@ -74,12 +74,14 @@ export const authenticationSlice = createSlice({
                     state.status = 'loading'
                     state.error = ''
                 })
-            .addMatcher(isAnyOf(signIn.fulfilled, signUp.fulfilled, checkSignIn.fulfilled),
+            .addMatcher(isAnyOf(signIn.fulfilled, checkSignIn.fulfilled),
                 (state, action) => {
                     const userObject = {
                         idUser: action.payload.data.user.idUser,
                         role: action.payload.data.user.role,
                         completedSignUp: action.payload.data.user.completedSignUp,
+                        confirmed: action.payload.data.user.confirmed,
+                        banned: action.payload.data.user.banned,
                     }
 
                     cookies.set('authObject', JSON.stringify(userObject),
@@ -91,8 +93,7 @@ export const authenticationSlice = createSlice({
                     state.status = 'connected'
                     state.user = userObject
                 })
-            .addMatcher(isAnyOf(signIn.rejected, signUp.rejected), (state, action) => {
-                console.log(action);
+            .addMatcher(isAnyOf(signIn.rejected), (state, action) => {
                 state.status = 'disconnected'
                 state.error = action.error.message
             })
@@ -104,20 +105,6 @@ export const signIn = createAsyncThunk('authentication/login',
         try {
             const response = await axios.post(
                 `/users/login`, {
-                email,
-                password,
-            })
-            return response.data
-        } catch (e) {
-            throw new Error(e.response.data.message)
-        }
-    })
-
-export const signUp = createAsyncThunk('authentication/signUp',
-    async ({ email, password }) => {
-        try {
-            const response = await axios.post(
-                `/users/signup`, {
                 email,
                 password,
             })
@@ -150,6 +137,6 @@ export const signOut = createAsyncThunk('authentication/logout',
     })
 
 // Action creators are generated for each case reducer function
-export const { reset, logout, autoSignIn, setCompletedSignup, logoutWithError } = authenticationSlice.actions
+export const { reset, logout, autoSignIn, setCompletedSignup,  } = authenticationSlice.actions
 
 export default authenticationSlice.reducer

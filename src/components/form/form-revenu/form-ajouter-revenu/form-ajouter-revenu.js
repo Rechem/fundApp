@@ -12,6 +12,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { CustomTextField } from '../../../../theme';
 import { toast } from 'react-toastify';
 import { statusArticleRevenu } from '../../../../utils';
+import dayjs from 'dayjs';
 
 const initialValues = {
     description: '',
@@ -22,8 +23,21 @@ const initialValues = {
 }
 
 const FormAjouterRevenu = props => {
+    
+    const formatValues = () => {
+        return ({
+            description: props.values.description,
+            dateDebut: dayjs(props.values.dateDebut, "DD/MM/YYYY"),
+            dateFin: dayjs(props.values.dateFin, "DD/MM/YYYY"),
+            montant: props.values.montant,
+            lien: props.values.lien,
+        })
+    }
 
-    const [values, setValues] = useState(props.values ? props.values : initialValues)
+    const [values, setValues] = useState(props.values ? formatValues() : initialValues)
+
+    console.log(props);
+
     const [errors, setErrors] = useState({})
 
     const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +98,7 @@ const FormAjouterRevenu = props => {
         temp.datesInvalid = values.dateFin < values.dateDebut ?
             'La date fin ne peut pas précéder la date début' :
             ''
-        temp.lien = (radio === 'facture' && (selectedFile === null && (props.values && !props.values.facture)))
+        temp.lien = (radio === 'facture' && (selectedFile === null && (!props.values || props.values && !props.values.facture)))
             || (radio === 'lien' && values.lien === '') ?
             'Vous devez fournir une facture ou un lien vers un paiement' : ''
 
@@ -118,7 +132,7 @@ const FormAjouterRevenu = props => {
 
                 if (props.values) {
                     formData.append('etat', statusArticleRevenu.pending)
-                    response = await axios.patch(`/revenus/${props.projetId}/${props.values.idRevenu}`, formData,)
+                    response = await axios.patch(`/revenus/${props.projetId}/${props.values.idArticleRevenu}`, formData,)
                 } else
                     response = await axios.post(`/revenus`, formData)
                 toast.success(response.data.message)
@@ -184,7 +198,6 @@ const FormAjouterRevenu = props => {
                     <LocalizationProvider dateAdapter={AdapterDayjs} >
                         <DatePicker
                             inputFormat='DD/MM/YYYY'
-                            disableFuture
                             value={values.dateFin}
                             onChange={onChangeDateFinHandler}
                             components={{

@@ -7,8 +7,8 @@ const roles = {
 
 export const statusUser = {
     banned: 'Désactivé',
-    confirmed: 'Confirmé',
-    notConfirmed: 'Non confirmé',
+    completed: 'Complétée',
+    notCompleted: 'Non Complétée',
 }
 
 export const getRoleName = (role) => {
@@ -34,6 +34,10 @@ export const statusPrevision = {
 export const statusRealisation = {
     waiting: 'En attente saisie',
     pending: 'En attente évaluation',
+    pendingWaiting : 'En attente évaluation et saisie',
+    evaluatedWaiting : 'Evalué en attente saisie',
+    evaluatedPending : 'Evalué en attente évaluation',
+    evaluated : 'Evalué',
     terminee: 'Terminée',
 }
 
@@ -64,6 +68,24 @@ export const statusArticleRevenu = {
     pending: 'En attente évaluation',
 }
 
+export const statusRevenu = {
+    waiting: 'En attente saisie',
+    pending: 'En attente évaluation',
+    evaluated: 'Evalué',
+}
+
+export const motifTicket = {
+    rdv: 'Demander un rendez-vous',
+    renseignement: 'Demander un renseignement',
+    reclamation: 'Faire une réclamation',
+    autre: 'Autre',
+}
+
+export const statusTicket = {
+    ouvert: 'Ouvert',
+    ferme: 'Fermé',
+}
+
 export const isAdmin = (authenticationState) => {
     return authenticationState.user.role === roles.roleAdmin
 }
@@ -74,6 +96,26 @@ export const isModo = (authenticationState) => {
 
 export const isSimpleUser = (authenticationState) => {
     return authenticationState.user.role === roles.roleSimpleUser
+}
+
+export function flattenObject(ob) {
+    var toReturn = {};
+
+    for (var i in ob) {
+        if (!ob.hasOwnProperty(i)) continue;
+
+        if ((typeof ob[i]) == 'object' && ob[i] !== null) {
+            var flatObject = flattenObject(ob[i]);
+            for (var x in flatObject) {
+                if (!flatObject.hasOwnProperty(x)) continue;
+
+                toReturn[i + '.' + x] = flatObject[x];
+            }
+        } else {
+            toReturn[i] = ob[i];
+        }
+    }
+    return toReturn;
 }
 
 export default roles

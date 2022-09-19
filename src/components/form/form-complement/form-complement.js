@@ -115,7 +115,6 @@ const FormComplement = props => {
             props.afterSubmit()
         } catch (e) {
             toast.error(e.response.data.message)
-            // console.log("error ?", e);TOAST IT
             setIsLoading(false)
         }
     }
@@ -126,10 +125,9 @@ const FormComplement = props => {
             <div className={classes.complementContainer}>
                 <div>
                     <Typography variant='body1' fontWeight={700}
-                        marginBottom='0.5rem' display='inline'>
+                        marginBottom='0.5rem' >
                         Compléments
                     </Typography>
-                    {isLoading && <CircularProgress size='1rem' />}
                 </div>
                 {combinedState.listComplements.map((c, i) => (
                     <div key={c.key}>
@@ -190,8 +188,7 @@ const FormComplement = props => {
                     }
                 </FormControl>
             </div>
-            <Typography variant='body1' fontWeight={700}
-                marginBottom='0.5rem'>
+            <Typography variant='body2'>
                 Message (optionel)
             </Typography>
             <CustomTextField
@@ -209,6 +206,10 @@ const FormComplement = props => {
                 </Button>
                 <Button className={classes.btn}
                     variant='contained' onClick={validateSendComplements}
+                    disabled={isLoading}
+                    startIcon={isLoading ?
+                        <CircularProgress size='1rem' color='background' />
+                        : null}
                 >
                     <Typography color='white' fontWeight={400}
                         variant='body1'>Envoyer</Typography>
