@@ -44,7 +44,7 @@ let theme = createTheme({
             color: "#424141"
         },
         h3: {
-            fontSize: "2.375rem",
+            fontSize: "2rem",
             color: "#424141"
         },
     },

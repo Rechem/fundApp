@@ -19,6 +19,7 @@ import Status from '../../components/status/status';
 import { isAdmin } from '../../utils';
 import FormEvaluerPrevision from '../../components/form/form-evaluer-prevision/form-evaluer-prevision';
 import Motif from '../../components/motif/motif';
+import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog';
 
 const scrollToRef = (ref) => window.scrollTo(0, ref.current.offsetTop)
 
@@ -56,26 +57,23 @@ const Prevision = () => {
         setOpenDialog(false);
     };
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [open, setOpen] = useState(false);
+    const [openAlert, setOpenAlert] = useState(false);
     const [total, setTotal] = useState(0)
 
     const [prevision, setPrevision] = useState(null)
 
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-        setOpen((prev) => !prev);
-    };
+    const handleOpenAlert = () => {
+        setOpenAlert(true)
+    }
+
+    const handleCloseAlert = () => {
+        setOpenAlert(false)
+    }
+
 
     const submitPrevision = async _ => {
-        try {
-            const response = await axios.patch(`/previsions/${idProjet}/${tranche}`,
+            await axios.patch(`/previsions/${idProjet}/${tranche}`,
                 { etat: statusPrevision.pending })
-            toast.success(response.data.message)
-        } catch (e) {
-            toast.error(e.response.data.message)
-        }
-        await fetchPrevisionDetails()
     }
 
     const fetchPrevisionDetails = async () => {
@@ -84,9 +82,9 @@ const Prevision = () => {
             setPrevision(response.data.data.prevision)
         } catch (e) {
             if (e.response.status === 404)
-                    navigate('/notfound')
-                else
-                    toast.error(e.response.data.message)
+                navigate('/notfound')
+            else
+                toast.error(e.response.data.message)
         }
     }
 
@@ -115,8 +113,7 @@ const Prevision = () => {
     }
 
     const dispatchSeenPrevisions = async () => {
-        if (isSimpleUser(authenticationState) && prevision
-        && !prevision.seenByUser
+        if (isSimpleUser(authenticationState) && prevision&& !prevision.seenByUser
         ) {
             try {
                 await axios.patch(`/previsions/seenByUser/${prevision.projet.idProjet}/${prevision.numeroTranche}`)
@@ -127,12 +124,12 @@ const Prevision = () => {
 
     useEffect(() => {
         if (authenticationState.user.idUser)
-        fetchPrevisionDetails()
+            fetchPrevisionDetails()
     }, [idProjet, tranche, authenticationState.user.idUser])
 
     useEffect(() => {
         if (authenticationState.user.idUser)
-        dispatchSeenPrevisions()
+            dispatchSeenPrevisions()
     }, [prevision, authenticationState.user.idUser])
 
     return (
@@ -155,13 +152,25 @@ const Prevision = () => {
                         {prevision.etat === statusPrevision.pending && isAdmin(authenticationState)
                             || ((prevision.etat === statusPrevision.brouillon || prevision.etat === statusPrevision.refused)
                                 && isSimpleUser(authenticationState)) ?
-                            <Button variant='contained'
-                                onClick={isSimpleUser(authenticationState) ? submitPrevision : handleDialogClickOpen}
-                                className={classes.submitButton}>
-                                <Box color='white'>
-                                    {isAdmin(authenticationState) ? 'Evaluer' : 'Envoyer'}
-                                </Box>
-                            </Button> :
+                            <>
+                                {isSimpleUser(authenticationState) &&
+                                    <ConfirmationDialog
+                                        open={openAlert}
+                                        afterSubmit={fetchPrevisionDetails}
+                                        onClose={handleCloseAlert}
+                                        onConfirm={submitPrevision}>
+                                            Voulez vous vraiment envoyer ces prévisions ?
+                                    </ConfirmationDialog>
+                                }
+                                <Button variant='contained'
+                                    onClick={isSimpleUser(authenticationState) ?  
+                                        handleOpenAlert : handleDialogClickOpen}
+                                    className={classes.submitButton}>
+                                    <Box color='white'>
+                                        {isAdmin(authenticationState) ? 'Evaluer' : 'Envoyer'}
+                                    </Box>
+                                </Button>
+                            </> :
                             <div>
                                 <Status status={prevision.etat} />
                             </div>
@@ -173,14 +182,17 @@ const Prevision = () => {
                 <CircularProgress sx={{ display: 'block', margin: 'auto' }}
                     size='2rem' /> :
                 <>
-                    <Grid container columns={12} columnSpacing={6} mb='2rem'>
+                    <Grid container columns={12} columnSpacing={6} mb='2rem' rowSpacing='1rem'
+                    className={classes.dboard}>
                         <Grid item xs={12} sm={4}
-                            sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', }}>
+                        className={classes.center}
+                            sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography variant='subtitle2'>
                                 {prevision.projet.demande.denominationCommerciale}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}
+                        className={classes.center}
                             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'column' }}>
                             <Box sx={{ typography: 'body2', color: textColor }} mb={1}>
                                 Tranches
@@ -196,21 +208,23 @@ const Prevision = () => {
                                 <i style={{ display: 'block' }}>Pas encore soumis</i>
                             }
                         </Grid>
-                        <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+                        <Grid item xs={12} sm={4}
+                        className={classes.center}
+                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                             <Typography
                                 color={prevision.valeurPrevision >
-                                        (prevision.projet.tranche.pourcentage[prevision.numeroTranche - 1]
+                                    (prevision.projet.tranche.pourcentage[prevision.numeroTranche - 1]
                                         * prevision.projet.montant) ?
-                                            theme.palette.error.main :
-                                        theme.palette.text.main}
-                                variant= 'subtitle2'
-                                display= 'inline' >
+                                    theme.palette.error.main :
+                                    theme.palette.text.main}
+                                variant='subtitle2'
+                                display='inline' >
                                 {prevision.valeurPrevision}
                             </Typography>
                             <Typography
-                                color= {theme.palette.text.main}
-                                variant= 'subtitle2'
-                                display= 'inline'
+                                color={theme.palette.text.main}
+                                variant='subtitle2'
+                                display='inline'
                             >
                                 / {
                                     prevision.projet.tranche.pourcentage[prevision.numeroTranche - 1]

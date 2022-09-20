@@ -1,11 +1,11 @@
-import { Button, Typography, CircularProgress } from '@mui/material';
+import { Button, Typography, CircularProgress, Box, useTheme } from '@mui/material';
 import { CustomTextField, CustomCheckBox } from '../../theme';
 import classes from './login.module.css'
 import React, { useEffect, useState } from 'react';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useSelector, useDispatch } from 'react-redux'
 import { signIn } from '../../store/loginSlice/reducer';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const initialValues = {
@@ -15,6 +15,8 @@ const initialValues = {
 }
 
 const Login = () => {
+
+    const theme = useTheme()
 
     const { state } = useLocation();
 
@@ -109,6 +111,13 @@ const Login = () => {
                         <Typography color='white' fontWeight={600} >Se connecter</Typography>
                     </Button>
                 </form>
+                <Box component={Link}
+                    to={'/inscription'}
+                    sx={{
+                        color: theme.palette.primary.main,
+                        marginTop : '1rem',
+                        display: 'block'
+                    }}>S'inscrir</Box>
             </div >
         </React.Fragment>
     );

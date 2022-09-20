@@ -18,7 +18,7 @@ import { flattenObject } from '../../utils';
 
 const Revenu = () => {
 
-    const navigate= useNavigate()
+    const navigate = useNavigate()
 
     const { idProjet } = useParams()
 
@@ -50,9 +50,9 @@ const Revenu = () => {
             setIsLoading(false)
         } catch (e) {
             if (e.response.status === 404)
-                    navigate('/notfound')
-                else
-                    toast.error(e.response.data.message)
+                navigate('/notfound')
+            else
+                toast.error(e.response.data.message)
         }
     }
 
@@ -90,7 +90,7 @@ const Revenu = () => {
     useEffect(
         () => {
             if (authenticationState.user.idUser)
-            fetchAllRevenus()
+                fetchAllRevenus()
         },
         [idProjet, authenticationState.user.idUser] // Only call effect if debounced search term changes
     );
@@ -121,20 +121,22 @@ const Revenu = () => {
                 <CircularProgress sx={{ display: 'block', margin: 'auto' }}
                     size='2rem' /> :
                 <>
-                    <Grid container columns={12} columnSpacing={6} mb='2rem'>
+                    <Grid container columns={12} columnSpacing={6} mb='2rem' rowSpacing='1rem'
+                        className={classes.dboard}>
                         <Grid item xs={12} sm={6}
-                            sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', }}>
+                            sx={{ display: 'flex', alignItems: 'center' }}
+                            className={classes.center}>
                             <Typography variant='subtitle2'>
                                 {revenu.projet.demande.denominationCommerciale}
                             </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                            <Box sx={{
-                                color: theme.palette.text.main,
-                                typography: 'subtitle2',
-                            }} >
+                        <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}
+                            className={classes.center}>
+                            <Typography
+                                color={theme.palette.text.main}
+                                variant='subtitle2'>
                                 {revenu.revenu.valeur} DZD
-                            </Box>
+                            </Typography>
                         </Grid>
                     </Grid>
 
@@ -145,7 +147,7 @@ const Revenu = () => {
                         onSearchChangeHandler={onChangeHandler}
                         onClick={handleOpenAdd}
                         hideButton={!isSimpleUser(authenticationState)}
-                        onRefresh={fetchAllRevenus}/>
+                        onRefresh={fetchAllRevenus} />
 
                     <CustomModal open={open} onClose={handleDialogClose}>
                         <DetailRevenu
@@ -164,8 +166,8 @@ const Revenu = () => {
                         revenus={revenu.revenu.revenus.filter(r => {
                             const values = Object.values(flattenObject(r))
                             return values.some(e => e?.toString().toLowerCase()
-                            .includes(debouncedSearchTerm.toLowerCase()))
-                        }) }
+                                .includes(debouncedSearchTerm.toLowerCase()))
+                        })}
                     />
                     {selectedItem && <ConfirmationDialog open={openAlert}
                         afterSubmit={fetchAllRevenus}
@@ -174,7 +176,7 @@ const Revenu = () => {
                         Voulez vous vraiment supprimer ce revenu ?
                     </ConfirmationDialog>}
                 </>}
-        </React.Fragment>
+        </React.Fragment >
 
     );
 };

@@ -1,11 +1,11 @@
-.footer{
+.footer {
     margin-top: 1rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
 }
 
-.headerContainer{
+.headerContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -16,6 +16,19 @@
     width: 10rem;
 }
 
-.modalContainer{
+.modalContainer {
     padding: 2rem;
+}
+
+
+@media screen and (max-width : 600px) {
+    .center {
+        text-align: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .dboard{
+        margin-block: 2rem;
+    }
 }

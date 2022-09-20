@@ -16,14 +16,6 @@
     height: 2rem;
 }
 
-.filebtn:hover {
-    background-color: transparent;
-}
-
-.btnSecondary:hover {
-    background-color: transparent;
-}
-
 .fileBtnContainer {
     display: flex;
     align-items: center;

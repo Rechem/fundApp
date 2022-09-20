@@ -87,8 +87,8 @@ const FromSteperHandler = props => {
             </Grid>
             <div className={classes.btnContainer}>
                 {activeStep > 0 ? (
-                    <Button variant='contained' className={classes.btn} onClick={() => setActiveStep(activeStep - 1)}>
-                        <Typography color='white' fontWeight={600} noWrap>
+                    <Button variant='outlined' className={classes.btn} onClick={() => setActiveStep(activeStep - 1)}>
+                        <Typography color='primary' fontWeight={600} noWrap>
                             Retour
                         </Typography>
                     </Button>) : null}

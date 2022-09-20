@@ -248,7 +248,7 @@ const DetailArticle = props => {
                                             <Button
                                                 onClick={onClickUpload}
                                                 className={classes.filebtn} variant='outlined'>
-                                                <input type='file' accept='.pdf,.doc,.docx'
+                                                <input type='file' accept='.pdf,.doc,.docx,.xls,.xlsx,.jpeg,.jpg,.png'
                                                     onChange={fileUploadHandler}
                                                     style={{ display: 'none' }}
                                                     id='file' ref={inputFile} />
@@ -353,8 +353,7 @@ const DetailArticle = props => {
             }
             {isSimpleUser(authenticationState) &&
                 <div className={classes.btnContainer}>
-                    <div></div>
-                    <Button sx={{ marginRight: 'auto' }}
+                    <Button 
                         onClick={props.onClose}
                     >
                         <Typography fontWeight={500} color='primary'
@@ -383,7 +382,7 @@ const DetailArticle = props => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <div className={classes.btnContainer}>
 
-                        <Button sx={{ marginLeft: 'auto' }}
+                        <Button
                             onClick={props.onClose}
                         >
                             <Typography fontWeight={500} color='primary'

@@ -10,6 +10,7 @@ import classes from './membres-tab.module.css'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
+import CustomModal from '../../../components/custom-modal/custom-modal';
 
 const MembresTab = () => {
 
@@ -71,14 +72,12 @@ const MembresTab = () => {
                 searchValue={searchInput} buttonLabel='Ajouter un membre'
                 onRefresh={()=> dispatch(fetchAllMembres(debouncedSearchTerm))}/>
 
-            <Dialog open={open} onClose={handleDialogClose}>
-                <Box>
+            <CustomModal open={open} onClose={handleDialogClose}>
                     <FormMembre
                         membre={selectedMembre}
                         afterSubmit={() => dispatch(fetchAllMembres())}
                         onClose={handleDialogClose} />
-                </Box>
-            </Dialog>
+            </CustomModal>
             {selectedMembre &&
                 <ConfirmationDialog
                     open={openAlert}

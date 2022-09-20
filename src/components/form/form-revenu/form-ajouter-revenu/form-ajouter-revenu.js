@@ -279,7 +279,7 @@ const FormAjouterRevenu = props => {
                     <Button
                         onClick={onClickUpload}
                         className={classes.filebtn} variant='outlined'>
-                        <input type='file' accept='.pdf,.doc,.docx'
+                        <input type='file' accept='.pdf,.doc,.docx,.xls,.xlsx,.jpeg,.jpg,.png'
                             onChange={fileUploadHandler}
                             style={{ display: 'none' }}
                             id='file' ref={inputFile} />

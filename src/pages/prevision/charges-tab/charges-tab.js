@@ -11,6 +11,7 @@ import ConfirmationDialog from '../../../components/confirmation-dialog/confirma
 import { useSelector } from 'react-redux';
 import useDebounce from '../../../custom-hooks/use-debounce';
 import { flattenObject } from '../../../utils';
+import CustomModal from '../../../components/custom-modal/custom-modal';
 
 const ChargesTab = props => {
     //provide an argument to specify wheter its charge or investissement for the type.
@@ -102,7 +103,7 @@ const ChargesTab = props => {
                 type='charge-externe'
                 projetId={idProjet}
                 numeroTranche={tranche}
-                afterSubmit={()=>{
+                afterSubmit={() => {
                     fetchChargesExternes()
                     props.updatePrevision()
                 }}
@@ -112,7 +113,7 @@ const ChargesTab = props => {
             formUI = <DetailArticle
                 isRealisation={props.isRealisation ? true : false}
                 type='charge-externe'
-                afterSubmit={()=>{
+                afterSubmit={() => {
                     fetchChargesExternes()
                     props.updateRealisation()
                 }}
@@ -125,7 +126,7 @@ const ChargesTab = props => {
 
     useEffect(() => {
         if (authenticationState.user.idUser)
-        fetchChargesExternes()
+            fetchChargesExternes()
     }, [idProjet, tranche, authenticationState.user.idUser])
 
     return (
@@ -134,7 +135,7 @@ const ChargesTab = props => {
                 hideButton={props.cannotEdit}
                 onRefresh={fetchChargesExternes}
                 searchValue={searchInput}
-                        onSearchChangeHandler={onChangeHandler}/>
+                onSearchChangeHandler={onChangeHandler} />
             <InvestissementsTable
                 openDeleteConfirmation={handleOpenDelete}
                 openEditForm={handleOpenEdit}
@@ -145,19 +146,18 @@ const ChargesTab = props => {
                 data={chargesExternes.filter(r => {
                     const flat = flattenObject(r)
                     const values = Object.values(flat)
-                    return values.concat(flat.montantUnitaire*flat.quantite)
-                    .some(e => e?.toString().toLowerCase()
-                    .includes(debouncedSearchTerm.toLowerCase()))
+                    return values.concat(flat.montantUnitaire * flat.quantite)
+                        .some(e => e?.toString().toLowerCase()
+                            .includes(debouncedSearchTerm.toLowerCase()))
                 })} />
-            <Modal open={open} onClose={handleDialogClose}>
-                <Box>
-                    {formUI}
-                </Box>
-            </Modal>
+            <CustomModal open={open} onClose={handleDialogClose}>
+                {formUI}
+            </CustomModal>
             {selectedItem && <ConfirmationDialog open={openAlert}
-                afterSubmit={()=>{
+                afterSubmit={() => {
                     fetchChargesExternes()
-                    props.updatePrevision()}}
+                    props.updatePrevision()
+                }}
                 onClose={() => setOpenAlert(false)}
                 onConfirm={deleteInvestissement}>
                 Voulez vous vraiment supprimer cet article ?

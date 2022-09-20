@@ -92,10 +92,6 @@ margin-right: 1rem;
 border-radius: 100px;
 }
 
-.filebtn:hover{
-    background-color: transparent;
-}
-
 .addBusinessPlan{
     display: flex;
     align-items: center;

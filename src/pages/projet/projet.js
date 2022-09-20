@@ -15,10 +15,12 @@ import FormMontant from '../../components/form/form-montant/form-montant'
 import FormTranche from '../../components/form/form-tranche/form-tranche';
 import { Link } from 'react-router-dom';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { isAdmin, isSimpleUser, statusPrevision, statusRealisation, statusRevenu } from '../../utils';
+import { isAdmin, isSimpleUser, statusPrevision, statusRealisation, statusRevenu, getWarningMessages } from '../../utils';
 import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog'
+import CustomModal from '../../components/custom-modal/custom-modal';
 
 const Projet = props => {
 
@@ -36,7 +38,7 @@ const Projet = props => {
 
     const [open, setOpen] = useState(false);
 
-
+    const [openAlert, setOpenAlert] = useState(false)
 
     const handleDialogOpen = () => {
         setOpen(true);
@@ -64,6 +66,8 @@ const Projet = props => {
     };
 
     const handleToggleButtonGroup2 = () => {
+        // debugger
+        console.log(isPrevision);
         setOpenButtonGroup2((prevOpen) => !prevOpen);
     };
 
@@ -174,50 +178,6 @@ const Projet = props => {
         dispatchSeenRevenu()
     }, [projet, authenticationState.user.idUser])
 
-    const debloquerPrevisions = async () => {
-        if (isAdmin(authenticationState) && (projet.previsions.length === 0
-            || (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.accepted
-                && projet.realisations.length > 0 && projet.previsions.length === projet.realisations.length
-                && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee))) {
-            try {
-                await axios.post('/previsions', {
-                    projetId: projet.idProjet,
-                })
-                toast.success('Succès')
-                await fetchProjet()
-            } catch (e) {
-                toast.error(e.response.data.message)
-            }
-        }
-    }
-
-    const viewPrevisions = async () => {
-        navigate(`prevision/${projet.previsions.length}`)
-    }
-
-    const debloquerRealisation = async () => {
-        if (isAdmin(authenticationState) && projet.previsions.length > 0 &&
-            projet.previsions.every(p => p.etat === statusPrevision.accepted)
-            && projet.previsions.length === projet.realisations.length + 1) {
-            try {
-                await axios.post('/realisations', {
-                    projetId: projet.idProjet,
-                })
-                toast.success("Succès")
-                await fetchProjet()
-            } catch (e) {
-                toast.error(e.response.data.message)
-            }
-        }
-    }
-
-    const viewRealisations = async () => {
-        navigate(`realisation/${projet.realisations.length}`)
-    }
-
-    const viewRevenu = () => {
-        navigate(`revenu`)
-    }
 
     const isDebloquerPrevision = () =>
         projet.tranche && isAdmin(authenticationState) && (
@@ -241,6 +201,35 @@ const Projet = props => {
         && (projet.realisations[projet.realisations.length - 1].etat !== statusRealisation.terminee
             || projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
             && projet.realisations.length === projet.tranche.nbTranches)
+
+
+    const debloquerPrevisions = async () => {
+        if (isDebloquerPrevision()) {
+            await axios.post('/previsions', {
+                projetId: projet.idProjet,
+            })
+        }
+    }
+
+    const viewPrevisions = async () => {
+        navigate(`prevision/${projet.previsions.length}`)
+    }
+
+    const debloquerRealisation = async () => {
+        if (isDebloquerRealisation()) {
+            await axios.post('/realisations', {
+                projetId: projet.idProjet,
+            })
+        }
+    }
+
+    const viewRealisations = async () => {
+        navigate(`realisation/${projet.realisations.length}`)
+    }
+
+    const viewRevenu = () => {
+        navigate(`revenu`)
+    }
 
     let formUI;
 
@@ -318,14 +307,17 @@ const Projet = props => {
                         columnSpacing={1}
                     >
                         <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <Box sx={{ color: textColor }}  >
+                            <Box sx={{ color: textColor, textAlign: 'right' }}  >
                                 Montant accordé:
                             </Box>
                         </Grid>
 
                         <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
                             {projet.montant ?
-                                <Box sx={{ fontWeight: 600, color: projet.montant ? primaryColor : theme.palette.warning.main }}    >
+                                <Box sx={{
+                                    fontWeight: 600, color: projet.montant ? primaryColor : theme.palette.warning.main
+                                    , textAlign: 'left'
+                                }}    >
                                     {projet.montant} DZD
                                 </Box> :
                                 isSimpleUser(authenticationState) ?
@@ -346,23 +338,28 @@ const Projet = props => {
 
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <Box sx={{ color: textColor }} >
+                            <Box sx={{ color: textColor, textAlign: 'right' }} >
                                 Revenu:{' '}
                             </Box>
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                            <Box sx={{ fontWeight: 600, color: primaryColor }}  >
+                            <Box sx={{ fontWeight: 600, color: primaryColor, textAlign: 'left' }}  >
                                 {projet.revenu ? projet.revenu : 0}
                             </Box>
                         </Grid>
                     </Grid>
                 </Grid>
             </div>
-            <Box className={classes.center}
-                sx={{ typography: 'body1', fontWeight: 600, color: theme.palette.warning.main, }}
-                mb={1}>
-                Montant et document d'accord de financement non soumis
-            </Box>
+            {getWarningMessages(projet, authenticationState).map((m, i) =>
+                <Typography className={classes.center} key={i}
+                    variant='body2' color={
+                        m.priority > 1 ? theme.palette.success.main :
+                            m.priority > 0 ? theme.palette.warning.main :
+                                theme.palette.error.main}
+                    fontWeight={600} mt={1}>
+                    {m.message}
+                </Typography>
+            )}
             <Divider />
             <Box sx={{ typography: 'body1', fontWeight: 600, color: textColor, }}
                 mb={0.5} mt={2}>
@@ -453,7 +450,7 @@ const Projet = props => {
                         </Box>
                     </Grid>
                 </Grid>
-                <Grid container item xs={12} sm={6} columnSpacing={0.5}>
+                <Grid item xs={12} sm={6} columnSpacing={0.5}>
                     <Box
                         component={Link}
                         to={`/demandes/${projet.demande.idDemande}`}
@@ -463,7 +460,6 @@ const Projet = props => {
                         }}
                     >
                         Voir demande
-
                     </Box>
                 </Grid>
                 <Grid container item xs={12} sm={6} columnSpacing={0.5}>
@@ -472,159 +468,179 @@ const Projet = props => {
                             Accepté le:
                         </Box>
                     </Grid>
+
                     <Grid item>
                         <Box sx={{ color: theme.palette.text.main, fontWeight: 600 }}>
-                            {projet.demande.commission.dateCommission}
+                            {dayjs(projet.demande.commission.dateCommission).format('DD/MM/YYYY')}
                         </Box>
                     </Grid>
                 </Grid>
-                <Grid container item xs={12} sm={6} columnSpacing={0.5}>
-                    <Box component={Link}
-                        to={`/commissions/${projet.demande.commission.idCommission}`}
-                        sx={{
-                            color: theme.palette.primary.main,
-                            display: 'inline',
-                        }}>
-                        Voir commission
-                    </Box>
-                </Grid>
+                {isAdmin(authenticationState) &&
+                    <Grid item xs={12} sm={6} columnSpacing={0.5}>
+                        <Box component={Link}
+                            to={`/commissions/${projet.demande.commission.idCommission}`}
+                            sx={{
+                                color: theme.palette.primary.main,
+                                display: 'inline',
+                            }}>
+                            Voir commission
+                        </Box>
+                    </Grid>
+                }
             </Grid>
-            <Dialog open={open} onClose={handleDialogClose}
-                maxWidth='100%'>
-                <Box className={classes.modelContainer}>
-                    {formUI}
-                </Box>
-            </Dialog>
+            <CustomModal open={open} onClose={handleDialogClose}>
+                {formUI}
+            </CustomModal>
             {
                 isAdmin(authenticationState) &&
+                (isDebloquerPrevision() || isDebloquerRealisation()) &&
                 <ConfirmationDialog
                     open={openAlert}
-                    afterSubmit={() => dispatch(fetchAllMembres())}
+                    afterSubmit={fetchProjet}
                     onClose={() => setOpenAlert(false)}
-                    onConfirm={supprimerMembre}>
-                    Voulez-vous vraiment supprimer {selectedMembre.nomMembre} {selectedMembre.prenomMembre} ?
+                    onConfirm={isDebloquerPrevision() ? debloquerPrevisions : debloquerRealisation}>
+                    {isDebloquerPrevision() ? `Voulez-vous vraiment débloquer les prévisions de la ${projet.previsions.length > 0
+                        ? projet.previsions.length + 1 + 'ème' : '1ère'} tranche` :
+                        `Voulez-vous vraiment débloquer les réalisations de la ${projet.realisations.length > 0
+                            ? projet.realisations.length + 1 + 'ème' : '1ère'} tranche`}
+
                 </ConfirmationDialog>
             }
             <div className={classes.outerBtnContainer}>
                 {(isSimpleUser(authenticationState) || isAdmin(authenticationState)) &&
                     <div className={classes.btnContainer}>
-                        {(isSimpleUser(authenticationState) && projet.previsions.length > 0
-                            || isAdmin(authenticationState) && projet.montant && projet.tranche)
-                            &&
-                            <div style={{ width: '15rem' }}>
-                                <ButtonGroup ref={anchorRef2} fullWidth>
-                                    {isAdmin(authenticationState) ?
-                                        (isDebloquerRealisation() ?
-                                            <Button onClick={debloquerRealisation}
-                                                fullWidth>{`Débloquer réalisations ${projet.realisations.length > 0
-                                                    ? projet.realisations.length + 1 + 'ème' : '1ère'} tranche`}</Button> :
-                                            (isDebloquerPrevision() ?
-                                                <Button onClick={debloquerPrevisions}
-                                                    fullWidth>{`Débloquer prévisions ${projet.previsions.length > 0
-                                                        ? projet.previsions.length + 1 + 'ème' : '1ère'} tranche`}</Button> :
-                                                (isRealisation() ?
-                                                    <Button onClick={viewRealisations}
-                                                        fullWidth>Réalisations</Button> :
-                                                    (isPrevision() ?
+                        <Grid container columns={2} rowSpacing='1rem' columnSpacing='1rem'>
+                            {(isSimpleUser(authenticationState) && projet.previsions.length > 0
+                                || isAdmin(authenticationState) && projet.montant && projet.tranche)
+                                &&
+                                <Grid item xs={2} md={1}>
+                                    <div className={classes.btn}>
+                                        <ButtonGroup ref={anchorRef2} fullWidth>
+                                            {isAdmin(authenticationState) ?
+                                                (isDebloquerRealisation() ?
+                                                    <Button onClick={() => setOpenAlert(true)}
+                                                        fullWidth>{`Débloquer réalisations ${projet.realisations.length > 0
+                                                            ? projet.realisations.length + 1 + 'ème' : '1ère'} tranche`}</Button> :
+                                                    (isDebloquerPrevision() ?
+                                                        <Button onClick={() => setOpenAlert(true)}
+                                                            fullWidth>{`Débloquer prévisions ${projet.previsions.length > 0
+                                                                ? projet.previsions.length + 1 + 'ème' : '1ère'} tranche`}</Button> :
+                                                        (isRealisation() ?
+                                                            <Button onClick={viewRealisations}
+                                                                fullWidth>Réalisations</Button> :
+                                                            (isPrevision() ?
+                                                                <Button onClick={viewPrevisions}
+                                                                    fullWidth>Prévisions</Button> : null))))
+                                                : projet.previsions.length === 0 ? null :
+                                                    projet.previsions.length > projet.realisations.length ?
                                                         <Button onClick={viewPrevisions}
-                                                            fullWidth>Prévisions</Button> : null))))
-                                        : projet.previsions.length === 0 ? null :
-                                            projet.previsions.length > projet.realisations.length ?
-                                                <Button onClick={viewPrevisions}
-                                                    fullWidth>Prévisions</Button> :
-                                                <Button onClick={viewRealisations}
-                                                    fullWidth>Réalisations</Button>
-                                    }
+                                                            fullWidth>Prévisions</Button> :
+                                                        <Button onClick={viewRealisations}
+                                                            fullWidth>Réalisations</Button>
+                                            }
 
-                                    {(isSimpleUser(authenticationState) && projet.realisations.length > 0
-                                        || isAdmin(authenticationState) && projet.previsions.length > 0 &&
-                                        projet.previsions[0].etat === statusPrevision.accepted) &&
-                                        <Button
-                                            size="small"
-                                            sx={{ maxWidth: '3rem' }}
-                                            onClick={handleToggleButtonGroup2}
-                                        ><ArrowDropDownIcon /></Button>
-                                    }
-                                </ButtonGroup>
-                            </div>}
-                        {(isSimpleUser(authenticationState) && projet.realisations.length > 0
-                            || isAdmin(authenticationState) && projet.previsions.length > 0) &&
-                            projet.previsions[0].etat === statusPrevision.accepted
-                            &&
-                            <Popper
-                                sx={{
-                                    zIndex: 1,
-                                }}
-                                open={openButtonGroup2}
-                                anchorEl={anchorRef2.current}
-                                role={undefined}
-                                transition
-                                disablePortal
-                            >
-                                {({ TransitionProps, placement }) => (
-                                    <Grow
-                                        {...TransitionProps}
-                                        style={{
-                                            transformOrigin:
-                                                placement === 'bottom' ? 'center top' : 'center bottom',
-                                        }}
-                                    >
-                                        <Paper>
-                                            <ClickAwayListener onClickAway={handleCloseButtonGroup2}>
-                                                <MenuList id="split-button-menu" className={classes.btn}>
-                                                    {isAdmin(authenticationState) &&
-                                                        (isDebloquerPrevision() && projet.previsions.length > 0 ?
-                                                            <MenuItem onClick={viewPrevisions}>
-                                                                Prévisions
-                                                            </MenuItem> :
-                                                            isDebloquerRealisation() && projet.realisations.length > 0 ?
-                                                                <MenuItem onClick={viewRealisations}>
-                                                                    Réalisations
-                                                                </MenuItem> : null)
-                                                    }
+                                            {(isSimpleUser(authenticationState) && projet.realisations.length > 0
+                                                || isAdmin(authenticationState) && projet.previsions.length > 0 &&
+                                                projet.previsions[0].etat === statusPrevision.accepted) &&
+                                                <Button
+                                                    size="small"
+                                                    sx={{ maxWidth: '3rem' }}
+                                                    onClick={handleToggleButtonGroup2}
+                                                ><KeyboardArrowUpIcon /></Button>
+                                            }
+                                        </ButtonGroup>
+                                    </div>
+                                </Grid>
 
-                                                    {isSimpleUser(authenticationState) ?
-                                                        (projet.previsions.length > 0 &&
-                                                            projet.previsions.length === projet.realisations.length ?
-                                                            <MenuItem onClick={viewPrevisions}>
-                                                                Prévisions
-                                                            </MenuItem> :
-                                                            projet.realisations.length > 0 &&
-                                                                projet.realisations.length === projet.previsions.length - 1 ?
-                                                                <MenuItem onClick={viewRealisations}>
-                                                                    Réalisations
-                                                                </MenuItem> : null) :
-                                                        //admin
-                                                        (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.accepted
-                                                            && (projet.realisations.length === projet.previsions.length - 1
-                                                                || projet.realisations[projet.realisations.length - 1].etat !== statusRealisation.terminee
-                                                                || (projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
-                                                                    && projet.realisations.length === projet.tranche.nbTranches))) ?
-                                                            <MenuItem onClick={viewPrevisions}>
-                                                                Prévisions
-                                                            </MenuItem> :
-                                                            ((projet.realisations.length === projet.previsions.length
-                                                                && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
-                                                                && projet.realisations.length < projet.tranche.nbTranches) ||
-                                                                (projet.previsions[projet.previsions.length - 1].etat !== statusPrevision.accepted
-                                                                    && projet.realisations.length === projet.previsions.length - 1)) ?
-                                                                <MenuItem onClick={viewRealisations}>
-                                                                    Réalisations
-                                                                </MenuItem> : null}
+                            }
+                            {(isSimpleUser(authenticationState) && projet.realisations.length > 0
+                                || isAdmin(authenticationState) && projet.previsions.length > 0) &&
+                                projet.previsions[0].etat === statusPrevision.accepted
+                                &&
+                                <Popper
+                                    className={classes.btn}
+                                    sx={{
+                                        zIndex: 1,
+                                    }}
+                                    open={openButtonGroup2}
+                                    anchorEl={anchorRef2.current}
+                                    role={undefined}
+                                    transition
+                                    disablePortal
+                                    placement='top'
+                                >
+                                    {({ TransitionProps, placement }) => (
+                                        <Grow
+                                            {...TransitionProps}
+                                            style={{
+                                                transformOrigin:
+                                                    placement === 'bottom' ? 'center top' : 'center bottom',
+                                            }}
+                                        >
+                                            <Paper >
+                                                <ClickAwayListener onClickAway={handleCloseButtonGroup2}>
+                                                    <MenuList id="split-button-menu" >
+                                                        {isAdmin(authenticationState) &&
+                                                            (isDebloquerPrevision() && projet.previsions.length > 0 ?
+                                                                <MenuItem onClick={viewPrevisions}>
+                                                                    Prévisions
+                                                                </MenuItem> :
+                                                                isDebloquerRealisation() && projet.realisations.length > 0 ?
+                                                                    <MenuItem onClick={viewRealisations}>
+                                                                        Réalisations
+                                                                    </MenuItem> : null)
+                                                        }
 
-                                                </MenuList>
-                                            </ClickAwayListener>
-                                        </Paper>
-                                    </Grow>
-                                )}
-                            </Popper>
-                        }
-                        <Button variant='outlined' className={classes.btn} fullWidth
-                            onClick={viewRevenu}>
-                            Revenus
-                        </Button>
-                    </div>}
-            </div>
+                                                        {isSimpleUser(authenticationState) ?
+                                                            (projet.previsions.length > 0 &&
+                                                                projet.previsions.length === projet.realisations.length ?
+                                                                <MenuItem onClick={viewPrevisions}>
+                                                                    Prévisions
+                                                                </MenuItem> :
+                                                                projet.realisations.length > 0 &&
+                                                                    projet.realisations.length === projet.previsions.length - 1 ?
+                                                                    <MenuItem onClick={viewRealisations}>
+                                                                        Réalisations
+                                                                    </MenuItem> : null) :
+                                                            //admin
+                                                            (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.accepted
+                                                                && (projet.realisations.length === projet.previsions.length - 1
+                                                                    || projet.realisations[projet.realisations.length - 1].etat !== statusRealisation.terminee
+                                                                    || (projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+                                                                        && projet.realisations.length === projet.tranche.nbTranches))) ?
+                                                                <MenuItem onClick={viewPrevisions}>
+                                                                    Prévisions
+                                                                </MenuItem> :
+                                                                ((projet.realisations.length === projet.previsions.length
+                                                                    && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+                                                                    && projet.realisations.length < projet.tranche.nbTranches) ||
+                                                                    (projet.previsions[projet.previsions.length - 1].etat !== statusPrevision.accepted
+                                                                        && projet.realisations.length === projet.previsions.length - 1)) ?
+                                                                    <MenuItem onClick={viewRealisations}>
+                                                                        Réalisations
+                                                                    </MenuItem> : null}
+                                                    </MenuList>
+                                                </ClickAwayListener>
+                                            </Paper>
+                                        </Grow>
+                                    )}
+                                </Popper>
+
+
+                            }
+
+                            <Grid item xs={2} md={1}>
+                                <Button variant='outlined'
+                                    style={{ height: '100%' }}
+                                    className={classes.btn} fullWidth
+                                    onClick={viewRevenu}>
+                                    Revenus
+                                </Button>
+                            </Grid>
+                        </Grid >
+                    </div>
+                }
+            </div >
         </>
 };
 

@@ -1,8 +1,9 @@
-import { Button, Typography, FormHelperText, FormControl, CircularProgress } from '@mui/material';
+import { Button, Typography, FormHelperText, useTheme,
+    FormControl, CircularProgress, Box } from '@mui/material';
 import { CustomTextField, CustomCheckBox } from '../../theme';
 import classes from './inscription.module.css'
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -14,6 +15,8 @@ const initialValues = {
 }
 
 const Inscription = () => {
+
+    const theme = useTheme()
 
     const navigate = useNavigate()
 
@@ -135,6 +138,13 @@ const Inscription = () => {
                         <Typography color='white' fontWeight={600} >S'inscrire</Typography>
                     </Button>
                 </form>
+                <Box component={Link}
+                    to={'/connexion'}
+                    sx={{
+                        color: theme.palette.primary.main,
+                        marginTop : '1rem',
+                        display: 'block'
+                    }}>Se connecter</Box>
             </div >
         </React.Fragment>
     );

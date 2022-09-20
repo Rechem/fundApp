@@ -10,6 +10,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Calendar1 } from 'iconsax-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import {fetchAllMembres} from '../../../store/membresSlice/reducer'
 
 
 const FormCommission = props => {
@@ -54,6 +55,10 @@ const FormCommission = props => {
     if (membres.length > 0) {
         optionPresident = optionPresident.filter(e => membres.every(m => m.idMembre != e.idMembre))
     }
+
+    useEffect(() => {
+        dispatch(fetchAllMembres())
+    }, [])
 
     const validate = () => {
         let temp = {}

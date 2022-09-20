@@ -38,26 +38,9 @@ const Prevision = () => {
         setTabValue(newValue);
     };
 
-    const [openDialog, setOpenDialog] = useState(false);
-
-    const handleDialogClickOpen = () => {
-        setOpenDialog(true);
-    };
-
-    const handleDialogClose = () => {
-        setOpenDialog(false);
-    };
-
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [open, setOpen] = useState(false);
     const [total, setTotal] = useState(0)
 
     const [realisation, setRealisation] = useState(null)
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-        setOpen((prev) => !prev);
-    };
 
     const fetchRealisationDetails = async () => {
         try {
@@ -65,9 +48,9 @@ const Prevision = () => {
             setRealisation(response.data.data.realisation)
         } catch (e) {
             if (e.response.status === 404)
-                    navigate('/notfound')
-                else
-                    toast.error(e.response.data.message)
+                navigate('/notfound')
+            else
+                toast.error(e.response.data.message)
         }
     }
 
@@ -94,12 +77,11 @@ const Prevision = () => {
     return (
         <>
             <div className={classes.headerContainer}>
-                <Box sx={{
-                    color: theme.palette.text.main,
-                    typography: 'h3'
-                }} className={classes.hdr}>
+                <Typography
+                    color={theme.palette.text.main}
+                    variant='h3' className={classes.hdr}>
                     Réalisation
-                </Box>
+                </Typography>
                 {realisation && realisation.etat === statusRealisation.terminee &&
                     <div>
                         <Status status={realisation.etat} />
@@ -109,18 +91,21 @@ const Prevision = () => {
                 <CircularProgress sx={{ display: 'block', margin: 'auto' }}
                     size='2rem' /> :
                 <>
-                    <Grid container columns={12} columnSpacing={6} mb='2rem'>
+                    <Grid container columns={12} columnSpacing={6} mb='2rem' rowSpacing='1rem'
+                        className={classes.dboard}>
                         <Grid item xs={12} sm={4}
-                            sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', }}>
+                            className={classes.center}
+                            sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography variant='subtitle2'>
                                 {realisation.projet.demande.denominationCommerciale}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}
+                            className={classes.center}
                             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'column' }}>
-                            <Box sx={{ typography: 'body2', color: textColor }} mb={1}>
+                            <Typography variant='body2' color={textColor} mb={1}>
                                 Tranches
-                            </Box>
+                            </Typography>
                             {realisation.projet.tranche ?
                                 <CustomStepper
                                     active={realisation.numeroTranche}
@@ -132,19 +117,15 @@ const Prevision = () => {
                                 <i style={{ display: 'block' }}>Pas encore soumis</i>
                             }
                         </Grid>
-                        <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                            <Box sx={{
-                                color: theme.palette.text.main,
-                                typography: 'subtitle2',
-                            }} >
+                        <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}
+                            className={classes.center}>
+                            <Typography
+                                color={theme.palette.text.main}
+                                variant='subtitle2'>
                                 {realisation && realisation.valeurRealisation} DZD
-                            </Box>
+                            </Typography>
                         </Grid>
                     </Grid>
-                    <Dialog open={openDialog} onClose={handleDialogClose} fullWidth>
-                        <Box>
-                        </Box>
-                    </Dialog>
                 </>
             }
             <Tabs value={tabValue} onChange={handleTabChange}>
@@ -177,20 +158,6 @@ const Prevision = () => {
                     <Box component='span'
                         sx={{ marginLeft: '0.5rem', color: primaryColor }}>{total} DZD</Box>
                 </div>
-                <Box>
-                    <Button variant='text' onClick={handleClick}>
-                        Aller a
-                    </Button>
-                    <Popper open={open} anchorEl={anchorEl} placement={'top-end'} transition>
-                        {({ TransitionProps }) => (
-                            <Grow {...TransitionProps} timeout={350}>
-                                <Paper>
-                                    The content of the Popper.
-                                </Paper>
-                            </Grow>
-                        )}
-                    </Popper>
-                </Box>
             </div>
         </>
     );

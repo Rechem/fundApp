@@ -6,7 +6,8 @@
     transform: translate(-50%, -50%);
     border-radius: 10px;
     padding: 1.5rem 2rem;
-    max-width: 90%;
+    max-height: 90%;
+    width: min(90% , 30.5rem);
     background-color: white;
 }
 

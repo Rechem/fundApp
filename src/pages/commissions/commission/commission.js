@@ -21,6 +21,7 @@ import FormAjouterDemande from '../../../components/form/form-ajouter-demande/fo
 import { toast } from 'react-toastify';
 import useDebounce from '../../../custom-hooks/use-debounce';
 import ConfirmationDialog from '../../../components/confirmation-dialog/confirmation-dialog';
+import CustomModal from '../../../components/custom-modal/custom-modal';
 
 const Commission = () => {
 
@@ -222,12 +223,10 @@ const Commission = () => {
             </div>
             {!commission ? <CircularProgress size='2rem' style={{ marginTop: '1rem' }} /> :
                 <React.Fragment>
-                    <Dialog open={open} onClose={handleDialogClose}
-                        maxWidth='100%'>
-                        <Box className={classes.modelContainer}>
+                    <CustomModal open={open} onClose={handleDialogClose}>
+
                             {formUI}
-                        </Box>
-                    </Dialog>
+                    </CustomModal>
                     <div className={classes.container}>
                         <div className={classes.leftColumn}>
                             <div className={classes.etatContainer}>

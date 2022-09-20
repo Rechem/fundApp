@@ -9,8 +9,10 @@ import axios from 'axios';
 import { WILAYA } from '../inscription/wilayas';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
-import { CustomTextField } from '../../theme';
+import FormResetPassword from '../../components/form/form-reset-pw/form-reset-pw';
 import { useNavigate } from 'react-router-dom';
+import CustomModal from '../../components/custom-modal/custom-modal';
+import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog';
 
 const Profil = () => {
 
@@ -21,18 +23,23 @@ const Profil = () => {
     const location = useLocation();
     const { idUser } = useParams()
     const [user, setUser] = useState(null)
-    const [errors, setErrors] = useState({})
     const [isFetching, setIsFetching] = useState(false)
-    const [values, setValues] = useState({})
+    const [open, setOpen] = useState(false)
 
-    const onChangeHandler = e => {
-        const { name, value } = e.target
-        setValues({
-            ...values,
-            [name]: value
-        })
+    const handlOpenDialog = () => {
+        setOpen(true)
+    }
+    const handlCloseDialog = () => {
+        setOpen(false)
+    }
 
-        setErrors({ ...errors, [name]: '' })
+    const [openAlert, setOpenAlert] = useState(false)
+
+    const handlOpenAlert = () => {
+        setOpenAlert(true)
+    }
+    const handlCloseAlert = () => {
+        setOpenAlert(false)
     }
 
     const INFO = [
@@ -86,7 +93,7 @@ const Profil = () => {
                     response = await axios.get(`/users/${authenticationState.user.idUser}`)
 
                 setUser(response.data.data.user)
-                setValues(response.data.data.user)
+                // setValues(response.data.data.user)
             } catch (e) {
                 if (e.response.status === 404)
                     navigate('/notfound')
@@ -99,7 +106,13 @@ const Profil = () => {
 
     useEffect(() => {
         fetchUserDetails()
-    }, [authenticationState.user.idUser])
+    }, [authenticationState.user.idUser, location.pathname])
+
+    const toggleBan = async () => {
+        await axios.patch(`users/ban/${user.idUser}`, {
+            banned : !user.banned
+        })
+    }
 
     return (
         <>
@@ -110,6 +123,18 @@ const Profil = () => {
             {isFetching && <CircularProgress />}
             {!isFetching && user !== null &&
                 <>
+                    <ConfirmationDialog
+                        open={openAlert}
+                        afterSubmit={fetchUserDetails}
+                        onClose={handlCloseAlert}
+                        onConfirm={toggleBan}>
+                        {user.banned ? 'Voulez vous vraiment réactiver ce compte ?' :
+                            'Voulez vous vraiment désactiver ce compte ?'}
+                    </ConfirmationDialog>
+                    <CustomModal open={open} onClose={handlCloseDialog}>
+                        <FormResetPassword isAdmin={isAdmin(authenticationState)}
+                            onClose={handlCloseDialog} idUser={user.idUser} />
+                    </CustomModal>
                     <div style={{
                         maxWidth: '40rem', marginInline: 'auto',
                     }}>
@@ -171,17 +196,19 @@ const Profil = () => {
                         {
                             user.idUser !== authenticationState.user.idUser &&
                             <Button
-                            style={{ marginTop: '1rem' }}
-                            display='block'
-                            variant='text'
-                            color='error'>
-                            <Typography variant='body2' color='error'>
-                                Désactiver
-                            </Typography>
-                        </Button>
-                            }
+                                style={{ marginTop: '1rem' }}
+                                display='block'
+                                variant='text'
+                                color='error'
+                                onClick={handlOpenAlert}>
+                                <Typography variant='body2' color='error'>
+                                    {user.banned ? 'Réactiver' : 'Désactiver'}
+                                </Typography>
+                            </Button>
+                        }
                         <div className={classes.btnContainer}>
                             <Button
+                                onClick={handlOpenDialog}
                                 display='block'
                                 variant='text'>
                                 Réinitialiser mot de passe

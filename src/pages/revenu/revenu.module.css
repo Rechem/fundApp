@@ -5,3 +5,15 @@
 .hdr{
     margin-bottom: 2rem;
 }
+
+@media screen and (max-width : 600px) {
+    .center {
+        text-align: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .dboard{
+        margin-block: 2rem;
+    }
+}

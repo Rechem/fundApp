@@ -22,6 +22,7 @@
     border-radius: 50%;
 }
 
+
 .userContainer {
     display: flex;
     align-items: center;
@@ -29,15 +30,9 @@
     margin-bottom: 2rem;
 }
 
-.outerBtnContainer {
-    display: flex;
-    justify-content: center;
-}
 
 .btnContainer {
     margin-top: 4rem;
-    display: flex;
-    gap: 1rem;
 }
 
 .btnSecondary {
@@ -56,15 +51,23 @@
     margin-top: 0.5rem;
     /* display: block; */
     align-items: center;
-    /* flex-direction: column; */
+    /* flex-direction
+    : column; */
 }
 
-.btnSecondary:hover {
-    background-color: transparent;
+.btnContainer{
+    margin-top: 2rem;
 }
 
-.btn {
+.outerBtnContainer {
+    display: flex;
+    justify-content: center;
+}
+
+
+.btn, .btnSecondary {
     width: 14rem;
+    height: 100%;
 }
 
 .modelContainer {
@@ -84,6 +87,18 @@
     }
     .fileBtnContainer{
         justify-content: space-between;
+    }
+
+}
+
+@media screen and (max-width: 899px) {
+    .btnSecondary,
+    .btn{
+        width: 100%;
+    }
+
+    .btnContainer{
+        width: 100%;
     }
 }
 

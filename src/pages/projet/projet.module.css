@@ -34,8 +34,6 @@
 
 .btnContainer {
     margin-top: 4rem;
-    display: flex;
-    gap: 1rem;
 }
 
 .fileBtnContainer{
@@ -67,5 +65,15 @@
         height: 5rem;
         width: 5rem;
         margin: auto;
+    }
+}
+
+@media screen and (max-width : 900px) {
+    .btn{
+        width: 100%;
+    }
+
+    .btnContainer {
+        width: 100%;
     }
 }

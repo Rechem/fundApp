@@ -7,6 +7,7 @@ import FormCommission from '../../../components/form/form-commission/form-commis
 import { Dialog, Box } from '@mui/material';
 import classes from './commissions-tab.module.css'
 import axios from 'axios';
+import CustomModal from '../../../components/custom-modal/custom-modal';
 
 const CommissionTab = () => {
 
@@ -48,13 +49,11 @@ const CommissionTab = () => {
                 onSearchChangeHandler={onChangeHandler}
                 onRefresh={refreshTable}
                 searchValue={searchInput} buttonLabel='Ajourer une commission' />
-            <Dialog open={open} onClose={handleDialogClose} maxWidth='100%'>
-                <Box className={classes.modelContainer}>
+            <CustomModal open={open} onClose={handleDialogClose} >
                     <FormCommission
                         afterSubmit={refreshTable}
                         onClose={handleDialogClose} />
-                </Box>
-            </Dialog>
+            </CustomModal>
             <CommissionsTable
             tableRef={tableRef}
             searchValue={debouncedSearchTerm}

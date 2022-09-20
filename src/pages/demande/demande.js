@@ -18,6 +18,7 @@ import { toast } from 'react-toastify';
 import ConfirmationDialog from '../../components/confirmation-dialog/confirmation-dialog'
 import { useNavigate, Link } from 'react-router-dom';
 import Motif from '../../components/motif/motif';
+import CustomModal from '../../components/custom-modal/custom-modal';
 
 const Demande = () => {
 
@@ -196,8 +197,6 @@ const Demande = () => {
             break;
     }
 
-
-
     useEffect(() => {
         if (authenticationState.user.idUser)
             fetchDemande()
@@ -212,7 +211,7 @@ const Demande = () => {
                 </Typography>
                 <Typography color={theme.palette.text.main}
                     variant='subtitle2' display='inline' fontWeight={400}>
-                    Id:{demande && demande.idDemande}
+                    Id{demande && demande.idDemande}
                 </Typography>
             </div>
             {isLoading ? <CircularProgress /> :
@@ -236,6 +235,7 @@ const Demande = () => {
                         to={isSimpleUser(authenticationState) ? '/me' : `/users/${demande.userId}`}
                         sx={{
                             display: 'inline',
+                            color: theme.palette.text.primary
                         }}>
                         <div className={classes.userContainer}>
                             <img src={process.env.PUBLIC_URL + '/asf-logo-white.png'} alt='Avatar'
@@ -298,6 +298,7 @@ const Demande = () => {
                                                                 className={classes.filebtn} variant='outlined'
                                                                 disabled={demande.etat !== statusDemande.complement}>
                                                                 <input type='file'
+                                                                accept='.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpeg,.jpg,.png'
                                                                     onChange={(e) => fileUploadHandler(e, c)}
                                                                     style={{ display: 'none' }}
                                                                     id='file' ref={el => refs.current[i] = el} />
@@ -345,42 +346,46 @@ const Demande = () => {
                         <>
                             <div className={classes.outerBtnContainer}>
                                 <div className={classes.btnContainer}>
-                                    <Button variant='outlined' className={classes.btnSecondary}
-                                        onClick={openComplementForm}>
-                                        <Typography color='primary'>Demander compléments</Typography>
-                                    </Button>
-                                    {demande.etat !== statusDemande.refused &&
-                                        <Button variant='outlined' className={classes.btnSecondary}
-                                            onClick={openRefuserForm}>
-                                            <Typography color='primary'>Refuser</Typography>
-                                        </Button>
-                                    }
-                                    <Button variant={
-                                        demande.etat === statusDemande.programmee ?
-                                            'outlined' : 'contained'}
-                                        className={demande.etat === statusDemande.programmee ?
-                                            classes.btnSecondary : classes.btn}
-                                        onClick={demande.etat === statusDemande.programmee ?
-                                            openDeprogrammerForm : openAccepterForm}>
-                                        {demande.etat === statusDemande.programmee ?
-                                            <Typography color='primary'>Déprogrammer</Typography>
-                                            : <Typography
-                                                color='white' fontWeight={500}>
-                                                {demande.etat === statusDemande.preselectionnee ?
-                                                    'Programmer' : 'Accepter'}
-                                            </Typography>
+                                    <Grid container columns={3} rowSpacing='1rem' columnSpacing='1rem'>
+                                        <Grid item xs={3} md={1}>
+                                            <Button variant='outlined' className={classes.btnSecondary}
+                                                onClick={openComplementForm}>
+                                                <Typography color='primary'>Demander compléments</Typography>
+                                            </Button>
+                                        </Grid>
+                                        {demande.etat !== statusDemande.refused &&
+                                            <Grid item xs={3} md={1}>
+                                                <Button variant='outlined' className={classes.btnSecondary}
+                                                    onClick={openRefuserForm}>
+                                                    <Typography color='primary'>Refuser</Typography>
+                                                </Button>
+                                            </Grid>
                                         }
-                                    </Button>
+                                        <Grid item xs={3} md={1}>
+                                            <Button variant={
+                                                demande.etat === statusDemande.programmee ?
+                                                    'outlined' : 'contained'}
+                                                className={demande.etat === statusDemande.programmee ?
+                                                    classes.btnSecondary : classes.btn}
+                                                onClick={demande.etat === statusDemande.programmee ?
+                                                    openDeprogrammerForm : openAccepterForm}>
+                                                {demande.etat === statusDemande.programmee ?
+                                                    <Typography color='primary'>Déprogrammer</Typography>
+                                                    : <Typography
+                                                        color='white' fontWeight={500}>
+                                                        {demande.etat === statusDemande.preselectionnee ?
+                                                            'Programmer' : 'Accepter'}
+                                                    </Typography>
+                                                }
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
                                 </div>
                             </div>
-                            <Dialog
-                                open={openDialog}
-                                onClose={() => setOpenDialog(false)}
-                                maxWidth='100%'>
-                                <Box className={classes.modelContainer}>
-                                    {formUI}
-                                </Box>
-                            </Dialog>
+                            <CustomModal open={openDialog}
+                                onClose={() => setOpenDialog(false)}>
+                                {formUI}
+                            </CustomModal>
                             <ConfirmationDialog open={openAlert} onClose={() => setOpenAlert(false)}
                                 onConfirm={() => deprogrammerDemande(demande.idDemande)}
                                 afterSubmit={fetchDemande}>

@@ -118,4 +118,176 @@ export function flattenObject(ob) {
     return toReturn;
 }
 
+export const getWarningMessages = (projet, authenticationState) => {
+
+    let warningMessages = [];
+    if (isSimpleUser(authenticationState)) {
+        if (projet.montant && projet.tranche === null) {
+            warningMessages.push({
+                message:
+                    `Vous devez choisir le nombre de tranche`,
+                priority: 0
+            })
+        } else {
+            if (projet.previsions.length > 0) {
+                if (projet.previsions[projet.previsions.length - 1].etat !== statusPrevision.pending
+                    && !projet.previsions[projet.previsions.length - 1].seenByUser) {
+                    switch (projet.previsions[projet.previsions.length - 1].etat) {
+                        case statusPrevision.accepted:
+                            warningMessages.push({
+                                message:
+                                    `Vos prévisions pour la ${projet.previsions.length > 1
+                                        ? projet.previsions.length + 'ème' : '1ère'} tranche ont été acceptées`,
+                                priority: 2
+                            })
+                            break;
+                        case statusPrevision.refused:
+                            warningMessages.push({
+                                message:
+                                    `Vos prévisions pour la ${projet.previsions.length > 1
+                                        ? projet.previsions.length + 'ème' : '1ère'} tranche ont été refusées`,
+                                priority: 0
+                            })
+                            break;
+                        case statusPrevision.brouillon:
+                            warningMessages.push({
+                                message:
+                                    `Vous pouvez désormais ajouter les prévisions de la
+                                ${projet.previsions.length > 1
+                                        ? projet.previsions.length + 'ème' : '1ère'} tranche`,
+                                priority: 2
+                            })
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            if (projet.realisations.length > 0) {
+                if (projet.realisations[projet.realisations.length - 1].etat !== statusRealisation.pending
+                    && !(projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+                        && projet.realisations[projet.realisations.length - 1].seenByUser)) {
+                    switch (projet.realisations[projet.realisations.length - 1].etat) {
+                        case statusRealisation.waiting:
+                        case statusRealisation.pendingWaiting:
+                            warningMessages.push({
+                                message:
+                                    `Vous avez des realisations non justifiees`,
+                                priority: 1
+                            })
+                            break;
+                        case statusRealisation.terminee:
+                            if (!projet.realisations[projet.realisations.length - 1].seenByUser)
+                                warningMessages.push({
+                                    message:
+                                        `Toutes vos réalisations de la ${projet.realisations.length > 1
+                                            ? projet.realisations.length + 'ème' : '1ère'} tranche on été acceptées`,
+                                    priority: 2
+                                })
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+        if (projet.revenuProjet) {
+            if (!projet.revenuProjet.seenByUser &&
+                (projet.revenuProjet.etat === statusRevenu.waiting
+                    || projet.revenuProjet.etat === statusRevenu.evaluated)) {
+                if (projet.revenuProjet.etat === statusRevenu.waiting)
+                    warningMessages.push({
+                        message:
+                            `Vous pouvez desormais ajouter des revenus`,
+                        priority: 2
+                    })
+                else if (projet.revenuProjet.etat === statusRevenu.evaluated)
+                    warningMessages.push({
+                        message:
+                            `Vous avez une mis a jour sur vos revenus`,
+                        priority: 1
+                    })
+
+            }
+        }
+    } else {
+        //admin
+        if (projet.documentAccordFinancement === null)
+            warningMessages.push({
+                message:
+                    `Document d'accord de financement non soumis`,
+                priority: 1
+            })
+        if (projet.montant === null) {
+            warningMessages.push({
+                message:
+                    `Monant de financement non soumis`,
+                priority: 0
+            })
+        } else {
+            if (projet.previsions.length > 0) {
+                if (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.pending) {
+                    warningMessages.push({
+                        message:
+                            `Prévisions en attente evaluation`,
+                        priority: 1
+                    })
+                } else {
+                    // debloquer realisation
+                    if (projet.previsions.length === projet.realisations.length + 1
+                        && projet.previsions.every(p => p.etat === statusPrevision.accepted))
+                        warningMessages.push({
+                            message:
+                                `Réalisations de la ${projet.realisations.length > 0
+                                    ? projet.realisations.length + 1 + 'ème' : '1ère'} tranche non encore débloquées`,
+                            priority: 1
+                        })
+                    else if (projet.previsions[projet.previsions.length - 1].etat === statusPrevision.accepted
+                        && projet.realisations.length > 0 && projet.previsions.length === projet.realisations.length
+                        && projet.realisations[projet.realisations.length - 1].etat === statusRealisation.terminee
+                        && projet.previsions.length < projet.tranche.nbTranches)
+                        warningMessages.push({
+                            message:
+                                `Prévisions de la ${projet.previsions.length + 1}ème tranche non encore débloquées`,
+                            priority: 1
+                        })
+
+
+                }
+            } else {
+                if (projet.tranche)
+                    warningMessages.push({
+                        message:
+                            `Prévisions de la 1ère tranche non encore débloquées`,
+                        priority: 1
+                    })
+            }
+
+            if (projet.realisations.length > 0) {
+                if ([statusRealisation.pending, statusRealisation.pendingWaiting].
+                    includes(projet.realisations[projet.realisations.length - 1].etat)) {
+                    warningMessages.push({
+                        message:
+                            `Réalisations en attente évaluation`,
+                        priority: 1
+                    })
+                }
+            }
+        }
+        if (projet.revenuProjet) {
+            if (projet.revenuProjet.etat === statusRevenu.pending) {
+                warningMessages.push({
+                    message:
+                        `Revenus en attente évaluation`,
+                    priority: 1
+                })
+            }
+        }
+    }
+
+    return warningMessages.sort((a, b) => a.priority > b.priority ? 1 : -1)
+}
+
 export default roles

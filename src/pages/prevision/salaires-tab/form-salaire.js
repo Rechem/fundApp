@@ -194,7 +194,7 @@ const FormSalaire = props => {
                 >
                 </CustomTextField>
                 <Grid container columns={4} columnSpacing={1}
-                    className={classes.field} mb={1}>
+                    className={classes.field} mb={1} alignItems='flex-end'>
                     <Grid item xs={2}>
                         <Typography fontWeight={400}
                             variant='body2'>Nombre de mois</Typography>

@@ -4,7 +4,8 @@
     top: 50%;
     overflow-y: auto;
     transform: translate(-50%, -50%);
-    width: min(90%,30,5rem);
+    max-height: 90%;
+    width: min(90% , 30.5rem);
     border-radius: 10px;
     padding: 1.5rem 2rem;
     background-color: white;

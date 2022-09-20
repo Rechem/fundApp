@@ -1,5 +1,14 @@
 .container{
-    width: 30rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    overflow-y: auto;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+    padding: 1.5rem 2rem;
+    max-height: 90%;
+    width: min(90% , 30.5rem);
+    background-color: white;
 }
 
 .field {
@@ -14,8 +23,4 @@
 
 .btn{
     margin-left: 1rem;
-}
-
-.btn:nth-child(1):hover {
-    background-color: transparent;
 }

@@ -25,7 +25,7 @@ const Layout = props => {
     }, [width]);
 
     useEffect(() => {
-        if (width >= 600)
+        if (width >= 900)
             openSideBar()
         else
             closeSideBar()
